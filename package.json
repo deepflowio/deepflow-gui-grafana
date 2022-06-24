@@ -1,0 +1,29 @@
+{
+  "name": "metaflow-gui-grafana",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "./*"
+  ],
+  "scripts": {
+    "preinstall": "npx only-allow pnpm",
+    "b:apptrace": "pnpm run --filter metaflow-apptrace-panel build",
+    "b:querier": "pnpm run --filter metaflow-querier-datasource build",
+    "b-dev:apptrace": "pnpm run --filter metaflow-apptrace-panel builddev",
+    "b-dev:querier": "pnpm run --filter metaflow-querier-datasource builddev"
+  },
+  "dependencies": {
+    "@grafana/data": "^8.5.3",
+    "@grafana/runtime": "^8.5.3",
+    "@grafana/toolkit": "^8.5.6",
+    "@grafana/ui": "^8.5.4",
+    "lodash": "^4.17.21",
+    "qs": "^6.10.5"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.45",
+    "prettier": "^2.7.1",
+    "tslib": "^2.3.1",
+    "typescript": "^4.7.4"
+  }
+}

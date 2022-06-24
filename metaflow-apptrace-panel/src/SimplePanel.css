@@ -1,0 +1,142 @@
+.metaflow-panel {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.goback-icon {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.metaflow-panel .content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  transition: all 0.3s;
+}
+
+.metaflow-panel .content > div {
+  width: 100%;
+  height: 100%;
+  flex-shrink: 0;
+}
+
+.table-and-select {
+  display: flex;
+  flex-direction: column;
+}
+
+.ref-select {
+  padding: 4px;
+}
+
+.flame-and-tables {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.flame-and-tables .main {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.flame-and-tables .flame-wrap,
+.flame-and-tables .service-table-wrap,
+.flame-and-tables .detail-table-wrap {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.flame-and-tables .view-title {
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 2px;
+}
+
+.semi-always-dark .flame-and-tables .view-title {
+  color: #fff;
+}
+.semi-always-light .flame-and-tables .view-title {
+  color: #303133;
+}
+
+.flame-and-tables .flame-wrap {
+  flex: 1;
+}
+
+.flame-and-tables .flame,
+.flame-and-tables .service-table,
+.flame-and-tables .detail-table {
+  width: 100%;
+  flex: 1;
+  display: flex;
+}
+
+.flame-and-tables .service-table-wrap {
+  width: 28%;
+  height: 100%;
+  margin-left: 12px;
+  display: flex;
+}
+
+.flame-and-tables .detail-table-wrap {
+  width: 100%;
+  height: 28%;
+  margin-top: 12px;
+  display: flex;
+}
+
+.table-wrap {
+  width: 100%;
+  flex: 1;
+  overflow: hidden;
+}
+
+.semi-table-thead > .semi-table-row > .semi-table-row-head,
+.semi-table-tbody > .semi-table-row > .semi-table-row-cell,
+.semi-table-small .semi-table-tbody > .semi-table-row > .semi-table-row-cell {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 6px;
+  padding-right: 6px;
+  font-size: 13px;
+}
+
+.high-light {
+  background-color: #606266;
+}
+
+.flame-tooltip {
+  position: fixed;
+  z-index: 1;
+  padding: 2px;
+  background-color: #909399;
+  color: #000;
+  border: 1px solid #303133;
+  border-radius: 2px;
+}
+
+.flame-tooltip p {
+  font-size: 12px;
+  padding: 0 4px;
+  margin: 2px 0;
+  display: flex;
+}
+
+.flame-tooltip p span:first-child {
+  width: 110px;
+}
+
+.flame-tooltip p span:last-child {
+  max-width: 160px;
+  word-break: break-all;
+}
