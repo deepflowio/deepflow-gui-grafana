@@ -1,0 +1,31 @@
+{
+  "name": "yun-shan-df-relation-panel",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "grafana-toolkit plugin:build",
+    "builddev": "grafana-toolkit plugin:build --preserveConsole",
+    "test": "grafana-toolkit plugin:test",
+    "dev": "grafana-toolkit plugin:dev",
+    "watch": "grafana-toolkit plugin:dev --watch",
+    "sign": "grafana-toolkit plugin:sign",
+    "start": "yarn watch"
+  },
+  "author": "Zhenyu Zhou",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@grafana/data": "^8.0.6",
+    "@grafana/toolkit": "^8.0.6",
+    "@grafana/ui": "latest",
+    "@types/echarts": "^4.9.10",
+    "@types/lodash": "^4.14.175",
+    "emotion": "10.0.27"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "dependencies": {
+    "echarts": "^5.2.1",
+    "yarn": "^1.22.15"
+  }
+}

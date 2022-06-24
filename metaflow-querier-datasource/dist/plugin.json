@@ -1,0 +1,65 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
+  "type": "datasource",
+  "name": "MetaFlow",
+  "id": "yunshan-metaflow-datasource",
+  "metrics": true,
+  "info": {
+    "description": "Grafana datasource plugin for DeepFlow",
+    "author": {
+      "name": "yunshan",
+      "url": "https://yunshan.net"
+    },
+    "keywords": [
+      "DeepFlow"
+    ],
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "links": [],
+    "screenshots": [],
+    "version": "1.0.0",
+    "updated": "2022-06-24"
+  },
+  "routes": [
+    {
+      "path": "auth",
+      "url": "{{ .JsonData.requestUrl }}",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "content": "application/x-www-form-urlencoded"
+        },
+        {
+          "name": "authorization",
+          "content": "Bearer {{ .JsonData.token }}"
+        }
+      ]
+    },
+    {
+      "path": "noauth",
+      "url": "{{ .JsonData.requestUrl }}",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "content": "application/x-www-form-urlencoded"
+        }
+      ]
+    },
+    {
+      "path": "trace",
+      "url": "{{ .JsonData.traceUrl }}",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "content": "application/x-www-form-urlencoded"
+        }
+      ]
+    }
+  ],
+  "dependencies": {
+    "grafanaDependency": ">=8.0.0",
+    "plugins": []
+  }
+}

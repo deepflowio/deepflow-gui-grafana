@@ -1,0 +1,142 @@
+.w-100-percent {
+  width: 100%;
+}
+
+.save-btn {
+  margin-left: 100%;
+  transform: translateX(-100%);
+}
+
+.custom-label {
+  margin-bottom: 6px;
+}
+
+.custom-label > label {
+  color: #33a2e5;
+}
+
+.h32 {
+  height: 32px;
+}
+
+.row-start-center {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.editor-form-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.editor-form-row:last-child {
+  margin-bottom: 0;
+}
+
+.editor-form-row .content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.editor-form-row .content > div,
+.editor-form-row .content > span,
+.editor-form-row .active-btns > button {
+  margin-right: 4px;
+}
+
+.editor-form-row .content > span {
+  line-height: 32px;
+  font-size: 12px;
+}
+
+.editor-form-row .active-btns > button:last-child {
+  margin-right: 0;
+}
+
+.groupby-time-select {
+  margin-left: 40px;
+  width: 60px;
+}
+
+.time-select-display {
+  display: flex;
+  align-items: center;
+  position: relative;
+  left: -40px;
+}
+
+.time-select-display p {
+  margin: 0;
+}
+
+.time-select-display .value-text {
+  width: 100px;
+  min-width: 10px;
+  padding: 0 2px;
+}
+
+.sub-functions-wrap {
+  margin-left: 296px;
+  border: 1px dashed #606266;
+  padding: 6px;
+}
+
+.sub-functions-editor {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.sub-functions-title {
+  font-size: 12px;
+  line-height: 1em;
+  margin: 0 4px 0 0;
+}
+
+.sub-functions-editor > div {
+  margin-right: 4px;
+}
+
+.sub-functions-list {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sub-function-item {
+  height: 18px;
+  padding: 2px;
+  border-radius: 3px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  border: 1px solid #3D71D9;
+  background-color: #33a2e5;
+  font-size: 12px;
+  user-select: none;
+  margin-right: 2px;
+  margin-bottom: 2px;
+}
+
+.sub-function-item span {
+  color: #fff;
+  margin-right: 2px;
+}
+
+.sub-function-item .remove-icon {
+  cursor: pointer;
+  color: #fff;
+}
+
+.sub-functions-wrap > div:last-child {
+  margin-right: 0;
+}
+
