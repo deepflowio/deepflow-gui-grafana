@@ -119,24 +119,31 @@
   position: fixed;
   z-index: 1;
   padding: 2px;
-  background-color: #909399;
-  color: #000;
-  border: 1px solid #303133;
+  background-color: #3B4860;
+  color: #fff;
+  border: 1px solid #566C89;
   border-radius: 2px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
 }
 
 .flame-tooltip p {
   font-size: 12px;
   padding: 0 4px;
-  margin: 2px 0;
+  margin: 0;
+}
+
+.flame-tooltip .labels-wrap {
+  width: auto;
   display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-end;
 }
 
-.flame-tooltip p span:first-child {
-  width: 110px;
-}
-
-.flame-tooltip p span:last-child {
-  max-width: 160px;
+.flame-tooltip .values-wrap {
+  flex: 1;
   word-break: break-all;
 }

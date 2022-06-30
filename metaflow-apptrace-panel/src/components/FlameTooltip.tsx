@@ -42,19 +42,21 @@ export const FlameTooltip: React.FC<Props> = ({ barData, mousePos }) => {
     <div
       className="flame-tooltip"
       style={{
-        display: Object.keys(content).length > 0 ? 'block' : 'none',
+        display: Object.keys(content).length > 0 ? '' : 'none',
         left: pos.left,
         top: pos.top
       }}
     >
-      {Object.keys(content).map((key: string, index: number) => {
-        return (
-          <p key={index}>
-            <span>{key}:</span>
-            <span>{content[key]}</span>
-          </p>
-        )
-      })}
+      <div className="labels-wrap">
+        {Object.keys(content).map((key: string, index: number) => {
+          return <p key={index}>{key}:</p>
+        })}
+      </div>
+      <div className="values-wrap">
+        {Object.values(content).map((val: any, index: number) => {
+          return <p key={index}>{val}</p>
+        })}
+      </div>
     </div>
   )
 }

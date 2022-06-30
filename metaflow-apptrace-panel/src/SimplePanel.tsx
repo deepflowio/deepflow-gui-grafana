@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react'
+import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react'
 import { Field, PanelProps, Vector } from '@grafana/data'
 import { SimpleOptions } from 'types'
 import { DYTable } from 'components/DYTable'
@@ -9,7 +9,7 @@ import { ColumnProps } from '@douyinfe/semi-ui/lib/es/table'
 import { Alert, Select } from '@grafana/ui'
 import _ from 'lodash'
 import { getDataSourceSrv } from '@grafana/runtime'
-import { renderTimeBar, addSvg, fitSvgToContainer, TAP_SIDE_OPTIONS_MAP } from 'ys-metaflow-chart'
+import { renderTimeBar, addSvg, fitSvgToContainer, TAP_SIDE_OPTIONS_MAP } from 'metaflow-vis-js'
 import { FlameTooltip } from 'components/FlameTooltip'
 import { genServiceId, useDebounce } from 'utils/tools'
 import { calcTableCellWidth, tarnsArrayToTableData } from 'utils/tables'
@@ -52,11 +52,22 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     chart.renderBars()
   }, [])
 
+  const panelRef = useRef(null)
+
+  const [randomClassName, setRandomClassName] = useState('')
   useEffect(() => {
-    const container = addSvg('.flame')
+    const randomString = 'flame' + Math.random().toFixed(9).replace('0.', '')
+    setRandomClassName(randomString)
+  }, [panelRef])
+
+  useEffect(() => {
+    if (!randomClassName) {
+      return
+    }
+    const container = addSvg('.' + randomClassName)
     fitSvgToContainer(container)
     setFlameContainer(container)
-  }, [])
+  }, [randomClassName])
 
   const [mousePos, setMousePos] = useState({
     x: 0,
@@ -133,6 +144,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
 
   const [targetIndex, setTargetIndex] = useState(0)
   const startTableData = useMemo(() => {
+    setHoveredBarData(undefined)
     const columnFixedRight = 'right' as const
     const actionCloumn = {
       title: 'action',
@@ -147,11 +159,11 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
           }}
           disabled={!record._id}
         >
-          trace
+          tracing
         </Button>
       ),
       fixed: columnFixedRight,
-      width: 76
+      width: 88
     }
     const target = series[targetIndex] ? series[targetIndex].fields : []
 
@@ -169,7 +181,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
             key: index + ''
           }
         }
-        dataSource[index][e.name] = typeof val.toString === 'function' ? val.toString() : val
+        dataSource[index][e.name] = typeof val?.toString === 'function' ? val.toString() : val
       })
     })
 
@@ -246,7 +258,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
   }, [debouncedWidth, debouncedHeight, isMultiRefIds])
 
   return (
-    <div className={`metaflow-panel ${isDark ? 'semi-always-dark' : 'semi-always-light'}`}>
+    <div ref={panelRef} className={`metaflow-panel ${isDark ? 'semi-always-dark' : 'semi-always-light'}`}>
       <div className="content" style={contentTranslateX}>
         <div className="table-and-select">
           {isMultiRefIds ? (
@@ -271,7 +283,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
           <div className="main">
             <div className="flame-wrap">
               <div className="view-title">FLAME GRAPH</div>
-              <div className="flame"></div>
+              <div className={`flame ${randomClassName}`}></div>
             </div>
             <div className="service-table-wrap">
               <div className="view-title">SERVICE LIST</div>

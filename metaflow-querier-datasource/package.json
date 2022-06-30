@@ -17,8 +17,8 @@
     "node": ">=14"
   },
   "dependencies": {
-    "json-bigint": "^1.0.0",
-    "querier-js": "^1.0.0"
+    "json-bigint-patch": "^0.0.8",
+    "metaflow-sdk-js": "^1.0.0"
   },
   "devDependencies": {
     "@types/json-bigint": "^1.0.1"

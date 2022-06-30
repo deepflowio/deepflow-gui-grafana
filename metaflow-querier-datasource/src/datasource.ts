@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import * as JSONbig from 'json-bigint'
+// import * as JSONbig from 'json-bigint'
 import {
   DataQueryRequest,
   DataQueryResponse,
@@ -12,8 +12,10 @@ import { MyQuery, MyDataSourceOptions } from './types'
 import { DATA_SOURCE_SETTINGS, QUERY_DATA_CACHE } from 'utils/cache'
 import { getBackendSrv } from '@grafana/runtime'
 import parseQueryStr from './utils/parseQueryStr'
-import * as querierJs from 'querier-js'
+import * as querierJs from 'metaflow-sdk-js'
 import qs from 'qs'
+import { BasicDataWithId } from 'QueryEditor'
+import 'json-bigint-patch'
 
 function setTimeKey(
   queryData: any,
@@ -58,7 +60,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           })
           .toPromise()
           .then((res: any) => {
-            return JSONbig.parse(res.data)
+            // return JSONbig.parse(res.data)
+            return JSON.parse(res.data)
           })
       }
       f.cancel = () => {}
@@ -77,6 +80,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     QUERY_DATA_CACHE.time_start = from
     QUERY_DATA_CACHE.time_end = to
 
+    const queryConfig: any = {}
     let data = await Promise.all(
       options.targets.map(async target => {
         if (target.hide || !target.queryText) {
@@ -101,16 +105,33 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           throw new Error(error.message)
         }
 
-        const { returnMetrics, sql } = querierJsResult.resource[0]
+        const { returnTags, returnMetrics, sql } = querierJsResult.resource[0]
         const returnMetricNames = returnMetrics.map((metric: any) => {
           return metric.name
         })
 
         // @ts-ignore
         let response = await querierJs.searchBySql(sql)
-
         if (!response || !response.length) {
           return []
+        }
+        queryConfig[target.refId] = {
+          returnTags,
+          returnMetrics,
+          ...(queryData.appType === 'accessRelationship'
+            ? {
+                from: queryData.groupBy
+                  .filter((e: BasicDataWithId) => {
+                    return e.sideType === 'from'
+                  })
+                  .map((e: BasicDataWithId) => e.key),
+                to: queryData.groupBy
+                  .filter((e: BasicDataWithId) => {
+                    return e.sideType === 'to'
+                  })
+                  .map((e: BasicDataWithId) => e.key)
+              }
+            : {})
         }
 
         let timeTypeKey: string
@@ -118,7 +139,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           Object.keys(item).forEach((key: any) => {
             if (key.includes('time') && typeof item[key] === 'number') {
               timeTypeKey = key
-              item[key] = +new Date(item[key] * 1000)
+              item[key] = item[key] * 1000
             }
           })
         })
@@ -138,9 +159,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             tagKeys.push(key)
           }
         })
-        const isUseGroupBy = sql.includes('group by') && queryData.resultGroupBy
+        const usingGroupBy = sql.includes('group by') && queryData.resultGroupBy
 
-        if (!isUseGroupBy) {
+        if (!usingGroupBy) {
           return [response]
         }
         const dataAfterGroupBy = _.groupBy(response, item => {
@@ -183,7 +204,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           })
           frameArray.push(frame)
         })
-
         return frameArray
       })
     ) // 返回的可能是 dataframe 或者 array<dataframe>
@@ -201,6 +221,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         throw e
       })
 
+    QUERY_DATA_CACHE['config'] = queryConfig
     return { data }
   }
 
@@ -288,40 +309,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           })
           .flat(Infinity)
           .join(' OR ')
-        const detailPostData = {
-          PAGE_INDEX: 1,
-          PAGE_SIZE: services.length,
-          SORT: {
-            ORDER_BY: 'start_time',
-            SORTED_BY: 'ASC'
-          },
-          DATABASE: 'flow_log',
-          TABLE: 'l7_flow_log',
-          QUERIES: [
-            {
-              QUERY_ID: 'R1-R1',
-              WHERE,
-              SELECT
-            }
-          ],
-          time_end,
-          time_start
-        }
-        detailList = await getBackendSrv()
-          .fetch({
-            method: 'POST',
-            url: `${DATA_SOURCE_SETTINGS.basicUrl}/trace/v1/stats/querier/FlowLogDetailList`,
-            headers: {
-              'Content-Type': 'application/json',
-              'X-User-Id': '1',
-              'X-User-Type': '1'
-            },
-            data: detailPostData
-          })
-          .toPromise()
-          .then((res: any) => {
-            return res.data.DATA
-          })
+        const sql = `select ${SELECT} from l7_flow_log where ${WHERE} AND time>=${time_start} AND time<=${time_end} order by start_time`
+
+        // @ts-ignore
+        detailList = await querierJs.searchBySql(sql)
       }
       // @ts-ignore
       const l7ProtocolValuesMap = await querierJs.getL7ProtocolValuesMap()
@@ -338,6 +329,29 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       }
     } catch (error) {
       throw error
+    }
+  }
+
+  getQueryConfig(refId?: string) {
+    if (!refId) {
+      return QUERY_DATA_CACHE['config']
+    }
+    const { returnTags } = QUERY_DATA_CACHE['config'][refId] || {}
+    const _returnTags = returnTags
+      ? returnTags
+          .filter(e => {
+            return !e.name.includes('time')
+          })
+          .map(e => {
+            return {
+              ...e,
+              name: e.name.replace(/'/g, '')
+            }
+          })
+      : []
+    return {
+      ...(QUERY_DATA_CACHE['config'][refId] || {}),
+      returnTags: _returnTags
     }
   }
 }
