@@ -47,10 +47,10 @@ export class ConfigEditor extends PureComponent<Props, State> {
           <span className="width-10">Trace Url</span>
           <div style={{ flexGrow: 1 }}>
             <Input
-              name="Trace Url"
+              name="Tracing Url"
               value={jsonData.traceUrl}
               onChange={this.onJsonChange('traceUrl')}
-              placeholder="app trace request url"
+              placeholder="app tracing request url"
             ></Input>
           </div>
         </div>

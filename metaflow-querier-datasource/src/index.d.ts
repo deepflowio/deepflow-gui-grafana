@@ -1,4 +1,4 @@
-declare module 'querier-js' {
-  import * as querierJs from 'querier-js'
+declare module 'metaflow-sdk-js' {
+  import * as querierJs from 'metaflow-sdk-js'
   export default querierJs
 }

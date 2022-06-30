@@ -17,10 +17,8 @@
     "node": ">=14"
   },
   "dependencies": {
-    "@douyinfe/semi-icons": "^2.13.0",
-    "@douyinfe/semi-ui": "^2.13.0",
-    "ys-metaflow-chart": "^0.0.1"
-  },
-  "devDependencies": {
+    "@douyinfe/semi-icons": "^2.14.0",
+    "@douyinfe/semi-ui": "^2.14.0",
+    "metaflow-vis-js": "^0.0.9"
   }
 }

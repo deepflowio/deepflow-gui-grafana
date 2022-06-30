@@ -3,7 +3,7 @@ import React, { PureComponent } from 'react'
 import { Select, AsyncSelect, Button, Input, RadioButtonGroup } from '@grafana/ui'
 import { FuncSelectOpts, LabelItem, MetricOpts, SelectOpts, SelectOptsWithStringValue, uuid } from 'QueryEditor'
 import _ from 'lodash'
-import * as querierJs from 'querier-js'
+import * as querierJs from 'metaflow-sdk-js'
 import { SubFuncsEditor } from './SubFuncsEditor'
 
 export interface RowConfig {
@@ -15,7 +15,6 @@ export interface RowConfig {
   sort?: boolean
   disableTimeTag?: boolean
 }
-
 export interface BasicData {
   type: 'tag' | 'metric'
   key: string
@@ -26,6 +25,7 @@ export interface BasicData {
   params: string[]
   sort?: string
   subFuncs?: []
+  sideType?: 'from' | 'to'
 }
 
 type Props = {
@@ -33,7 +33,11 @@ type Props = {
   basicData: BasicData
   onRowValChange: any
   onActiveBtnClick: any
-  removeBtnDisable: boolean
+  showSideType?: boolean
+  addBtnDisabled?: boolean
+  removeBtnDisabled?: boolean
+  typeSelectDisabled?: boolean
+  keySelectDisabled?: boolean
   tagOpts: MetricOpts
   metricOpts: MetricOpts
   funcOpts: FuncSelectOpts
@@ -42,7 +46,6 @@ type Props = {
   from: string
   gotBasicData: boolean
   usingGroupBy: boolean
-  keySelectDisabled: boolean
 }
 
 const columnTypeOpts = [
@@ -66,7 +69,17 @@ const sortOpts: SelectOpts = [
   }
 ]
 
-const BasicSelectAsync = (props: any) => {
+const BasicSelectAsync = (props: {
+  parentProps: {
+    db: string
+    from: string
+    basicData: any
+    gotBasicData: boolean
+  }
+  currentTagType: string
+  isMulti: boolean
+  onChange: (ev: any) => void
+}) => {
   const { db, from, basicData, gotBasicData } = props.parentProps
 
   const boolOpts = [
@@ -295,7 +308,19 @@ export class QueryEditorFormRow extends PureComponent<Props> {
   }
 
   render() {
-    const { config, basicData, tagOpts, metricOpts, usingGroupBy } = this.props
+    const {
+      config,
+      basicData,
+      tagOpts,
+      metricOpts,
+      usingGroupBy,
+      addBtnDisabled,
+      removeBtnDisabled,
+      keySelectDisabled,
+      typeSelectDisabled,
+      subFuncOpts,
+      showSideType
+    } = this.props
     const tagOptsFilted = config.disableTimeTag
       ? tagOpts.filter(item => {
           return !(item.value as string).includes('time')
@@ -319,6 +344,9 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       <div>
         <div className="editor-form-row">
           <div className="content">
+            {basicData.sideType ? (
+              <span style={{ width: '30px' }}>{showSideType ? `${basicData.sideType}:` : ''}</span>
+            ) : null}
             {config.type ? (
               <div>
                 <Select
@@ -327,6 +355,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                   onChange={this.onColumnTypeSelect}
                   placeholder="type"
                   value={basicData.type}
+                  disabled={typeSelectDisabled}
                 />
               </div>
             ) : null}
@@ -338,7 +367,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                 placeholder={`${basicData.type.toUpperCase()}`}
                 value={basicData.key}
                 isClearable={true}
-                disabled={this.props.keySelectDisabled}
+                disabled={keySelectDisabled}
               />
             </div>
             {config.func && basicData.type === 'metric' ? (
@@ -352,6 +381,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                     value={basicData.func}
                     isClearable={true}
                     key={'funcSelect'}
+                    disabled={keySelectDisabled}
                   />
                 </div>
               ) : (
@@ -412,7 +442,13 @@ export class QueryEditorFormRow extends PureComponent<Props> {
               </>
             ) : null}
             {config.sort ? (
-              <RadioButtonGroup options={sortOpts} value={basicData.sort} size="md" onChange={this.onSortChange} />
+              <RadioButtonGroup
+                options={sortOpts}
+                value={basicData.sort}
+                size="md"
+                onChange={this.onSortChange}
+                disabled={keySelectDisabled}
+              />
             ) : null}
           </div>
           <div className="active-btns">
@@ -421,9 +457,10 @@ export class QueryEditorFormRow extends PureComponent<Props> {
               variant="secondary"
               icon="plus"
               onClick={ev => this.onActiveBtnClick(ev, 'add')}
+              disabled={addBtnDisabled || keySelectDisabled}
             ></Button>
             <Button
-              disabled={this.props.removeBtnDisable}
+              disabled={removeBtnDisabled || keySelectDisabled}
               fill="outline"
               variant="secondary"
               icon="trash-alt"
@@ -434,7 +471,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
         {this.showSubFuncsEditor ? (
           <SubFuncsEditor
             subFuncs={basicData.subFuncs as any[]}
-            subFuncOpts={this.props.subFuncOpts}
+            subFuncOpts={subFuncOpts}
             onSubFuncsChange={this.onSubFuncsChange}
           ></SubFuncsEditor>
         ) : null}

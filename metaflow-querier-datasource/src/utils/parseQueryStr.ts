@@ -2,6 +2,146 @@ import { BasicData } from 'components/QueryEditorFormRow'
 import _ from 'lodash'
 import { LabelItem } from 'QueryEditor'
 
+// Secondary Operators and Concatenated Strings Map:
+// {
+//   other: 'and',
+//   forward: 'or',
+//   reverse: 'and'
+// }
+const OP_TEXT_MAP = [
+  {
+    name: '<',
+    op: '<',
+    display_name: '<',
+    isSupport: true,
+    secondLevelType: 'other'
+  },
+  {
+    name: '<=',
+    op: '<=',
+    display_name: '<=',
+    isSupport: true,
+    secondLevelType: 'other'
+  },
+  {
+    name: '>',
+    op: '>',
+    display_name: '>',
+    isSupport: true,
+    secondLevelType: 'other'
+  },
+  {
+    name: '>=',
+    op: '>=',
+    display_name: '>=',
+    isSupport: true,
+    secondLevelType: 'other'
+  },
+  {
+    name: '=',
+    op: '=',
+    display_name: '=',
+    isSupport: true,
+    secondLevelType: 'forward'
+  },
+  {
+    name: '!=',
+    op: '!=',
+    display_name: '!=',
+    isSupport: true,
+    secondLevelType: 'reverse'
+  },
+  {
+    name: 'IN',
+    op: 'IN',
+    display_name: 'in',
+    isSupport: false,
+    secondLevelType: 'forward'
+  },
+  {
+    name: 'NOT IN',
+    op: 'NOT IN',
+    display_name: 'not in',
+    isSupport: false,
+    secondLevelType: 'reverse'
+  },
+  {
+    name: 'REGEXP',
+    op: 'REGEXP',
+    display_name: '~',
+    isSupport: true,
+    secondLevelType: 'forward'
+  },
+  {
+    name: 'NOT REGEXP',
+    op: 'NOT REGEXP',
+    display_name: '!~',
+    isSupport: true,
+    secondLevelType: 'reverse'
+  },
+  {
+    name: 'LIKE',
+    op: 'LIKE',
+    display_name: ':',
+    isSupport: true,
+    secondLevelType: 'forward'
+  },
+  {
+    name: 'NOT LIKE',
+    op: 'NOT LIKE',
+    display_name: '!:',
+    isSupport: true,
+    secondLevelType: 'reverse'
+  }
+]
+
+enum OP {
+  AND = 'AND',
+  OR = 'OR'
+}
+
+const SUPPORT_OP_TEXT_MAP = _.keyBy(
+  _.filter(OP_TEXT_MAP, ({ isSupport }) => isSupport),
+  ({ op }: { op: string }) => op
+)
+
+// conditon merge
+function jointOrAnd(conditionList: any) {
+  const keyMap = _.groupBy(conditionList, o => o.key)
+  const result: any[] = []
+  _.forEach(keyMap, (condList, key) => {
+    const type = _.get(condList, [0, 'type'], '')
+    const opMap = _.groupBy(condList, o => {
+      return SUPPORT_OP_TEXT_MAP[o.op]?.secondLevelType
+    })
+    const tagList: any[] = []
+    _.forEach(opMap, (conds, key) => {
+      let op = OP.AND
+      if (key === 'forward') {
+        op = OP.OR
+      } else if (key === 'reverse' || key === 'other') {
+        op = OP.AND
+      }
+      tagList.push({
+        type,
+        op,
+        val: [...conds]
+      })
+    })
+    if (tagList.length > 1) {
+      result.push({
+        type,
+        op: OP.OR,
+        val: [...tagList]
+      })
+    } else {
+      result.push(...tagList)
+    }
+  })
+
+  return result
+}
+
 function formatWithsubFuncs(target: any) {
   const { subFuncs, func, key, params } = target
   if (!Array.isArray(subFuncs) || !subFuncs.length) {
@@ -64,7 +204,7 @@ function selectFormat(data: any): {
       }
     })
 
-  if (appType === 'appTrace') {
+  if (appType === 'appTracing') {
     TAGS.push('_id')
   }
   return {
@@ -74,7 +214,7 @@ function selectFormat(data: any): {
 }
 
 function whereFormat(data: any) {
-  const { where, having, appType } = data
+  const { where, having } = data
   const fullData = where.concat(having)
   const validKeys = ['type', 'key', 'func', 'op', 'val', 'params', 'subFuncs'] as const
   const result = fullData
@@ -107,14 +247,6 @@ function whereFormat(data: any) {
             })
       }
     })
-  if (appType === 'appTrace') {
-    result.push({
-      type: 'tag',
-      key: 'tap_port_type',
-      op: '=',
-      val: '7'
-    })
-  }
   return result
 }
 
@@ -200,7 +332,7 @@ function queryTextFormat(queryData: any) {
         {
           id: '0',
           isForbidden: false,
-          condition: whereFormat(data)
+          condition: jointOrAnd(whereFormat(data))
         }
       ]
     },
