@@ -1,7 +1,7 @@
 import { ColumnProps } from '@douyinfe/semi-ui/lib/es/table'
 
 export function calcTableCellWidth(num: number) {
-  const ONE_WORD_WIDTH = 9
+  const ONE_WORD_WIDTH = 11
   return num * ONE_WORD_WIDTH + 8
 }
 

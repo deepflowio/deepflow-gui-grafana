@@ -101,10 +101,20 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           throw new Error(error.message)
         }
 
-        const { returnMetrics, sql } = querierJsResult.resource[0]
+        const { returnTags, returnMetrics, sql } = querierJsResult.resource[0]
         const returnMetricNames = returnMetrics.map((metric: any) => {
           return metric.name
         })
+        QUERY_DATA_CACHE['config'][target.refId] = {
+          returnTags,
+          returnMetrics,
+          ...(queryData.appType === 'accessRelationship'
+            ? {
+                from: _.get(queryData, ['groupBy', 0, 'key']),
+                to: _.get(queryData, ['groupBy', 1, 'key'])
+              }
+            : {})
+        }
 
         // @ts-ignore
         let response = await querierJs.searchBySql(sql)
@@ -138,9 +148,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             tagKeys.push(key)
           }
         })
-        const isUseGroupBy = sql.includes('group by') && queryData.resultGroupBy
+        const usingGroupBy = sql.includes('group by') && queryData.resultGroupBy
 
-        if (!isUseGroupBy) {
+        if (!usingGroupBy) {
           return [response]
         }
         const dataAfterGroupBy = _.groupBy(response, item => {
@@ -183,7 +193,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           })
           frameArray.push(frame)
         })
-
         return frameArray
       })
     ) // 返回的可能是 dataframe 或者 array<dataframe>
@@ -338,6 +347,29 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       }
     } catch (error) {
       throw error
+    }
+  }
+
+  getQueryConfig(refId?: string) {
+    if (!refId) {
+      return QUERY_DATA_CACHE['config']
+    }
+    const { returnTags } = QUERY_DATA_CACHE['config'][refId] || {}
+    const _returnTags = returnTags
+      ? returnTags
+          .filter(e => {
+            return !e.name.includes('time')
+          })
+          .map(e => {
+            return {
+              ...e,
+              name: e.name.replace(/'/g, '')
+            }
+          })
+      : []
+    return {
+      ...(QUERY_DATA_CACHE['config'][refId] || {}),
+      returnTags: _returnTags
     }
   }
 }

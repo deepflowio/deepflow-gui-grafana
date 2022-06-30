@@ -20,7 +20,5 @@
     "@douyinfe/semi-icons": "^2.13.0",
     "@douyinfe/semi-ui": "^2.13.0",
     "ys-metaflow-chart": "^0.0.1"
-  },
-  "devDependencies": {
   }
 }

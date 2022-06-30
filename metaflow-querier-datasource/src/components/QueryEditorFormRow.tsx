@@ -33,6 +33,7 @@ type Props = {
   basicData: BasicData
   onRowValChange: any
   onActiveBtnClick: any
+  addBtnDisable: boolean
   removeBtnDisable: boolean
   tagOpts: MetricOpts
   metricOpts: MetricOpts
@@ -43,6 +44,7 @@ type Props = {
   gotBasicData: boolean
   usingGroupBy: boolean
   keySelectDisabled: boolean
+  innerLabel?: string
 }
 
 const columnTypeOpts = [
@@ -319,6 +321,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       <div>
         <div className="editor-form-row">
           <div className="content">
+            {this.props.innerLabel ? <span style={{ width: '30px' }}>{this.props.innerLabel}</span> : null}
             {config.type ? (
               <div>
                 <Select
@@ -352,6 +355,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                     value={basicData.func}
                     isClearable={true}
                     key={'funcSelect'}
+                    disabled={this.props.keySelectDisabled}
                   />
                 </div>
               ) : (
@@ -412,7 +416,13 @@ export class QueryEditorFormRow extends PureComponent<Props> {
               </>
             ) : null}
             {config.sort ? (
-              <RadioButtonGroup options={sortOpts} value={basicData.sort} size="md" onChange={this.onSortChange} />
+              <RadioButtonGroup
+                options={sortOpts}
+                value={basicData.sort}
+                size="md"
+                onChange={this.onSortChange}
+                disabled={this.props.keySelectDisabled}
+              />
             ) : null}
           </div>
           <div className="active-btns">
@@ -421,9 +431,10 @@ export class QueryEditorFormRow extends PureComponent<Props> {
               variant="secondary"
               icon="plus"
               onClick={ev => this.onActiveBtnClick(ev, 'add')}
+              disabled={this.props.addBtnDisable || this.props.keySelectDisabled}
             ></Button>
             <Button
-              disabled={this.props.removeBtnDisable}
+              disabled={this.props.removeBtnDisable || this.props.keySelectDisabled}
               fill="outline"
               variant="secondary"
               icon="trash-alt"

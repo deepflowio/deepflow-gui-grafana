@@ -1,0 +1,53 @@
+.topo-actions-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.actions-warp {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.ref-select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 4px;
+}
+
+.chart-container {
+  width: 100%;
+  max-height: 100%;
+  flex: 1;
+}
+
+.topo-tooltip {
+  position: fixed;
+  z-index: 1;
+  padding: 2px;
+  background-color: #909399;
+  color: #000;
+  border: 1px solid #303133;
+  border-radius: 2px;
+}
+
+.topo-tooltip p {
+  font-size: 12px;
+  padding: 0 4px;
+  margin: 2px 0;
+  display: flex;
+}
+
+.topo-tooltip p span:first-child {
+  width: 110px;
+}
+
+.topo-tooltip p span:last-child {
+  max-width: 160px;
+  word-break: break-all;
+}

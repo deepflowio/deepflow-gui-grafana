@@ -174,8 +174,7 @@ const defaultFormData: Omit<QueryDataType, 'appType' | 'db'> = {
       val: '',
       as: '',
       params: [],
-      uuid: uuid(),
-      subFuncs: []
+      uuid: uuid()
     }
   ],
   where: [
@@ -199,8 +198,7 @@ const defaultFormData: Omit<QueryDataType, 'appType' | 'db'> = {
       val: '',
       as: '',
       params: [],
-      uuid: uuid(),
-      subFuncs: []
+      uuid: uuid()
     }
   ],
   groupBy: [
@@ -225,8 +223,7 @@ const defaultFormData: Omit<QueryDataType, 'appType' | 'db'> = {
       as: '',
       params: [],
       uuid: uuid(),
-      sort: 'asc',
-      subFuncs: []
+      sort: 'asc'
     }
   ],
   interval: '',
@@ -310,6 +307,10 @@ export class QueryEditor extends PureComponent<Props> {
         {
           label: '流量查询',
           value: 'trafficQuery'
+        },
+        {
+          label: '访问关系',
+          value: 'accessRelationship'
         }
       ],
       appType: '',
@@ -391,8 +392,11 @@ export class QueryEditor extends PureComponent<Props> {
     return groupByKeys.length > 0 || !!interval
   }
 
-  get usingappTraceType(): boolean {
+  get usingAppTraceType(): boolean {
     return this.state.appType === 'appTrace'
+  }
+  get usingAccessRelationshipType(): boolean {
+    return this.state.appType === 'accessRelationship'
   }
 
   get databaseOptsAfterFilter(): SelectOpts {
@@ -429,7 +433,7 @@ export class QueryEditor extends PureComponent<Props> {
     ])
 
     try {
-      const { groupBy, select, interval, where, having, orderBy } = dataObj
+      const { appType, groupBy, select, interval, where, having, orderBy } = dataObj
       const groupByKeys = (groupBy as BasicDataWithId[])
         .filter((item: any) => {
           return item.key
@@ -437,6 +441,9 @@ export class QueryEditor extends PureComponent<Props> {
         .map((item: any) => {
           return item.key
         })
+      if (appType === 'accessRelationship' && groupByKeys.length < 2) {
+        throw new Error('When using accessRelationship, need to set from and to in GROUP BY')
+      }
       if (groupByKeys.length > 0 || interval) {
         const funcMetrics = (select as BasicDataWithId[])
           .concat(having as BasicDataWithId[])
@@ -576,6 +583,31 @@ export class QueryEditor extends PureComponent<Props> {
     return obj
   }
 
+  accessRelationshipTypeCheck(apptype: string) {
+    return apptype === 'accessRelationship'
+      ? {
+          groupBy: [
+            {
+              ...defaultFormData.groupBy[0],
+              uuid: uuid()
+            },
+            {
+              ...defaultFormData.groupBy[0],
+              uuid: uuid()
+            }
+          ],
+          select: [
+            {
+              ...defaultFormData.select[0],
+              type: 'metric',
+              uuid: uuid()
+            }
+          ],
+          resultGroupBy: false
+        }
+      : {}
+  }
+
   onRowValChange = (a: any, newValue: any) => {
     const { target, index } = a
     this.setState((state: any, props) => {
@@ -602,8 +634,7 @@ export class QueryEditor extends PureComponent<Props> {
       const result: any[] = JSON.parse(JSON.stringify(_result))
       if (type === 'add') {
         result.splice(index + 1, 0, {
-          // 当前版本 select 仅允许添加一个 metric
-          type: target === 'select' ? 'tag' : result[index].type,
+          type: result[index].type,
           key: '',
           func: '',
           op: '',
@@ -629,9 +660,11 @@ export class QueryEditor extends PureComponent<Props> {
     })
   }
 
-  onFieldChange = (field: string, val: LabelItem) => {
+  onFieldChange = (field: string, val: LabelItem | boolean) => {
     let result
     if (field === 'sort') {
+      result = val
+    } else if (typeof val === 'boolean') {
       result = val
     } else {
       result = val ? val.value : ''
@@ -666,20 +699,42 @@ export class QueryEditor extends PureComponent<Props> {
         ...(result === 'appTrace'
           ? {
               db: 'flow_log',
-              from: 'l7_flow_log'
+              from: 'l7_flow_log',
+              resultGroupBy: false
             }
-          : {})
+          : {}),
+        ...this.accessRelationshipTypeCheck(result as string)
       })
     } else if (field === 'db') {
+      const { appType } = this.state
       this.setState({
         ...defaultFormDB,
         ...defaultFormData,
         [field]: result,
         tagOpts: [],
         metricOpts: [],
-        funcOpts: []
+        funcOpts: [],
+        ...this.accessRelationshipTypeCheck(appType)
       })
       this.getTableOpts(result as string)
+    } else if (field === 'from') {
+      const { appType, db } = this.state
+      this.setState({
+        ...defaultFormData,
+        [field]: result,
+        tagOpts: [],
+        metricOpts: [],
+        funcOpts: [],
+        ...this.accessRelationshipTypeCheck(appType)
+      })
+      const table = { db: db as string, from: result as string }
+      this.getBasicData(table)
+    } else if (field === 'interval') {
+      this.setState({
+        [field]: result,
+        ...this.groupBySelectCheck('groupBy', result as string, this.state.groupBy),
+        ...this.selectOrderByCheck('select', result as string, this.state.select)
+      })
     } else if (field === 'limit') {
       this.setState({
         [field]: result,
@@ -689,27 +744,9 @@ export class QueryEditor extends PureComponent<Props> {
             }
           : {})
       })
-    } else if (field === 'from') {
-      this.setState({
-        ...defaultFormData,
-        [field]: result,
-        tagOpts: [],
-        metricOpts: [],
-        funcOpts: []
-      })
-      const { db } = this.state
-      const table = { db: db as string, from: result as string }
-      this.getBasicData(table)
-    } else if (field === 'interval') {
-      this.setState({
-        [field]: result,
-        ...this.groupBySelectCheck('groupBy', result as string, this.state.groupBy),
-        ...this.selectOrderByCheck('select', result as string, this.state.select)
-      })
     } else if (field === 'resultGroupBy') {
       this.setState({
-        // @ts-ignore
-        [field]: val.checked
+        [field]: val
       })
     } else {
       this.setState({
@@ -888,16 +925,8 @@ export class QueryEditor extends PureComponent<Props> {
     })
   }
 
-  getRemoveBtnDisable(parent: BasicData[], current: BasicData) {
-    return parent.length <= 1
-  }
-
-  getAddBtnDisable(parent: BasicData[], current: BasicData) {
-    return (
-      !!parent.find((item: BasicData) => {
-        return item.type === 'metric'
-      }) && parent.length > 1
-    )
+  getRemoveBtnDisable(parent: BasicData[], current: BasicData, targetKey?: string) {
+    return parent.length <= 1 || (targetKey === 'groupBy' && this.usingAccessRelationshipType && parent.length <= 2)
   }
 
   onAlertRemove = () => {
@@ -952,37 +981,52 @@ export class QueryEditor extends PureComponent<Props> {
                       {this.state[conf.targetDataKey].map((item: BasicDataWithId, index: number) => {
                         return (
                           <QueryEditorFormRow
+                            innerLabel={
+                              conf.targetDataKey === 'groupBy' && this.usingAccessRelationshipType
+                                ? index === 0
+                                  ? 'from:'
+                                  : 'to:'
+                                : undefined
+                            }
                             config={formItemConfigs[conf.targetDataKey]}
                             basicData={item}
                             gotBasicData={this.state.gotBasicData}
                             db={this.state.db}
                             from={this.state.from}
                             usingGroupBy={this.usingGroupBy}
-                            keySelectDisabled={conf.targetDataKey === 'groupBy' && this.usingappTraceType}
+                            keySelectDisabled={
+                              (conf.targetDataKey === 'groupBy' && this.usingAppTraceType) ||
+                              (conf.targetDataKey === 'orderBy' && this.usingAccessRelationshipType)
+                            }
                             tagOpts={
                               conf.targetDataKey === 'select'
                                 ? this.selectTagOpts
                                 : conf.targetDataKey === 'groupBy'
                                 ? tagOpts.filter((item: MetricOptsItem) => {
-                                    return !GROUP_BY_DISABLE_TAGS.find((val: string) => {
-                                      return (item.value as string).includes(val)
-                                    })
+                                    const accessRelationshipAllowTagTypes = ['resource', 'ip']
+                                    const extra = this.usingAccessRelationshipType
+                                      ? accessRelationshipAllowTagTypes.includes(item.type as string)
+                                      : true
+                                    return (
+                                      !GROUP_BY_DISABLE_TAGS.find((val: string) => {
+                                        return (item.value as string).includes(val)
+                                      }) && extra
+                                    )
                                   })
                                 : tagOpts
                             }
-                            // metricOpts={metricOpts}
                             metricOpts={
                               conf.targetDataKey === 'orderBy' ? this.orderByMetricOpts : this.basciMetricOpts
                             }
                             funcOpts={funcOpts}
                             subFuncOpts={subFuncOpts}
                             key={item.uuid}
-                            removeBtnDisable={this.getRemoveBtnDisable(this.state[conf.targetDataKey], item)}
-                            // addBtnDisable={
-                            //   conf.targetDataKey === 'select'
-                            //     ? this.getAddBtnDisable(this.state[conf.targetDataKey], item)
-                            //     : false
-                            // }
+                            removeBtnDisable={this.getRemoveBtnDisable(
+                              this.state[conf.targetDataKey],
+                              item,
+                              conf.targetDataKey
+                            )}
+                            addBtnDisable={conf.targetDataKey === 'groupBy' && this.usingAccessRelationshipType}
                             onRowValChange={(obj: any) =>
                               this.onRowValChange(
                                 {
@@ -1017,7 +1061,7 @@ export class QueryEditor extends PureComponent<Props> {
                           placeholder="TIME"
                           isClearable={true}
                           width={36.5}
-                          disabled={this.usingappTraceType}
+                          disabled={this.usingAppTraceType || this.usingAccessRelationshipType}
                         />
                       </div>
                     </InlineField>
@@ -1044,12 +1088,12 @@ export class QueryEditor extends PureComponent<Props> {
                 />
               </div>
             </InlineField>
-            {this.usingGroupBy ? (
+            {this.usingGroupBy && !this.usingAccessRelationshipType ? (
               <InlineField className="custom-label" label="AUTO AGG" labelWidth={10}>
                 <div className="w-100-percent h32 row-start-center">
                   <Switch
                     value={this.state.resultGroupBy}
-                    onChange={(ev: any) => this.onFieldChange('resultGroupBy', ev.target)}
+                    onChange={(ev: any) => this.onFieldChange('resultGroupBy', ev.target.checked)}
                   />
                 </div>
               </InlineField>
