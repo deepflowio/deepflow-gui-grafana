@@ -1,3 +1,4 @@
+import { getTemplateSrv } from '@grafana/runtime'
 import { BasicData } from 'components/QueryEditorFormRow'
 import _ from 'lodash'
 import { LabelItem } from 'QueryEditor'
@@ -213,10 +214,27 @@ function selectFormat(data: any): {
   }
 }
 
+function getValueByVariablesName(val: LabelItem, variables: any[]) {
+  const isVariable = val?.isVariable
+  let result
+  if (isVariable) {
+    const currentVariable = variables.find((variable: any) => {
+      return variable.name === val?.value
+    })?.current
+    if (currentVariable?.selected) {
+      result = currentVariable?.value
+    }
+  }
+  return result !== undefined ? result : val.value
+}
+
 function whereFormat(data: any) {
   const { where, having } = data
   const fullData = where.concat(having)
   const validKeys = ['type', 'key', 'func', 'op', 'val', 'params', 'subFuncs'] as const
+  const templateSrv = getTemplateSrv()
+  const variables = templateSrv.getVariables() as any[]
+
   const result = fullData
     .filter((item: BasicData) => {
       return item.key
@@ -228,11 +246,13 @@ function whereFormat(data: any) {
           result[key] = item[key]
         }
         if (key === 'val') {
-          if (_.isObject(item[key])) {
-            result[key] = (item[key] as LabelItem).value
+          if (item[key] instanceof Object) {
+            result[key] = getValueByVariablesName(item[key] as LabelItem, variables)
           }
           if (Array.isArray(item[key])) {
-            result[key] = (item[key] as LabelItem[]).map((e: LabelItem) => e.value)
+            result[key] = (item[key] as LabelItem[]).map((e: LabelItem) => {
+              return getValueByVariablesName(e, variables)
+            })
           }
         }
       })

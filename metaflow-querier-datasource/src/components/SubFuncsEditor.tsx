@@ -65,17 +65,22 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
   const addBtnDisable = noFunc || mathWithoutOpOrParams || sunFuncsMaxLen
 
   function onAddBtnClick(ev: React.MouseEvent<HTMLButtonElement>) {
-    const basic = {
-      func,
-      op,
-      params
+    const basic: {
+      func: string
+      op?: string
+      params?: number
+    } = {
+      func
     }
-    props.onSubFuncsChange([...props.subFuncs, basic])
     if (func.toLocaleLowerCase() !== 'math') {
       setFunc('')
       setOp('')
       setParams(undefined)
+    } else {
+      basic.op = op
+      basic.params = params
     }
+    props.onSubFuncsChange([...props.subFuncs, basic])
     ev.stopPropagation()
     ev.preventDefault()
   }

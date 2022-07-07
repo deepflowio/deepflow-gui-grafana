@@ -1,10 +1,11 @@
 import React, { PureComponent } from 'react'
 
 import { Select, AsyncSelect, Button, Input, RadioButtonGroup } from '@grafana/ui'
-import { FuncSelectOpts, LabelItem, MetricOpts, SelectOpts, SelectOptsWithStringValue, uuid } from 'QueryEditor'
+import { FuncSelectOpts, LabelItem, MetricOpts, SelectOpts, SelectOptsWithStringValue } from 'QueryEditor'
 import _ from 'lodash'
 import * as querierJs from 'metaflow-sdk-js'
 import { SubFuncsEditor } from './SubFuncsEditor'
+import { uuid } from 'utils/tools'
 
 export interface RowConfig {
   type: boolean
@@ -46,6 +47,7 @@ type Props = {
   from: string
   gotBasicData: boolean
   usingGroupBy: boolean
+  templateVariableOpts: SelectOpts
 }
 
 const columnTypeOpts = [
@@ -75,13 +77,14 @@ const BasicSelectAsync = (props: {
     from: string
     basicData: any
     gotBasicData: boolean
+    templateVariableOpts: SelectOpts
   }
   currentTagType: string
   isMulti: boolean
   onChange: (ev: any) => void
 }) => {
-  const { db, from, basicData, gotBasicData } = props.parentProps
-
+  const { db, from, basicData, gotBasicData, templateVariableOpts } = props.parentProps
+  const { currentTagType } = props
   const boolOpts = [
     {
       label: '是',
@@ -114,8 +117,7 @@ const BasicSelectAsync = (props: {
         value: item.value
       }
     })
-
-    return result
+    return currentTagType === 'resource' ? result.concat(templateVariableOpts) : result
   }
 
   return gotBasicData ? (

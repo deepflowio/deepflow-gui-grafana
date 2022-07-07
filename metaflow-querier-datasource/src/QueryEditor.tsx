@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react'
-import { QueryEditorProps } from '@grafana/data'
+import { QueryEditorProps, VariableModel } from '@grafana/data'
 import { DataSource } from './datasource'
 import { MyDataSourceOptions, MyQuery } from './types'
 import { Button, Form, InlineField, Select, Input, Alert, Switch } from '@grafana/ui'
@@ -7,12 +7,15 @@ import { BasicData, QueryEditorFormRow, RowConfig } from './components/QueryEdit
 import _ from 'lodash'
 import * as querierJs from 'metaflow-sdk-js'
 import './QueryEditor.css'
+import { uuid } from 'utils/tools'
+import { getTemplateSrv } from '@grafana/runtime'
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>
 
 export type LabelItem = {
   label: string
   value: string | number
+  isVariable?: boolean
 }
 
 export type SelectOpts = LabelItem[]
@@ -135,15 +138,6 @@ interface FormConfigItem {
   targetDataKey: FormKeys
 }
 
-export function uuid() {
-  function s4() {
-    return Math.floor((1 + Math.random()) * 0x10000)
-      .toString(16)
-      .substring(1)
-  }
-  return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4()
-}
-
 export type BasicDataWithId = BasicData & { uuid: string }
 
 export type QueryDataType = {
@@ -262,6 +256,7 @@ export class QueryEditor extends PureComponent<Props> {
     errorMsg: string
     showErrorAlert: boolean
     gotBasicData: boolean
+    templateVariableOpts: SelectOpts
   }
   editor: any | undefined
   constructor(props: any) {
@@ -319,7 +314,8 @@ export class QueryEditor extends PureComponent<Props> {
       ...defaultFormData,
       errorMsg: '',
       showErrorAlert: false,
-      gotBasicData: false
+      gotBasicData: false,
+      templateVariableOpts: []
     }
   }
 
@@ -790,8 +786,25 @@ export class QueryEditor extends PureComponent<Props> {
     }
   }
 
+  getTemplateVariables() {
+    const templateSrv = getTemplateSrv()
+    this.setState({
+      templateVariableOpts: templateSrv
+        .getVariables()
+        .map((item: VariableModel) => {
+          return {
+            label: `$${item.name}`,
+            value: item.name,
+            isVariable: true
+          }
+        })
+        .flat(Infinity)
+    })
+  }
+
   componentDidMount() {
     this.initFormData()
+    this.getTemplateVariables()
   }
 
   getTableOpts = async (db: string) => {
@@ -958,7 +971,6 @@ export class QueryEditor extends PureComponent<Props> {
           ]
         })
         .flat(Infinity) as MetricOpts
-
       const funcOpts = funcs.map((item: any) => {
         return {
           label: item.name,
@@ -1018,7 +1030,8 @@ export class QueryEditor extends PureComponent<Props> {
   }
 
   render() {
-    const { formConfig, tagOpts, funcOpts, subFuncOpts, appTypeOpts, errorMsg, showErrorAlert } = this.state
+    const { formConfig, tagOpts, funcOpts, subFuncOpts, appTypeOpts, errorMsg, showErrorAlert, templateVariableOpts } =
+      this.state
     const formStyle = {
       width: '900px',
       maxWidth: '900px'
@@ -1068,6 +1081,7 @@ export class QueryEditor extends PureComponent<Props> {
                       {this.state[conf.targetDataKey].map((item: BasicDataWithId, index: number) => {
                         return (
                           <QueryEditorFormRow
+                            templateVariableOpts={templateVariableOpts}
                             config={formItemConfigs[conf.targetDataKey]}
                             basicData={item}
                             gotBasicData={this.state.gotBasicData}
