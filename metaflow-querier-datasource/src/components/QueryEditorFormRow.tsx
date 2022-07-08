@@ -71,6 +71,7 @@ const sortOpts: SelectOpts = [
   }
 ]
 
+const TAG_VAL_OPTS_LABEL_SHOW_VALUE = ['server_port']
 const BasicSelectAsync = (props: {
   parentProps: {
     db: string
@@ -104,7 +105,9 @@ const BasicSelectAsync = (props: {
       search(item: any) {
         const _val = val.toLocaleLowerCase()
         const itemDisplayName = (item.display_name as string).toLocaleLowerCase()
-        return itemDisplayName.includes(_val)
+        const itemVal = `${item.value}`.toLocaleLowerCase()
+        const valMatch = TAG_VAL_OPTS_LABEL_SHOW_VALUE.includes(basicData.key) ? itemVal.includes(_val) : false
+        return itemDisplayName.includes(_val) || valMatch
       }
     }
 
@@ -113,7 +116,9 @@ const BasicSelectAsync = (props: {
 
     const result = data.map((item: any) => {
       return {
-        label: item.display_name,
+        label: TAG_VAL_OPTS_LABEL_SHOW_VALUE.includes(basicData.key)
+          ? `${item.display_name}(${item.value})`
+          : item.display_name,
         value: item.value
       }
     })
@@ -150,7 +155,6 @@ export class QueryEditorFormRow extends PureComponent<Props> {
   state: {
     tagValOpts: FuncSelectOpts
     tagValSelectPlaceholder: string
-    fuxx: any
   }
   static defaultProps = {}
   constructor(props: any) {
@@ -158,7 +162,6 @@ export class QueryEditorFormRow extends PureComponent<Props> {
     this.state = {
       tagValOpts: [],
       tagValSelectPlaceholder: '',
-      fuxx: {}
     }
   }
 
