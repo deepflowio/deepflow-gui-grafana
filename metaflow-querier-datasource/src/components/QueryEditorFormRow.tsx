@@ -152,17 +152,9 @@ const InputTagValueTypes = ['int', 'string', 'ip', 'mac']
 const selectTagValueOps = ['=', '!=', 'IN', 'NOT IN']
 
 export class QueryEditorFormRow extends PureComponent<Props> {
-  state: {
-    tagValOpts: FuncSelectOpts
-    tagValSelectPlaceholder: string
-  }
   static defaultProps = {}
   constructor(props: any) {
     super(props)
-    this.state = {
-      tagValOpts: [],
-      tagValSelectPlaceholder: '',
-    }
   }
 
   get operatorOpts(): SelectOpts {

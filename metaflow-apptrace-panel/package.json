@@ -18,8 +18,7 @@
   },
   "dependencies": {
     "@douyinfe/semi-icons": "^2.14.0",
-    "@douyinfe/semi-ui": "^2.14.0",
-    "metaflow-vis-js": "^0.0.9"
+    "@douyinfe/semi-ui": "^2.14.0"
   },
   "devDependencies": {
     "prop-types": "^15.8.1"
