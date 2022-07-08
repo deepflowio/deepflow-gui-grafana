@@ -7,7 +7,7 @@ import { BasicData, QueryEditorFormRow, RowConfig } from './components/QueryEdit
 import _ from 'lodash'
 import * as querierJs from 'metaflow-sdk-js'
 import './QueryEditor.css'
-import { uuid } from 'utils/tools'
+import { formatTagOperators, uuid } from 'utils/tools'
 import { getTemplateSrv } from '@grafana/runtime'
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>
@@ -916,19 +916,13 @@ export class QueryEditor extends PureComponent<Props> {
       const tagOpts = tags
         .map((item: any) => {
           const { name, client_name, server_name } = item
+          const operatorOpts = formatTagOperators(item.operators)
           if (name === client_name && name === server_name) {
             return {
               label: item.display_name === item.name ? `${item.name}` : `${item.display_name}(${item.name})`,
               value: item.name,
               type: item.type,
-              operatorOpts: item.operators
-                ? item.operators.map((op: any) => {
-                    return {
-                      label: op,
-                      value: op
-                    }
-                  })
-                : []
+              operatorOpts
             }
           }
           return [
@@ -939,14 +933,7 @@ export class QueryEditor extends PureComponent<Props> {
                     value: item.client_name,
                     type: item.type,
                     sideType: 'from',
-                    operatorOpts: item.operators
-                      ? item.operators.map((op: any) => {
-                          return {
-                            label: op,
-                            value: op
-                          }
-                        })
-                      : []
+                    operatorOpts
                   }
                 ]
               : []),
@@ -957,14 +944,7 @@ export class QueryEditor extends PureComponent<Props> {
                     value: item.server_name,
                     type: item.type,
                     sideType: 'to',
-                    operatorOpts: item.operators
-                      ? item.operators.map((op: any) => {
-                          return {
-                            label: op,
-                            value: op
-                          }
-                        })
-                      : []
+                    operatorOpts
                   }
                 ]
               : [])

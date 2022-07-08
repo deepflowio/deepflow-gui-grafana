@@ -21,6 +21,7 @@
     "@grafana/toolkit": "^8.5.6",
     "@grafana/ui": "^8.5.6",
     "lodash": "^4.17.21",
+    "metaflow-vis-js": "^0.0.9",
     "qs": "^6.11.0"
   },
   "devDependencies": {
