@@ -413,7 +413,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                   width={8}
                   options={this.operatorOpts}
                   onChange={this.onOperatorChange}
-                  placeholder="="
+                  placeholder="OP"
                   value={basicData.op}
                 />
               </div>
