@@ -41,13 +41,15 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
         bar.props.blur = false
       })
     } else {
+      let ids: string[] = []
       chart.bars.forEach((bar: any) => {
         const blurBoolean = genServiceId(bar.data) !== serviceId
         if (!blurBoolean) {
-          setDetailFilteIds(bar.data._ids || [])
+          ids = [...ids, ...(bar.data._ids || [])]
         }
         bar.props.blur = blurBoolean
       })
+      setDetailFilteIds(ids)
     }
     chart.renderBars()
   }, [])
