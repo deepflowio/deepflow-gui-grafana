@@ -143,6 +143,7 @@ export type BasicDataWithId = BasicData & { uuid: string }
 export type QueryDataType = {
   appType: string
   db: string
+  sources: string
   from: string
   select: BasicDataWithId[]
   where: BasicDataWithId[]
@@ -155,10 +156,11 @@ export type QueryDataType = {
   resultGroupBy: boolean
 }
 
-const defaultFormDB: Pick<QueryDataType, 'db'> = {
-  db: ''
+const defaultFormDB: Pick<QueryDataType, 'db' | 'sources'> = {
+  db: '',
+  sources: ''
 }
-const defaultFormData: Omit<QueryDataType, 'appType' | 'db'> = {
+const defaultFormData: Omit<QueryDataType, 'appType' | 'db' | 'sources'> = {
   from: '',
   select: [
     {
@@ -235,7 +237,7 @@ export class QueryEditor extends PureComponent<Props> {
   state: {
     formConfig: FormConfigItem[]
     databaseOpts: SelectOpts
-    tableOpts: SelectOpts
+    tableOpts: Array<LabelItem & { dataSources: null | string[] }>
     tagOpts: MetricOpts
     metricOpts: MetricOpts
     funcOpts: FuncSelectOpts
@@ -243,6 +245,7 @@ export class QueryEditor extends PureComponent<Props> {
     appTypeOpts: SelectOpts
     appType: string
     db: string
+    sources: string
     from: string
     select: BasicDataWithId[]
     where: BasicDataWithId[]
@@ -418,6 +421,34 @@ export class QueryEditor extends PureComponent<Props> {
           }
         ]
       : tableOpts
+  }
+
+  get dataSourcesTypeOpts(): SelectOpts | null {
+    const { tableOpts, from } = this.state
+    const dataSources = tableOpts.find(e => {
+      return e.value === from
+    })?.dataSources
+    return Array.isArray(dataSources)
+      ? dataSources.map(e => {
+          return {
+            label: e,
+            value: e
+          }
+        })
+      : null
+  }
+
+  setSourcesChange(val: LabelItem & { dataSources: null | string[] }) {
+    const dataSources = val
+    if (Array.isArray(dataSources)) {
+      this.setState({
+        sources: dataSources?.includes('1m') ? '1m' : dataSources[0]
+      })
+    } else {
+      this.setState({
+        sources: ''
+      })
+    }
   }
 
   onSubmit = () => {
@@ -816,10 +847,11 @@ export class QueryEditor extends PureComponent<Props> {
       const tables = await querierJs.getTables(db)
       this.setState({
         tableOpts: Array.isArray(tables)
-          ? tables.map((e: { name: string }) => {
+          ? tables.map((e: { name: string; datasources: null | string[] }) => {
               return {
                 label: e.name,
-                value: e.name
+                value: e.name,
+                dataSources: e.datasources
               }
             })
           : []
@@ -1041,18 +1073,32 @@ export class QueryEditor extends PureComponent<Props> {
                 value={this.state.db}
                 onChange={(val: any) => this.onFieldChange('db', val)}
                 placeholder="DATABASE"
-                key={this.state.db ? 'dbSelectWithVal' : 'dbSelectWithoutVal'}
+                key={this.state.db ? 'dbWithVal' : 'dbWithoutVal'}
               />
             </InlineField>
             <InlineField className="custom-label" label="FROM" labelWidth={10}>
               <Select
                 options={this.tableOptsAfterFilter}
                 value={this.state.from}
-                onChange={(val: any) => this.onFieldChange('from', val)}
+                onChange={(val: any) => {
+                  this.setSourcesChange(val)
+                  this.onFieldChange('from', val)
+                }}
                 placeholder="TABLE"
                 key={this.state.from ? 'fromWithVal' : 'fromWithoutVal'}
               />
             </InlineField>
+            {this.dataSourcesTypeOpts ? (
+              <InlineField className="custom-label" label="SOURCES" labelWidth={10}>
+                <Select
+                  options={this.dataSourcesTypeOpts}
+                  value={this.state.sources}
+                  onChange={(val: any) => this.onFieldChange('sources', val)}
+                  placeholder="DATA SOURCES"
+                  key={this.state.sources ? 'sourceWithVal' : 'sourceWithoutVal'}
+                />
+              </InlineField>
+            ) : null}
             {formConfig.map((conf: FormConfigItem, i: number) => {
               return (
                 <>
