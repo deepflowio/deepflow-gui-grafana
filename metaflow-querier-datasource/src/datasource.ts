@@ -40,6 +40,21 @@ function setTimeKey(
     val: to
   })
 }
+
+const flatObject = function (obj: Record<any, any>) {
+  const result = {}
+  function addToParent(target: Record<any, any>, parent: Record<any, any>) {
+    _.forIn(target, (val, key) => {
+      if (val instanceof Object) {
+        addToParent(val, parent)
+      } else {
+        parent[key] = val
+      }
+    })
+  }
+  addToParent(obj, result)
+  return result
+}
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   url: string
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
@@ -53,7 +68,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           .fetch({
             method,
             url: this.url + (token ? '/auth/api/querier' : '/noauth') + '/v1/query/',
-            data: qs.stringify(params),
+            data: qs.stringify(flatObject(params)),
             headers,
             responseType: 'text'
           })
@@ -110,7 +125,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         })
 
         // @ts-ignore
-        let response = await querierJs.searchBySql(sql, queryData.db)
+        let response = await querierJs.searchBySql(sql, {
+          db: queryData.db,
+          datasource: queryData.sources
+        })
         if (!response || !response.length) {
           return []
         }
