@@ -93,7 +93,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         // @ts-ignore
         await querierJs.loadOP()
         // @ts-ignore
-        await querierJs.loadTableConfig(queryData.from)
+        await querierJs.loadTableConfig(queryData.from, queryData.db)
         const parsedQueryData = parseQueryStr(queryData)
         let querierJsResult
         try {
@@ -110,7 +110,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         })
 
         // @ts-ignore
-        let response = await querierJs.searchBySql(sql)
+        let response = await querierJs.searchBySql(sql, queryData.db)
         if (!response || !response.length) {
           return []
         }
