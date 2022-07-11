@@ -33,7 +33,8 @@ export const TopoTooltip: React.FC<Props> = ({ contentData, mousePos }) => {
         })}
       </div>
       <div className="values-wrap">
-        {Object.values(contentData).map((val: any, index: number) => {
+        {Object.keys(contentData).map((key: any, index: number) => {
+          const val = contentData[key] || ' '
           return <p key={index}>{val}</p>
         })}
       </div>
