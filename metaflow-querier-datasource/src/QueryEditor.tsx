@@ -439,7 +439,7 @@ export class QueryEditor extends PureComponent<Props> {
   }
 
   setSourcesChange(val: LabelItem & { dataSources: null | string[] }) {
-    const dataSources = val
+    const { dataSources } = val
     if (Array.isArray(dataSources)) {
       this.setState({
         sources: dataSources?.includes('1m') ? '1m' : dataSources[0]
