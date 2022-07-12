@@ -375,6 +375,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
   async metricFindQuery(query: MyVariableQuery, options?: any) {
     const { database, sql } = query
+
     if (!database || !sql) {
       return []
     }

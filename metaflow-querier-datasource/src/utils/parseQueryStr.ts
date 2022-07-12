@@ -218,9 +218,13 @@ function getValueByVariablesName(val: LabelItem, variables: any[]) {
   const isVariable = val?.isVariable
   let result
   if (isVariable) {
-    result = variables.find((variable: any) => {
+    const currentVariable = variables.find((variable: any) => {
       return variable.name === val?.value
-    })?.current?.value
+    })
+    result = currentVariable?.current?.value
+    if (result.includes('$__all')) {
+      result = currentVariable.options.filter((e: any) => e.value !== '$__all').map((e: any) => e.value)
+    }
   }
   return result !== undefined ? result : val.value
 }
@@ -247,9 +251,11 @@ function whereFormat(data: any) {
             result[key] = getValueByVariablesName(item[key] as LabelItem, variables)
           }
           if (Array.isArray(item[key])) {
-            result[key] = (item[key] as LabelItem[]).map((e: LabelItem) => {
-              return getValueByVariablesName(e, variables)
-            })
+            result[key] = (item[key] as LabelItem[])
+              .map((e: LabelItem) => {
+                return getValueByVariablesName(e, variables)
+              })
+              .flat(Infinity)
           }
         }
       })
