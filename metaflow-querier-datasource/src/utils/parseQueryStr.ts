@@ -218,12 +218,9 @@ function getValueByVariablesName(val: LabelItem, variables: any[]) {
   const isVariable = val?.isVariable
   let result
   if (isVariable) {
-    const currentVariable = variables.find((variable: any) => {
+    result = variables.find((variable: any) => {
       return variable.name === val?.value
-    })?.current
-    if (currentVariable?.selected) {
-      result = currentVariable?.value
-    }
+    })?.current?.value
   }
   return result !== undefined ? result : val.value
 }

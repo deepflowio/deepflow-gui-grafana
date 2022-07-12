@@ -15,6 +15,7 @@ import * as querierJs from 'metaflow-sdk-js'
 import qs from 'qs'
 import { BasicDataWithId } from 'QueryEditor'
 import 'json-bigint-patch'
+import { MyVariableQuery } from 'components/VariableQueryEditor'
 
 function setTimeKey(
   queryData: any,
@@ -370,5 +371,24 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       ...(QUERY_DATA_CACHE['config'][refId] || {}),
       returnTags: _returnTags
     }
+  }
+
+  async metricFindQuery(query: MyVariableQuery, options?: any) {
+    const { database, sql } = query
+    if (!database || !sql) {
+      return []
+    }
+    // @ts-ignore
+    const response = await querierJs.searchBySql(sql, database)
+
+    return Array.isArray(response)
+      ? response.map((e: any) => {
+          return {
+            value: e.value,
+            label: e.display_name,
+            text: e.display_name
+          }
+        })
+      : []
   }
 }
