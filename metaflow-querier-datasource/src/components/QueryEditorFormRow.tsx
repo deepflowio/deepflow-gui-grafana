@@ -221,7 +221,12 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       val: '',
       params: [],
       subFuncs: [],
-      uuid: uuid()
+      uuid: uuid(),
+      ...(result.includes('resource_gl')
+        ? {
+            as: ''
+          }
+        : {})
     })
   }
 
@@ -435,7 +440,11 @@ export class QueryEditorFormRow extends PureComponent<Props> {
             {config.as ? (
               <>
                 <span>AS</span>
-                <Input value={basicData.as} onChange={this.onAsInput}></Input>
+                <Input
+                  value={basicData.as}
+                  onChange={this.onAsInput}
+                  disabled={basicData.key.includes('resource_gl')}
+                ></Input>
               </>
             ) : null}
             {config.sort ? (
