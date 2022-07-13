@@ -49,9 +49,12 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
 
   const subFuncOpts = [
     ...props.subFuncOpts.filter((item: LabelItem & { value: string }) => {
-      return !props.subFuncs.find((subFunc: any) => {
-        return subFunc.func === item.value
-      })
+      return (
+        item.value.toLocaleLowerCase() !== 'histogram' &&
+        !props.subFuncs.find((subFunc: any) => {
+          return subFunc.func === item.value
+        })
+      )
     }),
     {
       label: 'Math',
@@ -95,7 +98,7 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
       <div className="sub-functions-editor">
         <p className="sub-functions-title">SUB FUNCTIONS:</p>
         <Select
-          width={14}
+          width={15}
           options={subFuncOpts}
           value={func}
           onChange={ev => {

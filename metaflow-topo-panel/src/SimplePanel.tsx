@@ -25,6 +25,9 @@ type LinkItem = {
 
 interface Props extends PanelProps<SimpleOptions> {}
 
+//  ip: 255, internet_ip: 0
+const IP_LIKELY_NODE_TYPE_TDS = [255, 0]
+
 export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) => {
   const [errMsg, setErrMsg] = useState('')
   const [chartContainer, setChartContainer] = useState<any>(undefined)
@@ -63,14 +66,20 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
   }, [series, targetIndex, chartContainer])
 
   const [queryConfig, setQueryConfig] = useState<
-    { returnMetrics: any[]; returnTags: any[]; from: string[]; to: string[] } | undefined
+    { returnMetrics: any[]; returnTags: any[]; from: string[]; to: string[]; common: string[] } | undefined
   >(undefined)
   const getConfigByRefId = useCallback(async () => {
     const metaFlow = await getDataSourceSrv().get('MetaFlow')
     const refId = refIds[targetIndex].label
     const result = metaFlow
       ? // @ts-ignore
-        (metaFlow.getQueryConfig(refId) as { returnMetrics: any[]; returnTags: any[]; from: string[]; to: string[] })
+        (metaFlow.getQueryConfig(refId) as {
+          returnMetrics: any[]
+          returnTags: any[]
+          from: string[]
+          to: string[]
+          common: string[]
+        })
       : undefined
     setQueryConfig(result)
   }, [refIds, targetIndex])
@@ -82,7 +91,6 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     if (!queryConfig?.from?.length) {
       return []
     }
-    // return getResourceIdKey(queryConfig.from[0])
     return queryConfig.from.map(e => {
       return getResourceIdKey(e)
     })
@@ -91,7 +99,6 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     if (!queryConfig?.to?.length) {
       return []
     }
-    // return getResourceIdKey(queryConfig.to[0])
     return queryConfig.to.map(e => {
       return getResourceIdKey(e)
     })
@@ -102,7 +109,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       return []
     }
     const filedNames = selectedData.fields.map(field => field.name)
-    const dataIsMatched = [...sourceSide, ...destinationSide].every(e => {
+    const dataIsMatched = [...sourceSide, ...destinationSide, ...queryConfig.common].every(e => {
       return filedNames.includes(e)
     })
     if (!dataIsMatched) {
@@ -120,8 +127,30 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     const result: LinkItem[] = fullData.map(e => {
       return {
         ...e,
-        from: sourceSide.map(key => e[key]).join(''),
-        to: destinationSide.map(key => e[key]).join(''),
+        from:
+          [...sourceSide, ...queryConfig.common]
+            .map(key => {
+              if (key.includes('resource_gl')) {
+                const nodeTypeId = e[key.replace('_id', '_type')]
+                if (IP_LIKELY_NODE_TYPE_TDS.includes(nodeTypeId)) {
+                  return `${e['ip_0']}${e['subnet_id_0']}`
+                }
+              }
+              return e[key]
+            })
+            .join('') + e.client_node_type,
+        to:
+          [...destinationSide, ...queryConfig.common]
+            .map(key => {
+              if (key.includes('resource_gl')) {
+                const nodeTypeId = e[key.replace('_id', '_type')]
+                if (IP_LIKELY_NODE_TYPE_TDS.includes(nodeTypeId)) {
+                  return `${e['ip_1']}${e['subnet_id_1']}`
+                }
+              }
+              return e[key]
+            })
+            .join('') + e.server_node_type,
         metrics: Object.fromEntries(
           queryConfig.returnMetrics.map(metric => {
             const key = metric.name
@@ -144,11 +173,13 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
           {
             id: e['from'],
             node_type: e['client_node_type'],
-            displayName: _.get(e, [queryConfig.from[0]]),
+            displayName: _.get(queryConfig, ['from', 0]).includes('resource_gl')
+              ? _.get(e, ['client_resource'], _.get(e, [queryConfig.from[0]], ''))
+              : _.get(e, [queryConfig.from[0]], ''),
             tags: {
               node_type: e['client_node_type'],
               ...Object.fromEntries(
-                queryConfig.from.map(tag => {
+                [...queryConfig.from, ...queryConfig.common].map(tag => {
                   return [[tag], e[tag]]
                 })
               )
@@ -157,11 +188,13 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
           {
             id: e['to'],
             node_type: e['server_node_type'],
-            displayName: _.get(e, [queryConfig.to[0]]),
+            displayName: _.get(queryConfig, ['to', 0]).includes('resource_gl')
+              ? _.get(e, ['server_resource'], _.get(e, [queryConfig.to[0]], ''))
+              : _.get(e, [queryConfig.to[0]], ''),
             tags: {
-              node_type: e['client_node_type'],
+              node_type: e['server_node_type'],
               ...Object.fromEntries(
-                queryConfig.to.map(tag => {
+                [...queryConfig.to, ...queryConfig.common].map(tag => {
                   return [[tag], e[tag]]
                 })
               )
@@ -211,7 +244,9 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         {
           getNodeV: (node: Node<NodeItem>) => 0,
           getNodeColor: (node: Node<NodeItem>) => nodeAndLinkColor,
-          getNodeIcon: (node: Node<NodeItem>) => node.data.node_type,
+          getNodeIcon: (node: Node<NodeItem>) => {
+            return node.data.node_type.includes('ip') ? 'ip' : node.data.node_type
+          },
           getNodeTitle: (node: Node<NodeItem>) => node.data.displayName,
           getLinkV: (link: Link<LinkItem>) => link.data.metricValue,
           getLinkColor: (link: Link<LinkItem>) => nodeAndLinkColor,

@@ -34,7 +34,7 @@ export const TopoTooltip: React.FC<Props> = ({ contentData, mousePos }) => {
       </div>
       <div className="values-wrap">
         {Object.keys(contentData).map((key: any, index: number) => {
-          const val = contentData[key] || ' '
+          const val = typeof contentData[key] !== 'undefined' ? contentData[key] : ' '
           return <p key={index}>{val}</p>
         })}
       </div>

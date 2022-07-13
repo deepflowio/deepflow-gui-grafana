@@ -1,7 +1,9 @@
+import { DataQueryRequest } from '@grafana/data'
 import { getTemplateSrv } from '@grafana/runtime'
 import { BasicData } from 'components/QueryEditorFormRow'
 import _ from 'lodash'
 import { LabelItem } from 'QueryEditor'
+import { MyQuery } from 'types'
 
 // Secondary Operators and Concatenated Strings Map:
 // {
@@ -149,9 +151,6 @@ function formatWithsubFuncs(target: any) {
     return target
   }
   const result = _.cloneDeep(subFuncs).map((e: any) => {
-    if (e.func.toLocaleLowerCase() === 'percentage') {
-      e.params = '100'
-    }
     if (e.func.toLocaleLowerCase() === 'math') {
       e.func = e.op
     }
@@ -174,7 +173,13 @@ function formatWithsubFuncs(target: any) {
     }
     e.params = e.params.filter((e: any) => e !== undefined)
   })
-  return result[result.length - 1]
+
+  return target.as
+    ? {
+        func: 'as',
+        params: [result[result.length - 1], target.as]
+      }
+    : result[result.length - 1]
 }
 
 function selectFormat(data: any): {
@@ -214,16 +219,20 @@ function selectFormat(data: any): {
   }
 }
 
-function getValueByVariablesName(val: LabelItem, variables: any[]) {
+function getValueByVariablesName(val: LabelItem, variables: any[], op: string) {
+  const isLikeOp = op.toUpperCase().includes('LIKE')
+  const targetField = isLikeOp ? 'text' : 'value'
   const isVariable = val?.isVariable
   let result
   if (isVariable) {
     const currentVariable = variables.find((variable: any) => {
       return variable.name === val?.value
     })
-    result = currentVariable?.current?.value
-    if (result.includes('$__all')) {
-      result = currentVariable.options.filter((e: any) => e.value !== '$__all').map((e: any) => e.value)
+    const currentValue = _.get(currentVariable, ['current', 'value'], '')
+    if (currentValue.includes('$__all')) {
+      result = currentVariable.options.filter((e: any) => e.value !== '$__all').map((e: any) => _.get(e, [targetField]))
+    } else {
+      result = _.get(currentVariable, ['current', targetField])
     }
   }
   return result !== undefined ? result : val.value
@@ -232,7 +241,7 @@ function getValueByVariablesName(val: LabelItem, variables: any[]) {
 function whereFormat(data: any) {
   const { where, having } = data
   const fullData = where.concat(having)
-  const validKeys = ['type', 'key', 'func', 'op', 'val', 'params', 'subFuncs'] as const
+  const validKeys = ['type', 'key', 'func', 'op', 'val', 'params', 'subFuncs', 'whereOnly'] as const
   const templateSrv = getTemplateSrv()
   const variables = templateSrv.getVariables() as any[]
 
@@ -243,17 +252,17 @@ function whereFormat(data: any) {
     .map((item: BasicData) => {
       const result: any = {}
       validKeys.forEach(key => {
-        if (_.isNumber(item[key]) || !_.isEmpty(item[key])) {
+        if (typeof item[key] === 'boolean' || _.isNumber(item[key]) || !_.isEmpty(item[key])) {
           result[key] = item[key]
         }
         if (key === 'val') {
           if (item[key] instanceof Object) {
-            result[key] = getValueByVariablesName(item[key] as LabelItem, variables)
+            result[key] = getValueByVariablesName(item[key] as LabelItem, variables, item.op)
           }
           if (Array.isArray(item[key])) {
             result[key] = (item[key] as LabelItem[])
               .map((e: LabelItem) => {
-                return getValueByVariablesName(e, variables)
+                return getValueByVariablesName(e, variables, item.op)
               })
               .flat(Infinity)
           }
@@ -270,7 +279,46 @@ function whereFormat(data: any) {
             })
       }
     })
-  return result
+  const _result: any[] = []
+  result.forEach((e: any) => {
+    if (e.whereOnly) {
+      const tagNames = ['_0', '_1'].map(clientName => {
+        return `${e.key}${clientName}`
+      })
+      const obj = {
+        type: 'tag',
+        op: e.op.toUpperCase().includes('NOT') || e.op.includes('!') ? 'AND' : 'OR',
+        val: tagNames
+          .map(tagName => {
+            if (e.op.toUpperCase().includes('LIKE')) {
+              return e.val.map((val: any) => {
+                return {
+                  ...e,
+                  key: tagName,
+                  val
+                }
+              })
+            }
+            return {
+              ...e,
+              key: tagName
+            }
+          })
+          .flat(Infinity)
+      }
+      _result.push(obj)
+    } else if (e.op.toUpperCase().includes('LIKE')) {
+      e.val.forEach((val: any) => {
+        _result.push({
+          ...e,
+          val
+        })
+      })
+    } else {
+      _result.push(e)
+    }
+  })
+  return _result
 }
 
 function groupByFormat(data: any) {
@@ -371,3 +419,15 @@ let parse = (str: string) => {
 }
 
 export default parse
+
+export const replaceInterval = (queryText: string, options: DataQueryRequest<MyQuery>) => {
+  return typeof options?.scopedVars?.__interval_ms?.value === 'number'
+    ? getTemplateSrv().replace(queryText, {
+        ...options.scopedVars,
+        __interval_ms: {
+          ...options.scopedVars.__interval_ms,
+          value: options.scopedVars.__interval_ms.value / 1000
+        }
+      })
+    : queryText
+}

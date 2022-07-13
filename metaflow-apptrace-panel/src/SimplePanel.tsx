@@ -12,7 +12,7 @@ import { getDataSourceSrv } from '@grafana/runtime'
 import { renderTimeBar, addSvg, fitSvgToContainer, TAP_SIDE_OPTIONS_MAP } from 'metaflow-vis-js'
 import { FlameTooltip } from 'components/FlameTooltip'
 import { genServiceId, useDebounce } from 'utils/tools'
-import { calcTableCellWidth, tarnsArrayToTableData } from 'utils/tables'
+import { calcTableCellWidth, getStringLen, tarnsArrayToTableData } from 'utils/tables'
 
 interface Props extends PanelProps<SimpleOptions> {}
 
@@ -194,9 +194,13 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     > = [
       ...target.map((e: Field<any, Vector<any>>, i: number) => {
         const textLens: number[] = [
-          e.name.length,
+          // e.name.length,
+          // ...dataSource.map(d => {
+          //   return d[e.name] === null ? 0 : d[e.name].toString().length
+          // })
+          e.name === null ? 0 : getStringLen(e.name),
           ...dataSource.map(d => {
-            return d[e.name] === null ? 0 : d[e.name].toString().length
+            return d[e.name] === null ? 0 : getStringLen(d[e.name].toString())
           })
         ]
         const maxLen = Math.max(...textLens)
@@ -284,11 +288,11 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
         <div className="flame-and-tables">
           <div className="main">
             <div className="flame-wrap">
-              <div className="view-title">FLAME GRAPH</div>
+              <div className="view-title">Flame Graph</div>
               <div className={`flame ${randomClassName}`}></div>
             </div>
             <div className="service-table-wrap">
-              <div className="view-title">SERVICE LIST</div>
+              <div className="view-title">Service List</div>
               <div className="service-table">
                 <DYTable
                   className={'table-wrap'}
@@ -307,7 +311,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
             </div>
           </div>
           <div className="detail-table-wrap">
-            <div className="view-title">DETAIL LIST</div>
+            <div className="view-title">Request Log</div>
             <div className="detail-table">
               <DYTable
                 className={'table-wrap'}

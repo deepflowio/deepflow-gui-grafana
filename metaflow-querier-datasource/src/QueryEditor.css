@@ -29,7 +29,7 @@
 .editor-form-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 4px;
 }
 
@@ -40,7 +40,8 @@
 .editor-form-row .content {
   flex: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  max-width: 740px;
 }
 
 .editor-form-row .content > div,
@@ -140,3 +141,29 @@
   margin-right: 0;
 }
 
+.min-width-60 {
+  min-width: 60px;
+}
+.min-width-70 {
+  min-width: 70px;
+}
+.min-width-80 {
+  min-width: 80px;
+}
+.min-width-90 {
+  min-width: 90px;
+}
+.min-width-100 {
+  min-width: 100px;
+}
+.min-width-110 {
+  min-width: 110px;
+}
+.min-width-120 {
+  min-width: 120px;
+}
+
+/*  */
+.op-selector .css-1xwhpd8 {
+  width: 180px;
+}
