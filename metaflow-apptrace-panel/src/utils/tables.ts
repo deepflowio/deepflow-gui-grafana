@@ -2,8 +2,15 @@ import { ColumnProps } from '@douyinfe/semi-ui/lib/es/table'
 import _ from 'lodash'
 
 export function calcTableCellWidth(num: number) {
-  const ONE_WORD_WIDTH = 11
-  return num * ONE_WORD_WIDTH + 8
+  const ONE_WORD_WIDTH = 75
+  return (num * ONE_WORD_WIDTH) / 10 + 12 + 1
+}
+
+export function getStringLen(str: string) {
+  return str.split('').reduce((prev: number, current: string) => {
+    const currentLen = /^[\u4e00-\u9fa5]/.test(current) ? 2 : 1
+    return prev + currentLen
+  }, 0)
 }
 
 export function tarnsArrayToTableData(data: any[]) {
@@ -35,20 +42,24 @@ export function tarnsArrayToTableData(data: any[]) {
     ColumnProps<{
       key: string
     }>
-  > = Object.keys(keysTarget).map((e: string) => {
-    const textLens: number[] = [
-      e.length,
-      ...dataSource.map(d => {
-        return d[e] === null ? 0 : d[e].toString().length
-      })
-    ]
-    const maxLen = Math.max(...textLens)
-    return {
-      title: e,
-      dataIndex: e,
-      width: calcTableCellWidth(maxLen)
-    }
-  })
+  > = Object.keys(keysTarget)
+    .filter((key: string) => {
+      return key !== 'service_uid'
+    })
+    .map((e: string) => {
+      const textLens: number[] = [
+        e === null ? 0 : getStringLen(e),
+        ...dataSource.map(d => {
+          return d[e] === null ? 0 : getStringLen(d[e].toString())
+        })
+      ]
+      const maxLen = Math.max(...textLens)
+      return {
+        title: e,
+        dataIndex: e,
+        width: calcTableCellWidth(maxLen)
+      }
+    })
   return {
     columns,
     dataSource

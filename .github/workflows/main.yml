@@ -49,6 +49,14 @@ jobs:
         with:
           install: true
 
+      - uses: robinraju/release-downloader@v1.4
+        with:
+          repository: "grafana/clickhouse-datasource"
+          tag: "v1.1.2"
+          fileName: "grafana-clickhouse-datasource-1.1.2.zip"
+      - name: Unzip grafana clickhouse datasource
+        run: unzip grafana-clickhouse-datasource-1.1.2.zip
+
       - name: Log in to GitHub Docker Registry
         uses: docker/login-action@v2
         with:

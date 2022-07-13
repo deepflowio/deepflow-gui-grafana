@@ -44,7 +44,7 @@ export class ConfigEditor extends PureComponent<Props, State> {
           </div>
         </div>
         <div className="gf-form">
-          <span className="width-10">Trace Url</span>
+          <span className="width-10">Tracing Url</span>
           <div style={{ flexGrow: 1 }}>
             <Input
               name="Tracing Url"

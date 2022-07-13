@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, useState } from 'react'
 
 import { Select, AsyncSelect, Button, Input, RadioButtonGroup } from '@grafana/ui'
 import { FuncSelectOpts, LabelItem, MetricOpts, SelectOpts, SelectOptsWithStringValue } from 'QueryEditor'
@@ -27,6 +27,7 @@ export interface BasicData {
   sort?: string
   subFuncs?: []
   sideType?: 'from' | 'to'
+  whereOnly?: boolean
 }
 
 type Props = {
@@ -82,10 +83,11 @@ const BasicSelectAsync = (props: {
   }
   currentTagType: string
   isMulti: boolean
+  useInput: boolean
   onChange: (ev: any) => void
 }) => {
   const { db, from, basicData, gotBasicData, templateVariableOpts } = props.parentProps
-  const { currentTagType } = props
+  const { useInput } = props
   const boolOpts = [
     {
       label: '是',
@@ -122,9 +124,30 @@ const BasicSelectAsync = (props: {
         value: item.value
       }
     })
-    return currentTagType === 'resource' ? result.concat(templateVariableOpts) : result
+    return result.concat(templateVariableOpts)
   }
 
+  const [selectInputOpts, setSelectInputOpts] = useState(
+    [
+      ...(Array.isArray(basicData.val)
+        ? basicData.val.map((e: string) => {
+            return typeof e === 'string'
+              ? {
+                  label: e,
+                  value: e
+                }
+              : e
+          })
+        : basicData.val !== ''
+        ? [
+            {
+              label: basicData.val,
+              value: basicData.val
+            }
+          ]
+        : [])
+    ].concat(templateVariableOpts)
+  )
   return gotBasicData ? (
     props.currentTagType === 'bool' ? (
       <Select
@@ -133,6 +156,25 @@ const BasicSelectAsync = (props: {
         onChange={v => {
           props.onChange(v)
         }}
+      />
+    ) : useInput ? (
+      <Select
+        value={basicData.val}
+        options={selectInputOpts}
+        onChange={v => {
+          props.onChange(v)
+        }}
+        allowCustomValue
+        onCreateOption={v => {
+          const customValue = { value: v, label: v }
+          setSelectInputOpts([...selectInputOpts, customValue])
+          if (props.isMulti) {
+            props.onChange([...basicData.val, customValue])
+          } else {
+            props.onChange(v)
+          }
+        }}
+        isMulti={props.isMulti}
       />
     ) : (
       <AsyncSelect
@@ -148,8 +190,8 @@ const BasicSelectAsync = (props: {
   ) : null
 }
 
-const InputTagValueTypes = ['int', 'string', 'ip', 'mac']
-const selectTagValueOps = ['=', '!=', 'IN', 'NOT IN']
+const INPUT_TAG_VAL_TYPES = ['int', 'string', 'ip', 'mac']
+const SELECT_TAG_VAL_OPS = ['=', '!=', 'IN', 'NOT IN']
 
 export class QueryEditorFormRow extends PureComponent<Props> {
   static defaultProps = {}
@@ -226,7 +268,9 @@ export class QueryEditorFormRow extends PureComponent<Props> {
         ? {
             as: ''
           }
-        : {})
+        : {}),
+      whereOnly: !!val?.whereOnly,
+      sideType: val?.sideType
     })
   }
 
@@ -253,24 +297,11 @@ export class QueryEditorFormRow extends PureComponent<Props> {
 
   onOperatorChange = (val: any) => {
     const result = val ? val.value : ''
-    const oldOp = this.props.basicData.op
-    const oldIsSelect = selectTagValueOps.includes(oldOp)
-    const oldIsMulti = oldOp === 'IN' || oldOp === 'NOT IN'
-    const newIsSelect = selectTagValueOps.includes(result)
-    const newIsMulti = result === 'IN' || result === 'NOT IN'
-
-    const isAllSelect = oldIsSelect === newIsSelect && newIsSelect
-    const isSameMulti = oldIsMulti === newIsMulti
-    const isAllInput = oldIsSelect === newIsSelect && !newIsSelect
 
     this.props.onRowValChange({
       op: result,
-      ...((isAllSelect && isSameMulti) || isAllInput
-        ? {}
-        : {
-            val: '',
-            uuid: uuid()
-          })
+      val: this.props.basicData.type === 'tag' ? [] : '',
+      uuid: uuid()
     })
   }
 
@@ -320,8 +351,8 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       removeBtnDisabled,
       keySelectDisabled,
       typeSelectDisabled,
-      subFuncOpts,
-      showSideType
+      subFuncOpts
+      // showSideType
     } = this.props
     const tagOptsFilted = config.disableTimeTag
       ? tagOpts.filter(item => {
@@ -346,9 +377,9 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       <div>
         <div className="editor-form-row">
           <div className="content">
-            {basicData.sideType ? (
+            {/* {basicData.sideType ? (
               <span style={{ width: '30px' }}>{showSideType ? `${basicData.sideType}:` : ''}</span>
-            ) : null}
+            ) : null} */}
             {config.type ? (
               <div>
                 <Select
@@ -420,18 +451,20 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                   onChange={this.onOperatorChange}
                   placeholder="OP"
                   value={basicData.op}
+                  className="op-selector"
                 />
               </div>
             ) : null}
             {config.val ? (
-              basicData.type === 'tag' &&
-              !InputTagValueTypes.includes(this.currentTagType) &&
-              selectTagValueOps.includes(basicData.op) ? (
+              basicData.type === 'tag' ? (
                 <BasicSelectAsync
                   parentProps={this.props}
                   currentTagType={this.currentTagType}
                   onChange={(ev: any) => this.onValueChange('asyncselect', ev)}
-                  isMulti={basicData.op === 'IN' || basicData.op === 'NOT IN'}
+                  isMulti={['IN', 'NOT IN', 'LIKE', 'NOT LIKE'].includes(basicData.op)}
+                  useInput={
+                    INPUT_TAG_VAL_TYPES.includes(this.currentTagType) || !SELECT_TAG_VAL_OPS.includes(basicData.op)
+                  }
                 ></BasicSelectAsync>
               ) : (
                 <Input value={basicData.val as string} onChange={(ev: any) => this.onValueChange('input', ev)}></Input>
@@ -457,7 +490,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
               />
             ) : null}
           </div>
-          <div className="active-btns">
+          <div className="active-btns row-start-center">
             <Button
               fill="outline"
               variant="secondary"

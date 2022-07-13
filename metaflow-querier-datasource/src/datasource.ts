@@ -10,12 +10,12 @@ import {
 import { MyQuery, MyDataSourceOptions } from './types'
 import { DATA_SOURCE_SETTINGS, QUERY_DATA_CACHE } from 'utils/cache'
 import { getBackendSrv } from '@grafana/runtime'
-import parseQueryStr from './utils/parseQueryStr'
+import parseQueryStr, { replaceInterval } from './utils/parseQueryStr'
 import * as querierJs from 'metaflow-sdk-js'
 import qs from 'qs'
-import { BasicDataWithId } from 'QueryEditor'
 import 'json-bigint-patch'
 import { MyVariableQuery } from 'components/VariableQueryEditor'
+import { getAccessRelationshipeQueryConfig, getMetricFieldNameByAlias, getParamByName } from 'utils/tools'
 
 function setTimeKey(
   queryData: any,
@@ -42,20 +42,6 @@ function setTimeKey(
   })
 }
 
-const flatObject = function (obj: Record<any, any>) {
-  const result = {}
-  function addToParent(target: Record<any, any>, parent: Record<any, any>) {
-    _.forIn(target, (val, key) => {
-      if (val instanceof Object) {
-        addToParent(val, parent)
-      } else {
-        parent[key] = val
-      }
-    })
-  }
-  addToParent(obj, result)
-  return result
-}
 export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   url: string
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
@@ -65,11 +51,12 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     // @ts-ignore
     const test = (method, url, params, headers) => {
       const f = () => {
+        const debugOnOff = getParamByName('debug') === 'true'
         return getBackendSrv()
           .fetch({
             method,
-            url: this.url + (token ? '/auth/api/querier' : '/noauth') + '/v1/query/',
-            data: qs.stringify(flatObject(params)),
+            url: `${this.url}${token ? '/auth/api/querier' : '/noauth'}/v1/query/${debugOnOff ? '?debug=true' : ''}`,
+            data: qs.stringify(params),
             headers,
             responseType: 'text'
           })
@@ -101,7 +88,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         if (target.hide || !target.queryText) {
           return []
         }
-        const queryData = JSON.parse(target.queryText) as any
+        const queryText = replaceInterval(target.queryText, options)
+        const queryData = JSON.parse(queryText) as any
         setTimeKey(queryData, {
           from,
           to
@@ -126,30 +114,25 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         })
 
         // @ts-ignore
-        let response = await querierJs.searchBySql(sql, {
-          db: queryData.db,
-          datasource: queryData.sources
+        let response = await querierJs.searchBySql(sql, queryData.db, params => {
+          return {
+            ...params,
+            ...(queryData.sources
+              ? {
+                  datasource: queryData.sources
+                }
+              : {})
+          }
         })
         if (!response || !response.length) {
           return []
         }
+        // @ts-ignore
+        response = querierJs.addResourceFieldsInData(response)
         queryConfig[target.refId] = {
           returnTags,
           returnMetrics,
-          ...(queryData.appType === 'accessRelationship'
-            ? {
-                from: queryData.groupBy
-                  .filter((e: BasicDataWithId) => {
-                    return e.sideType === 'from'
-                  })
-                  .map((e: BasicDataWithId) => e.key),
-                to: queryData.groupBy
-                  .filter((e: BasicDataWithId) => {
-                    return e.sideType === 'to'
-                  })
-                  .map((e: BasicDataWithId) => e.key)
-              }
-            : {})
+          ...(queryData.appType === 'accessRelationship' ? getAccessRelationshipeQueryConfig(queryData.groupBy) : {})
         }
 
         let timeTypeKey: string
@@ -177,23 +160,25 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             tagKeys.push(key)
           }
         })
-        const usingGroupBy = sql.includes('group by') && queryData.resultGroupBy
+        const usingGroupBy = sql.includes('group by') && queryData.formatAs === 'timeSeries'
 
         if (!usingGroupBy) {
           return [response]
         }
-        const dataAfterGroupBy = _.groupBy(response, item => {
+        let dataAfterGroupBy = _.groupBy(response, item => {
           return tagKeys
             .map(key => {
               return item[key]
             })
             .join('，')
         })
+
         const frameArray: any = []
         _.forIn(dataAfterGroupBy, (item, groupByKey) => {
           item = _.sortBy(item, [timeTypeKey])
-
           const first = item[0]
+          const aliasName = getMetricFieldNameByAlias(queryData.alias, first)
+
           const frame = new MutableDataFrame({
             refId: target.refId,
             fields: [
@@ -202,11 +187,17 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                 if (key.includes('time') && typeof first[key] === 'number') {
                   type = FieldType.time
                 } else {
-                  type = returnMetricNames.includes(key) && _.isNumber(first[key]) ? FieldType.number : FieldType.string
+                  type = returnMetricNames.includes(key) ? FieldType.number : FieldType.string
                 }
 
+                if (!returnMetricNames.includes(key)) {
+                  return {
+                    name: key,
+                    type: type
+                  }
+                }
                 return {
-                  name: returnMetricNames.includes(key) ? `${groupByKey}${groupByKey ? '-' : ''}${key}` : key,
+                  name: aliasName ? aliasName : `${groupByKey}${groupByKey ? '-' : ''}${key}`,
                   type: type
                 }
               })
@@ -215,13 +206,15 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           item.forEach((e, i) => {
             _.forIn(e, (val, key) => {
               if (returnMetricNames.includes(key)) {
-                e[`${groupByKey}${groupByKey ? '-' : ''}${key}`] = val
+                const keyName = aliasName ? aliasName : `${groupByKey}${groupByKey ? '-' : ''}${key}`
+                e[keyName] = val
               }
             })
             frame.add(e)
           })
           frameArray.push(frame)
         })
+
         return frameArray
       })
     ) // 返回的可能是 dataframe 或者 array<dataframe>
