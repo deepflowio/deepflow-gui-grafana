@@ -54,7 +54,7 @@ export const FlameTooltip: React.FC<Props> = ({ barData, mousePos }) => {
       </div>
       <div className="values-wrap">
         {Object.keys(content).map((key: any, index: number) => {
-          const val = content[key] || ' '
+          const val = typeof content[key] !== 'undefined' ? content[key] : ' '
           return <p key={index}>{val}</p>
         })}
       </div>

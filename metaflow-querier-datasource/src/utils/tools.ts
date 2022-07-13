@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import { BasicDataWithId } from 'QueryEditor'
 
 export function uuid() {
   function s4() {
@@ -61,18 +62,71 @@ const TAG_OPERATORS_MAP = {
     sort: 9
   }
 } as const
-// type keys = keyof typeof TAG_OPERATORS_MAP
+
 export function formatTagOperators(operators: string[]) {
   let operatorOpts: any[] = []
   operators.forEach(op => {
     const mapItem = _.get(TAG_OPERATORS_MAP, op)
     if (mapItem) {
-      const desc = mapItem.description ? ` (${mapItem.description})` : ''
       operatorOpts[mapItem.sort] = {
-        label: `${mapItem.display_name}${desc}`,
-        value: op
+        label: `${mapItem.display_name}`,
+        value: op,
+        description: mapItem.description
       }
     }
   })
   return operatorOpts.filter(e => e !== undefined)
+}
+
+export function getMetricFieldNameByAlias(alias: string, mapObj: Record<any, any>) {
+  const result = alias.replace(/\$\{.*?\}/g, ($1: string) => {
+    const keyMatchArr = $1.match(/(?<=\$\{).*?(?=\})/)
+    const key = keyMatchArr ? keyMatchArr[0] : $1
+    return mapObj[key] || key
+  })
+  return result
+}
+
+export function getAccessRelationshipeQueryConfig(groupBy: any) {
+  const result: {
+    from: string[]
+    to: string[]
+    common: string[]
+  } = {
+    from: [],
+    to: [],
+    common: []
+  }
+  groupBy.forEach((e: BasicDataWithId) => {
+    if (e.key) {
+      const { sideType } = e
+      switch (sideType) {
+        case 'from':
+          result.from.push(e.key)
+          break
+        case 'to':
+          result.to.push(e.key)
+          break
+        default:
+          result.common.push(e.key)
+          break
+      }
+    }
+  })
+  return result
+}
+
+export function getParamByName(name: string) {
+  const search = window.location.search.replace('?', '')
+  if (typeof name === 'undefined') {
+    return undefined
+  }
+  const searchObj: Record<string, string> = {}
+  search.split('&').forEach((e: string) => {
+    const _arr = e.split('=')
+    const key = _arr[0]
+    const name = _arr[1]
+    searchObj[key] = name
+  })
+  return searchObj[name]
 }

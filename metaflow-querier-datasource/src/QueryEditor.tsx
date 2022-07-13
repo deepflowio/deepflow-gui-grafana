@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react'
 import { QueryEditorProps, VariableModel } from '@grafana/data'
 import { DataSource } from './datasource'
 import { MyDataSourceOptions, MyQuery } from './types'
-import { Button, Form, InlineField, Select, Input, Alert, Switch } from '@grafana/ui'
+import { Button, Form, InlineField, Select, Input, Alert } from '@grafana/ui'
 import { BasicData, QueryEditorFormRow, RowConfig } from './components/QueryEditorFormRow'
 import _ from 'lodash'
 import * as querierJs from 'metaflow-sdk-js'
@@ -37,11 +37,26 @@ type MetricOptsItem = LabelItem & {
   sideType: 'from' | 'to'
   type?: string | number
   is_agg?: boolean
+  whereOnly?: boolean
 }
 
 export type MetricOpts = MetricOptsItem[]
 
+const formatAsOpts: SelectOpts = [
+  {
+    label: 'Time series',
+    value: 'timeSeries'
+  },
+  {
+    label: 'Table',
+    value: 'table'
+  }
+]
 const intervalOpts: SelectOpts = [
+  {
+    label: '$__interval',
+    value: '$__interval_ms'
+  },
   {
     label: '1s',
     value: '1'
@@ -153,7 +168,8 @@ export type QueryDataType = {
   interval: string
   limit: string
   offset: string
-  resultGroupBy: boolean
+  formatAs: 'timeSeries' | 'table' | ''
+  alias: string
 }
 
 const defaultFormDB: Pick<QueryDataType, 'db' | 'sources'> = {
@@ -164,7 +180,7 @@ const defaultFormData: Omit<QueryDataType, 'appType' | 'db' | 'sources'> = {
   from: '',
   select: [
     {
-      type: 'tag',
+      type: 'metric',
       key: '',
       func: '',
       op: '',
@@ -226,11 +242,15 @@ const defaultFormData: Omit<QueryDataType, 'appType' | 'db' | 'sources'> = {
   interval: '',
   limit: '100',
   offset: '',
-  resultGroupBy: true
+  formatAs: 'timeSeries',
+  alias: ''
 }
 
 // 不支持做分组的 tag: 负载均衡监听器, ingress
 const GROUP_BY_DISABLE_TAGS = ['lb_listener', 'pod_ingress']
+
+const SERVICE_MAP_SUPPORT_DB = ['flow_log', 'flow_metrics']
+const SERVICE_MAP_SUPPORT_TABLE = ['l4_flow_log', 'l7_flow_log', 'vtap_flow_edge_port', 'vtap_app_edge_port']
 
 export type QueryDataKeys = keyof QueryDataType
 export class QueryEditor extends PureComponent<Props> {
@@ -255,7 +275,8 @@ export class QueryEditor extends PureComponent<Props> {
     interval: string
     limit: string
     offset: string
-    resultGroupBy: boolean
+    formatAs: 'timeSeries' | 'table' | ''
+    alias: string
     errorMsg: string
     showErrorAlert: boolean
     gotBasicData: boolean
@@ -300,16 +321,16 @@ export class QueryEditor extends PureComponent<Props> {
       subFuncOpts: [],
       appTypeOpts: [
         {
-          label: '应用追踪',
-          value: 'appTracing'
-        },
-        {
-          label: '流量查询',
+          label: 'General Metrics',
           value: 'trafficQuery'
         },
         {
-          label: '访问关系',
+          label: 'Service Map',
           value: 'accessRelationship'
+        },
+        {
+          label: 'Distributed Tracing',
+          value: 'appTracing'
         }
       ],
       appType: '',
@@ -401,26 +422,40 @@ export class QueryEditor extends PureComponent<Props> {
 
   get databaseOptsAfterFilter(): SelectOpts {
     const { appType, databaseOpts } = this.state
-    return appType === 'appTracing'
-      ? [
+    switch (appType) {
+      case 'appTracing':
+        return [
           {
             label: 'flow_log',
             value: 'flow_log'
           }
         ]
-      : databaseOpts
+      case 'accessRelationship':
+        return databaseOpts.filter(e => {
+          return SERVICE_MAP_SUPPORT_DB.includes(e.value as string)
+        })
+      default:
+        return databaseOpts
+    }
   }
 
   get tableOptsAfterFilter(): SelectOpts {
     const { appType, tableOpts } = this.state
-    return appType === 'appTracing'
-      ? [
+    switch (appType) {
+      case 'appTracing':
+        return [
           {
             label: 'l7_flow_log',
             value: 'l7_flow_log'
           }
         ]
-      : tableOpts
+      case 'accessRelationship':
+        return tableOpts.filter(e => {
+          return SERVICE_MAP_SUPPORT_TABLE.includes(e.value as string)
+        })
+      default:
+        return tableOpts
+    }
   }
 
   get dataSourcesTypeOpts(): SelectOpts | null {
@@ -432,7 +467,8 @@ export class QueryEditor extends PureComponent<Props> {
       ? dataSources.map(e => {
           return {
             label: e,
-            value: e
+            value: e,
+            description: 'data interval'
           }
         })
       : null
@@ -542,7 +578,7 @@ export class QueryEditor extends PureComponent<Props> {
           ? newSelect
           : [
               {
-                type: 'tag',
+                type: 'metric',
                 key: '',
                 func: '',
                 op: '',
@@ -626,12 +662,10 @@ export class QueryEditor extends PureComponent<Props> {
           groupBy: [
             {
               ...defaultFormData.groupBy[0],
-              sideType: 'from',
               uuid: uuid()
             },
             {
               ...defaultFormData.groupBy[0],
-              sideType: 'to',
               uuid: uuid()
             }
           ],
@@ -642,7 +676,7 @@ export class QueryEditor extends PureComponent<Props> {
               uuid: uuid()
             }
           ],
-          resultGroupBy: false
+          formatAs: ''
         }
       : {}
   }
@@ -672,7 +706,7 @@ export class QueryEditor extends PureComponent<Props> {
       const _result = state[target]
       const result: any[] = JSON.parse(JSON.stringify(_result))
       if (type === 'add') {
-        const { type, sideType } = result[index]
+        const { type } = result[index]
         result.splice(index + 1, 0, {
           type,
           key: '',
@@ -687,12 +721,7 @@ export class QueryEditor extends PureComponent<Props> {
             : {}),
           params: [],
           uuid: uuid(),
-          subFuncs: [],
-          ...(sideType
-            ? {
-                sideType
-              }
-            : {})
+          subFuncs: []
         })
       } else {
         result.splice(index, 1)
@@ -705,9 +734,9 @@ export class QueryEditor extends PureComponent<Props> {
     })
   }
 
-  onFieldChange = (field: string, val: LabelItem | boolean) => {
+  onFieldChange = (field: string, val: LabelItem | boolean | string) => {
     let result
-    if (field === 'sort') {
+    if (typeof val === 'string') {
       result = val
     } else if (typeof val === 'boolean') {
       result = val
@@ -731,30 +760,23 @@ export class QueryEditor extends PureComponent<Props> {
         newState = {
           ...newState,
           ...dbFrom,
-          resultGroupBy: false,
+          formatAs: '',
           where: [
             {
               type: 'tag',
               key: 'tap_port_type',
               func: '',
-              op: '=',
-              val: {
-                label: 'eBPF',
-                value: 7
-              },
-              as: '',
-              params: [],
-              uuid: uuid()
-            },
-            {
-              type: 'tag',
-              key: 'tap_port_type',
-              func: '',
-              op: '=',
-              val: {
-                label: 'OTel',
-                value: 8
-              },
+              op: 'IN',
+              val: [
+                {
+                  label: 'eBPF',
+                  value: 7
+                },
+                {
+                  label: 'OTel',
+                  value: 8
+                }
+              ],
               as: '',
               params: [],
               uuid: uuid()
@@ -806,7 +828,7 @@ export class QueryEditor extends PureComponent<Props> {
             }
           : {})
       })
-    } else if (field === 'resultGroupBy') {
+    } else if (field === 'timeSeries') {
       this.setState({
         [field]: val
       })
@@ -819,18 +841,21 @@ export class QueryEditor extends PureComponent<Props> {
 
   getTemplateVariables() {
     const templateSrv = getTemplateSrv()
-    this.setState({
-      templateVariableOpts: templateSrv
-        .getVariables()
-        .map((item: VariableModel) => {
-          return {
-            label: `$${item.name}`,
-            value: item.name,
-            isVariable: true
-          }
-        })
-        .flat(Infinity)
-    })
+    const variables = templateSrv.getVariables()
+    if (Array.isArray(variables)) {
+      this.setState({
+        templateVariableOpts: templateSrv
+          .getVariables()
+          .map((item: VariableModel) => {
+            return {
+              label: `$${item.name}`,
+              value: item.name,
+              isVariable: true
+            }
+          })
+          .flat(Infinity)
+      })
+    }
   }
 
   componentDidMount() {
@@ -930,7 +955,7 @@ export class QueryEditor extends PureComponent<Props> {
         })
         .map((item: any) => {
           return {
-            label: `${item.display_name}(${item.name})`,
+            label: `${item.name} (${item.display_name})`,
             value: item.name,
             type: item.type,
             is_agg: item.is_agg,
@@ -951,17 +976,28 @@ export class QueryEditor extends PureComponent<Props> {
           const operatorOpts = formatTagOperators(item.operators)
           if (name === client_name && name === server_name) {
             return {
-              label: item.display_name === item.name ? `${item.name}` : `${item.display_name}(${item.name})`,
+              label: item.display_name === item.name ? `${item.name}` : `${item.name} (${item.display_name})`,
               value: item.name,
               type: item.type,
               operatorOpts
             }
           }
           return [
+            ...((item.type === 'resource' || item.type === 'ip') && (item.client_name || item.server_name)
+              ? [
+                  {
+                    label: `${item.name} (${item.display_name})`,
+                    value: item.name,
+                    type: item.type,
+                    whereOnly: true,
+                    operatorOpts
+                  }
+                ]
+              : []),
             ...(item.client_name
               ? [
                   {
-                    label: `${item.display_name}-客户端(${item.client_name})`,
+                    label: `${item.client_name} (${item.display_name}-客户端)`,
                     value: item.client_name,
                     type: item.type,
                     sideType: 'from',
@@ -972,7 +1008,7 @@ export class QueryEditor extends PureComponent<Props> {
             ...(item.server_name
               ? [
                   {
-                    label: `${item.display_name}-服务端(${item.server_name})`,
+                    label: `${item.server_name} (${item.display_name}-服务端)`,
                     value: item.server_name,
                     type: item.type,
                     sideType: 'to',
@@ -1010,14 +1046,15 @@ export class QueryEditor extends PureComponent<Props> {
   }
 
   getRemoveBtnDisabled(parent: BasicDataWithId[], current: BasicDataWithId, targetKey?: string) {
-    return (
-      parent.length <= 1 ||
-      (targetKey === 'groupBy' &&
-        this.usingAccessRelationshipType &&
-        parent.filter(parentItem => {
-          return parentItem.sideType === current.sideType
-        }).length <= 1)
-    )
+    return parent.length <= 1
+    // return (
+    //   parent.length <= 1 ||
+    //   (targetKey === 'groupBy' &&
+    //     this.usingAccessRelationshipType &&
+    //     parent.filter(parentItem => {
+    //       return parentItem.sideType === current.sideType
+    //     }).length <= 1)
+    // )
   }
 
   showSideType(parent: BasicDataWithId[], current: BasicDataWithId, targetKey?: string) {
@@ -1059,48 +1096,55 @@ export class QueryEditor extends PureComponent<Props> {
         {() => (
           <>
             {showErrorAlert ? <Alert title={errorMsg} severity="error" onRemove={this.onAlertRemove} /> : null}
-            <InlineField className="custom-label" label="APP TYPE" labelWidth={10}>
-              <Select
-                options={appTypeOpts}
-                value={this.state.appType}
-                onChange={(val: any) => this.onFieldChange('appType', val)}
-                placeholder="APP TYPE"
-              />
+            <InlineField className="custom-label" label="APP" labelWidth={10}>
+              <div>
+                <Select
+                  options={appTypeOpts}
+                  value={this.state.appType}
+                  onChange={(val: any) => this.onFieldChange('appType', val)}
+                  placeholder="APP TYPE"
+                  width={22}
+                />
+              </div>
             </InlineField>
             <InlineField className="custom-label" label="DATABASE" labelWidth={10}>
-              <Select
-                options={this.databaseOptsAfterFilter}
-                value={this.state.db}
-                onChange={(val: any) => this.onFieldChange('db', val)}
-                placeholder="DATABASE"
-                key={this.state.db ? 'dbWithVal' : 'dbWithoutVal'}
-              />
-            </InlineField>
-            <InlineField className="custom-label" label="FROM" labelWidth={10}>
-              <Select
-                options={this.tableOptsAfterFilter}
-                value={this.state.from}
-                onChange={(val: any) => {
-                  this.setSourcesChange(val)
-                  this.onFieldChange('from', val)
-                }}
-                placeholder="TABLE"
-                key={this.state.from ? 'fromWithVal' : 'fromWithoutVal'}
-              />
-            </InlineField>
-            {this.dataSourcesTypeOpts ? (
-              <InlineField className="custom-label" label="SOURCES" labelWidth={10}>
+              <div className="row-start-center">
                 <Select
-                  options={this.dataSourcesTypeOpts}
-                  value={this.state.sources}
-                  onChange={(val: any) => this.onFieldChange('sources', val)}
-                  placeholder="DATA SOURCES"
-                  key={this.state.sources ? 'sourceWithVal' : 'sourceWithoutVal'}
+                  options={this.databaseOptsAfterFilter}
+                  value={this.state.db}
+                  onChange={(val: any) => this.onFieldChange('db', val)}
+                  placeholder="DATABASE"
+                  key={this.state.db ? 'dbWithVal' : 'dbWithoutVal'}
+                  width={15}
                 />
-              </InlineField>
-            ) : null}
+                <Select
+                  options={this.tableOptsAfterFilter}
+                  value={this.state.from}
+                  onChange={(val: any) => {
+                    this.setSourcesChange(val)
+                    this.onFieldChange('from', val)
+                  }}
+                  placeholder="TABLE"
+                  key={this.state.from ? 'fromWithVal' : 'fromWithoutVal'}
+                  width={22.5}
+                />
+                {this.dataSourcesTypeOpts ? (
+                  <Select
+                    options={this.dataSourcesTypeOpts}
+                    value={this.state.sources}
+                    onChange={(val: any) => this.onFieldChange('sources', val)}
+                    placeholder="DATA_INTERVAL"
+                    key={this.state.sources ? 'sourceWithVal' : 'sourceWithoutVal'}
+                    width={14}
+                  />
+                ) : null}
+              </div>
+            </InlineField>
             {formConfig.map((conf: FormConfigItem, i: number) => {
-              return (
+              return !(
+                (conf.targetDataKey === 'groupBy' && this.usingAppTraceType) ||
+                (conf.targetDataKey === 'orderBy' && this.usingAccessRelationshipType)
+              ) ? (
                 <>
                   <InlineField className="custom-label" label={conf.label} labelWidth={conf.labelWidth} key={i}>
                     <div className="w-100-percent">
@@ -1116,18 +1160,21 @@ export class QueryEditor extends PureComponent<Props> {
                             usingGroupBy={this.usingGroupBy}
                             tagOpts={
                               conf.targetDataKey === 'select'
-                                ? this.selectTagOpts
+                                ? this.selectTagOpts.filter(tag => {
+                                    return !tag.whereOnly
+                                  })
                                 : conf.targetDataKey === 'groupBy'
                                 ? tagOpts
                                     .filter(tag => {
-                                      return tag.type !== 'map'
+                                      return tag.type !== 'map' && !tag.whereOnly
                                     })
                                     .filter((tag: MetricOptsItem) => {
-                                      const accessRelationshipAllowTagTypes = ['resource', 'ip']
-                                      const extra = this.usingAccessRelationshipType
-                                        ? accessRelationshipAllowTagTypes.includes(tag.type as string) &&
-                                          tag?.sideType === item!.sideType
-                                        : true
+                                      // const accessRelationshipAllowTagTypes = ['resource', 'ip']
+                                      // const extra = this.usingAccessRelationshipType
+                                      //   ? accessRelationshipAllowTagTypes.includes(tag.type as string) &&
+                                      //     tag?.sideType === item!.sideType
+                                      //   : true
+                                      const extra = true
                                       return (
                                         !GROUP_BY_DISABLE_TAGS.find((val: string) => {
                                           return (tag.value as string).includes(val)
@@ -1183,7 +1230,7 @@ export class QueryEditor extends PureComponent<Props> {
                     <InlineField className="custom-label" label="INTERVAL" labelWidth={10}>
                       <div className="w-100-percent">
                         <Select
-                          key={this.state.interval ? '' : uuid()}
+                          key={this.state.interval ? 'intervalWithVal' : 'intervalWithoutVal'}
                           options={intervalOpts}
                           value={this.state.interval}
                           onChange={(val: any) => this.onFieldChange('interval', val)}
@@ -1196,39 +1243,56 @@ export class QueryEditor extends PureComponent<Props> {
                     </InlineField>
                   ) : null}
                 </>
-              )
+              ) : null
             })}
-            <InlineField className="custom-label" label="LIMIT" labelWidth={10}>
-              <div className="w-100-percent">
-                <Input
-                  value={this.state.limit}
-                  onChange={(ev: any) => this.onFieldChange('limit', ev.target)}
-                  placeholder="LIMIT"
-                />
-              </div>
-            </InlineField>
-            <InlineField className="custom-label" label="OFFSET" labelWidth={10}>
-              <div className="w-100-percent">
-                <Input
-                  value={this.state.offset}
-                  onChange={(ev: any) => this.onFieldChange('offset', ev.target)}
-                  placeholder="OFFSET"
-                  disabled={!this.state.limit}
-                />
-              </div>
-            </InlineField>
-            {this.usingGroupBy && !this.usingAccessRelationshipType ? (
-              <InlineField className="custom-label" label="AUTO AGG" labelWidth={10}>
-                <div className="w-100-percent h32 row-start-center">
-                  <Switch
-                    value={this.state.resultGroupBy}
-                    onChange={(ev: any) => this.onFieldChange('resultGroupBy', ev.target.checked)}
+            <div className="row-start-center">
+              <InlineField className="custom-label" label="LIMIT" labelWidth={6}>
+                <div className="w-100-percent">
+                  <Input
+                    value={this.state.limit}
+                    onChange={(ev: any) => this.onFieldChange('limit', ev.target)}
+                    placeholder="LIMIT"
+                    width={6}
                   />
                 </div>
               </InlineField>
+              <InlineField className="custom-label" label="OFFSET" labelWidth={8}>
+                <div className="w-100-percent">
+                  <Input
+                    value={this.state.offset}
+                    onChange={(ev: any) => this.onFieldChange('offset', ev.target)}
+                    placeholder="OFFSET"
+                    disabled={!this.state.limit}
+                    width={9}
+                  />
+                </div>
+              </InlineField>
+            </div>
+            {this.usingGroupBy && !this.usingAccessRelationshipType ? (
+              <div className="row-start-center">
+                <InlineField className="custom-label" label="FORMAT AS" labelWidth={11}>
+                  <Select
+                    options={formatAsOpts}
+                    value={this.state.formatAs}
+                    onChange={(val: any) => this.onFieldChange('formatAs', val)}
+                    placeholder="FORMAT_AS"
+                    key={this.state.formatAs ? 'formatAsWithVal' : 'formatAsWithoutVal'}
+                  />
+                </InlineField>
+                {this.state.formatAs === 'timeSeries' ? (
+                  <InlineField className="custom-label" label="ALIAS" labelWidth={6}>
+                    <Input
+                      value={this.state.alias}
+                      onChange={(ev: any) => this.onFieldChange('alias', ev.target)}
+                      placeholder="${tag0} ${metric0}"
+                      width={60}
+                    />
+                  </InlineField>
+                ) : null}
+              </div>
             ) : null}
             <Button type="submit" className="save-btn">
-              SUBMIT
+              Run Query
             </Button>
           </>
         )}

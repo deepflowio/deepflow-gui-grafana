@@ -104,7 +104,7 @@
 .semi-table-thead > .semi-table-row > .semi-table-row-head,
 .semi-table-tbody > .semi-table-row > .semi-table-row-cell,
 .semi-table-small .semi-table-tbody > .semi-table-row > .semi-table-row-cell {
-  padding-top: 4px;
+  padding-top: 6px;
   padding-bottom: 4px;
   padding-left: 6px;
   padding-right: 6px;
@@ -148,3 +148,8 @@
   flex: 1;
   word-break: break-all;
 }
+
+.generic-font {
+  font-family: Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
+}
+

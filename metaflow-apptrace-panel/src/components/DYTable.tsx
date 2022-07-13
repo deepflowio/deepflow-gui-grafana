@@ -81,6 +81,7 @@ export function DYTable({
           ...(index === 0
             ? {
                 width: e.width + widthDiffer - BORDER_WIDTH - TABLE_SCORLL_BAR_WIDTH
+                // width: undefined
               }
             : {})
         }
@@ -131,6 +132,7 @@ export function DYTable({
         virtualized={{ itemSize: TD_HEIGHT }}
         loading={loading || false}
         empty="No Data"
+        className="generic-font"
       />
     </div>
   )
