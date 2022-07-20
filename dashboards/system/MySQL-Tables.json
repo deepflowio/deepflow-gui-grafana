@@ -32,7 +32,7 @@
     {
       "datasource": {
         "type": "mysql",
-        "uid": "MetaFlow MySQL"
+        "uid": "DeepFlow MySQL"
       },
       "fieldConfig": {
         "defaults": {
@@ -83,7 +83,7 @@
         {
           "datasource": {
             "type": "mysql",
-            "uid": "MetaFlow MySQL"
+            "uid": "DeepFlow MySQL"
           },
           "format": "table",
           "group": [],
@@ -130,7 +130,7 @@
         },
         "datasource": {
           "type": "mysql",
-          "uid": "MetaFlow MySQL"
+          "uid": "DeepFlow MySQL"
         },
         "definition": "show tables",
         "hide": 0,
