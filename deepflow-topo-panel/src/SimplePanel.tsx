@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react'
-import { PanelProps } from '@grafana/data'
+import { DataSourceInstanceSettings, PanelProps } from '@grafana/data'
 import { SimpleOptions } from 'types'
 import './SimplePanel.css'
 import _ from 'lodash'
@@ -69,7 +69,12 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     { returnMetrics: any[]; returnTags: any[]; from: string[]; to: string[]; common: string[] } | undefined
   >(undefined)
   const getConfigByRefId = useCallback(async () => {
-    const deepFlow = await getDataSourceSrv().get('DeepFlow')
+    const deepFlowName = await getDataSourceSrv()
+      .getList()
+      .find((dataSource: DataSourceInstanceSettings) => {
+        return dataSource.type === 'deepflow-querier-datasource'
+      })?.name
+    const deepFlow = await getDataSourceSrv().get(deepFlowName)
     const refId = refIds[targetIndex].label
     const result = deepFlow
       ? // @ts-ignore

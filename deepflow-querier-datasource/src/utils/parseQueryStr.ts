@@ -244,7 +244,6 @@ function whereFormat(data: any) {
   const validKeys = ['type', 'key', 'func', 'op', 'val', 'params', 'subFuncs', 'whereOnly'] as const
   const templateSrv = getTemplateSrv()
   const variables = templateSrv.getVariables() as any[]
-
   const result = fullData
     .filter((item: BasicData) => {
       return item.key
@@ -279,8 +278,13 @@ function whereFormat(data: any) {
             })
       }
     })
-  const _result: any[] = []
+  const _tags: any[] = []
+  const _metrics: any[] = []
   result.forEach((e: any) => {
+    if (e.type === 'metric') {
+      _metrics.push(e)
+      return
+    }
     if (e.whereOnly) {
       const tagNames = ['_0', '_1'].map(clientName => {
         return `${e.key}${clientName}`
@@ -306,19 +310,19 @@ function whereFormat(data: any) {
           })
           .flat(Infinity)
       }
-      _result.push(obj)
+      _tags.push(obj)
     } else if (e.op.toUpperCase().includes('LIKE')) {
       e.val.forEach((val: any) => {
-        _result.push({
+        _tags.push({
           ...e,
           val
         })
       })
     } else {
-      _result.push(e)
+      _tags.push(e)
     }
   })
-  return _result
+  return jointOrAnd(_tags).concat(_metrics)
 }
 
 function groupByFormat(data: any) {
@@ -403,7 +407,7 @@ function queryTextFormat(queryData: any) {
         {
           id: '0',
           isForbidden: false,
-          condition: jointOrAnd(whereFormat(data))
+          condition: whereFormat(data)
         }
       ]
     },

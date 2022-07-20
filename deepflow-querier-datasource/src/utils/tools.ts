@@ -63,18 +63,26 @@ const TAG_OPERATORS_MAP = {
   }
 } as const
 
-export function formatTagOperators(operators: string[]) {
+export function formatTagOperators(operators: string[], item: any) {
   let operatorOpts: any[] = []
-  operators.forEach(op => {
-    const mapItem = _.get(TAG_OPERATORS_MAP, op)
-    if (mapItem) {
-      operatorOpts[mapItem.sort] = {
-        label: `${mapItem.display_name}`,
-        value: op,
-        description: mapItem.description
+  operators
+    .filter(op => {
+      const isStringType = item.type === 'string'
+      if (isStringType) {
+        return !['=', '!=', 'IN', 'NOT IN'].includes(op)
       }
-    }
-  })
+      return true
+    })
+    .forEach(op => {
+      const mapItem = _.get(TAG_OPERATORS_MAP, op)
+      if (mapItem) {
+        operatorOpts[mapItem.sort] = {
+          label: `${mapItem.display_name}`,
+          value: op,
+          description: mapItem.description
+        }
+      }
+    })
   return operatorOpts.filter(e => e !== undefined)
 }
 

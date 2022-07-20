@@ -1,5 +1,5 @@
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react'
-import { Field, PanelProps, Vector } from '@grafana/data'
+import { DataSourceInstanceSettings, Field, PanelProps, Vector } from '@grafana/data'
 import { SimpleOptions } from 'types'
 import { DYTable } from 'components/DYTable'
 import './SimplePanel.css'
@@ -121,15 +121,20 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
 
   const [startTableLoading, setStartTableLoading] = useState(false)
   const onActive = useCallback(async (item: any) => {
-    const deepflow = await getDataSourceSrv().get('DeepFlow')
-    if (!deepflow) {
+    const deepFlowName = await getDataSourceSrv()
+      .getList()
+      .find((dataSource: DataSourceInstanceSettings) => {
+        return dataSource.type === 'deepflow-querier-datasource'
+      })?.name
+    const deepFlow = await getDataSourceSrv().get(deepFlowName)
+    if (!deepFlow) {
       return
     }
     try {
       setStartTableLoading(true)
       const { _id } = item
       // @ts-ignore
-      const result = await deepflow.getFlameData({ _id })
+      const result = await deepFlow.getFlameData({ _id })
       const { services, tracing, detailList } = result
       setSelectedServiceRowId('')
       setDetailFilteIds([])
