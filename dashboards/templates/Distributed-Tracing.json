@@ -24,8 +24,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 40,
-  "iteration": 1657880942856,
+  "id": 57,
+  "iteration": 1658287457115,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -45,7 +45,7 @@
         "content": "[English doc](https://deepflow.yunshan.net/metaflow-docs/auto-tracing/tracing-without-instrumentation/?from=metaflow_grafana) | [中文文档](https://deepflow.yunshan.net/metaflow-docs/zh/auto-tracing/tracing-without-instrumentation/?from=metaflow_grafana) \n",
         "mode": "markdown"
       },
-      "pluginVersion": "9.0.1",
+      "pluginVersion": "9.0.3",
       "title": "Help doc",
       "type": "text"
     },
@@ -125,7 +125,7 @@
       "type": "metaflow-apptracing-panel"
     }
   ],
-  "schemaVersion": 36,
+  "schemaVersion": 37,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -317,6 +317,6 @@
   "timezone": "",
   "title": "Distributed Tracing",
   "uid": "Distributed_Tracing",
-  "version": 22,
+  "version": 2,
   "weekStart": ""
 }

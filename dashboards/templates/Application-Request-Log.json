@@ -25,7 +25,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": 58,
-  "iteration": 1658211186090,
+  "iteration": 1658286650716,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -45,7 +45,7 @@
         "content": "[English doc](https://deepflow.yunshan.net/metaflow-docs/auto-metrics/request-log/?from_metaflow_grafana) | [中文文档](https://deepflow.yunshan.net/metaflow-docs/zh/auto-metrics/request-log/?from_metaflow_grafana) \n",
         "mode": "markdown"
       },
-      "pluginVersion": "9.0.2",
+      "pluginVersion": "9.0.3",
       "title": "Help doc",
       "type": "text"
     },
@@ -536,7 +536,7 @@
           }
         ]
       },
-      "pluginVersion": "9.0.2",
+      "pluginVersion": "9.0.3",
       "targets": [
         {
           "datasource": {
@@ -589,7 +589,7 @@
     }
   ],
   "refresh": "",
-  "schemaVersion": 36,
+  "schemaVersion": 37,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -682,9 +682,13 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "selected": true,
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
         },
         "datasource": {
           "type": "metaflow-querier-datasource",
@@ -814,6 +818,6 @@
   "timezone": "",
   "title": "Application - Request Log",
   "uid": "Application_Request_Log",
-  "version": 6,
+  "version": 8,
   "weekStart": ""
 }

@@ -24,8 +24,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 47,
-  "iteration": 1657882677754,
+  "id": 59,
+  "iteration": 1658285357120,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -45,7 +45,7 @@
         "content": "[English doc](https://deepflow.yunshan.net/metaflow-docs/auto-metrics/application-metrics/?from=metaflow_grafana) | [中文文档](https://deepflow.yunshan.net/metaflow-docs/zh/auto-metrics/application-metrics/?from=metaflow_grafana) ",
         "mode": "markdown"
       },
-      "pluginVersion": "9.0.1",
+      "pluginVersion": "9.0.3",
       "title": "Help doc",
       "type": "text"
     },
@@ -561,7 +561,7 @@
           }
         ]
       },
-      "pluginVersion": "9.0.1",
+      "pluginVersion": "9.0.3",
       "targets": [
         {
           "datasource": {
@@ -613,7 +613,7 @@
     }
   ],
   "refresh": "",
-  "schemaVersion": 36,
+  "schemaVersion": 37,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -680,7 +680,7 @@
       },
       {
         "current": {
-          "selected": true,
+          "selected": false,
           "text": [
             "All"
           ],
@@ -748,6 +748,6 @@
   "timezone": "",
   "title": "Application - K8s Pod",
   "uid": "Application_K8s_Pod",
-  "version": 28,
+  "version": 11,
   "weekStart": ""
 }
