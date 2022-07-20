@@ -1284,7 +1284,7 @@ export class QueryEditor extends PureComponent<Props> {
                     <Input
                       value={this.state.alias}
                       onChange={(ev: any) => this.onFieldChange('alias', ev.target)}
-                      placeholder="${tag0} ${metric0}"
+                      placeholder="${tag0} ${tag1}"
                       width={60}
                     />
                   </InlineField>

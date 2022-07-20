@@ -178,6 +178,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           item = _.sortBy(item, [timeTypeKey])
           const first = item[0]
           const aliasName = getMetricFieldNameByAlias(queryData.alias, first)
+          const keyPrefix = aliasName || groupByKey
 
           const frame = new MutableDataFrame({
             refId: target.refId,
@@ -197,7 +198,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                   }
                 }
                 return {
-                  name: aliasName ? aliasName : `${groupByKey}${groupByKey ? '-' : ''}${key}`,
+                  name: `${keyPrefix}${keyPrefix ? '-' : ''}${key}`,
                   type: type
                 }
               })
@@ -206,7 +207,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           item.forEach((e, i) => {
             _.forIn(e, (val, key) => {
               if (returnMetricNames.includes(key)) {
-                const keyName = aliasName ? aliasName : `${groupByKey}${groupByKey ? '-' : ''}${key}`
+                const keyName = `${keyPrefix}${keyPrefix ? '-' : ''}${key}`
                 e[keyName] = val
               }
             })
