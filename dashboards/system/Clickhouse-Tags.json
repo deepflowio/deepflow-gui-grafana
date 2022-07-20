@@ -32,7 +32,7 @@
       {
         "datasource": {
           "type": "grafana-clickhouse-datasource",
-          "uid": "MetaFlow ClickHouse"
+          "uid": "DeepFlow ClickHouse"
         },
         "fieldConfig": {
           "defaults": {
@@ -95,7 +95,7 @@
             },
             "datasource": {
               "type": "grafana-clickhouse-datasource",
-              "uid": "MetaFlow ClickHouse"
+              "uid": "DeepFlow ClickHouse"
             },
             "format": 1,
             "queryType": "builder",
@@ -122,7 +122,7 @@
           },
           "datasource": {
             "type": "grafana-clickhouse-datasource",
-            "uid": "MetaFlow ClickHouse"
+            "uid": "DeepFlow ClickHouse"
           },
           "definition": "show tables from flow_tag",
           "hide": 0,
