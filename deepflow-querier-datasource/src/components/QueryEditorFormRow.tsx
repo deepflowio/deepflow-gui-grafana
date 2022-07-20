@@ -148,7 +148,7 @@ const BasicSelectAsync = (props: {
         : [])
     ].concat(templateVariableOpts)
   )
-  return gotBasicData ? (
+  return gotBasicData && props.currentTagType !== '' && typeof useInput === 'boolean' ? (
     props.currentTagType === 'bool' ? (
       <Select
         options={boolOpts}

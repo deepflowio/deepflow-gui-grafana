@@ -505,6 +505,16 @@ export class QueryEditor extends PureComponent<Props> {
         .map((item: any) => {
           return item.key
         })
+      const hasMetrciWithEmptyFuncParam = [
+        ...(select as BasicDataWithId[]),
+        ...(having as BasicDataWithId[]),
+        ...(orderBy as BasicDataWithId[])
+      ].find(e => {
+        return e.type === 'metric' && e.key && e.params?.length && e.params.join('') === ''
+      })
+      if (hasMetrciWithEmptyFuncParam) {
+        throw new Error('Params is required')
+      }
       if (appType === 'accessRelationship') {
         if (!groupBy!.find(e => e.sideType === 'from') || !groupBy!.find(e => e.sideType === 'to')) {
           throw new Error('When using accessRelationship, need to set from and to in GROUP BY')
@@ -525,26 +535,15 @@ export class QueryEditor extends PureComponent<Props> {
           return item.type === 'metric' && item.key !== '' && item.func === ''
         })
         if (funcCheck) {
-          throw new Error('group by 时, metric 需要设置 func')
+          throw new Error("When using group by or interval, metric's func is required")
         }
       }
       const valMetrics = (where as BasicDataWithId[]).concat(having as BasicDataWithId[])
       const valCheck = valMetrics.find((item: BasicDataWithId) => {
-        return item.type === 'metric' && item.key !== '' && (item.op === '' || item.val === '')
+        return item.key !== '' && (item.op === '' || item.val === '')
       })
       if (valCheck) {
-        throw new Error('where 和 having 内 需要设置 op 及 val')
-      }
-
-      const hasNoOpOrVal = (where as BasicDataWithId[])
-        .filter((item: any) => {
-          return item.key
-        })
-        .some((item: any) => {
-          return !item.op || !item.val
-        })
-      if (hasNoOpOrVal) {
-        throw new Error('where 中 缺少 operator 或 value')
+        throw new Error('When using where or having, op and val is required')
       }
       this.props.onChange({
         ...this.props.query,
@@ -973,7 +972,7 @@ export class QueryEditor extends PureComponent<Props> {
       const tagOpts = tags
         .map((item: any) => {
           const { name, client_name, server_name } = item
-          const operatorOpts = formatTagOperators(item.operators)
+          const operatorOpts = formatTagOperators(item.operators, item)
           if (name === client_name && name === server_name) {
             return {
               label: item.display_name === item.name ? `${item.name}` : `${item.name} (${item.display_name})`,
@@ -1284,7 +1283,7 @@ export class QueryEditor extends PureComponent<Props> {
                     <Input
                       value={this.state.alias}
                       onChange={(ev: any) => this.onFieldChange('alias', ev.target)}
-                      placeholder="${tag0} ${metric0}"
+                      placeholder="${tag0} ${tag1}"
                       width={60}
                     />
                   </InlineField>

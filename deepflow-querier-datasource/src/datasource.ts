@@ -135,16 +135,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           ...(queryData.appType === 'accessRelationship' ? getAccessRelationshipeQueryConfig(queryData.groupBy) : {})
         }
 
-        let timeTypeKey: string
-        response.forEach((item: any) => {
-          Object.keys(item).forEach((key: any) => {
-            if (key.includes('time') && typeof item[key] === 'number') {
-              timeTypeKey = key
-              item[key] = item[key] * 1000
-            }
-          })
-        })
-
         const keys = Object.keys(response[0]).filter((key: string) => !key.includes('_id'))
         const tagKeys: string[] = []
         const timeKeys: string[] = []
@@ -152,13 +142,23 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
         keys.forEach((key: string) => {
           const isMetric = returnMetricNames.includes(key)
-          if (key.includes('time')) {
-            timeKeys.push(key)
-          } else if (isMetric) {
+          if (isMetric) {
             metricKeys.push(key)
+          } else if (key.includes('time')) {
+            timeKeys.push(key)
           } else {
             tagKeys.push(key)
           }
+        })
+
+        let timeTypeKey: string
+        response.forEach((item: any) => {
+          Object.keys(item).forEach((key: any) => {
+            if (timeKeys.includes(key) && typeof item[key] === 'number') {
+              timeTypeKey = key
+              item[key] = item[key] * 1000
+            }
+          })
         })
         const usingGroupBy = sql.includes('group by') && queryData.formatAs === 'timeSeries'
 
@@ -178,13 +178,14 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           item = _.sortBy(item, [timeTypeKey])
           const first = item[0]
           const aliasName = getMetricFieldNameByAlias(queryData.alias, first)
+          const keyPrefix = aliasName || groupByKey
 
           const frame = new MutableDataFrame({
             refId: target.refId,
             fields: [
               ...Object.keys(first).map((key: string) => {
                 let type
-                if (key.includes('time') && typeof first[key] === 'number') {
+                if (timeKeys.includes(key) && typeof first[key] === 'number') {
                   type = FieldType.time
                 } else {
                   type = returnMetricNames.includes(key) ? FieldType.number : FieldType.string
@@ -197,7 +198,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                   }
                 }
                 return {
-                  name: aliasName ? aliasName : `${groupByKey}${groupByKey ? '-' : ''}${key}`,
+                  name: `${keyPrefix}${keyPrefix ? '-' : ''}${key}`,
                   type: type
                 }
               })
@@ -206,7 +207,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           item.forEach((e, i) => {
             _.forIn(e, (val, key) => {
               if (returnMetricNames.includes(key)) {
-                const keyName = aliasName ? aliasName : `${groupByKey}${groupByKey ? '-' : ''}${key}`
+                const keyName = `${keyPrefix}${keyPrefix ? '-' : ''}${key}`
                 e[keyName] = val
               }
             })
