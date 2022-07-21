@@ -24,8 +24,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 40,
-  "iteration": 1657880942856,
+  "id": 57,
+  "iteration": 1658308554708,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -42,10 +42,10 @@
       },
       "id": 4,
       "options": {
-        "content": "[English doc](https://deepflow.yunshan.net/deepflow-docs/auto-tracing/tracing-without-instrumentation/?from=deepflow_grafana) | [中文文档](https://deepflow.yunshan.net/deepflow-docs/zh/auto-tracing/tracing-without-instrumentation/?from=deepflow_grafana) \n",
+        "content": "[English doc](https://deepflow.yunshan.net/docs/auto-tracing/tracing-without-instrumentation/?from=deepflow_grafana) | [中文文档](https://deepflow.yunshan.net/docs/zh/auto-tracing/tracing-without-instrumentation/?from=deepflow_grafana) \n",
         "mode": "markdown"
       },
-      "pluginVersion": "9.0.1",
+      "pluginVersion": "9.0.3",
       "title": "Help doc",
       "type": "text"
     },
@@ -317,6 +317,6 @@
   "timezone": "",
   "title": "Distributed Tracing",
   "uid": "Distributed_Tracing",
-  "version": 22,
+  "version": 2,
   "weekStart": ""
 }

@@ -10,7 +10,7 @@
         "enable": true,
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
-        "name": "Annotations & Alerts",
+        "name": "Annotations &Alerts",
         "target": {
           "limit": 100,
           "matchAny": false,
@@ -24,8 +24,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 31,
-  "iteration": 1657880815168,
+  "id": 56,
+  "iteration": 1658308670369,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -42,10 +42,10 @@
       },
       "id": 14,
       "options": {
-        "content": "[English doc](https://deepflow.yunshan.net/deepflow-docs/auto-metrics/flow-log/?from_deepflow_grafana) | [中文文档](https://deepflow.yunshan.net/deepflow-docs/zh/auto-metrics/flow-log/?from_deepflow_grafana) \r\n",
+        "content": "[English doc](https://deepflow.yunshan.net/docs/auto-metrics/flow-log/?from_metaflow_grafana) | [中文文档](https://deepflow.yunshan.net/docs/zh/auto-metrics/flow-log/?from_metaflow_grafana) \r\n",
         "mode": "markdown"
       },
-      "pluginVersion": "9.0.1",
+      "pluginVersion": "9.0.3",
       "title": "Help doc",
       "type": "text"
     },
@@ -705,7 +705,7 @@
           }
         ]
       },
-      "pluginVersion": "9.0.1",
+      "pluginVersion": "9.0.3",
       "targets": [
         {
           "datasource": {
@@ -893,13 +893,13 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Network - Flow Log",
   "uid": "Network_Flow_Log",
-  "version": 74,
+  "version": 3,
   "weekStart": ""
 }
