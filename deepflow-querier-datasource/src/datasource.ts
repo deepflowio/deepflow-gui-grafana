@@ -62,8 +62,11 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           })
           .toPromise()
           .then((res: any) => {
-            // return JSONbig.parse(res.data)
-            return JSON.parse(res.data)
+            return JSON.parse(
+              res.data.replace(/[+-]?\d+(\.\d+)?e[+-]\d+/g, ($1: any) => {
+                return `"${$1}"`
+              })
+            )
           })
       }
       f.cancel = () => {}
@@ -368,22 +371,34 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   }
 
   async metricFindQuery(query: MyVariableQuery, options?: any) {
-    const { database, sql } = query
-
+    const { database, sql, useDisabled, useAny } = query
     if (!database || !sql) {
       return []
     }
     // @ts-ignore
     const response = await querierJs.searchBySql(sql, database)
-
-    return Array.isArray(response)
-      ? response.map((e: any) => {
-          return {
-            value: e.value,
-            label: e.display_name,
-            text: e.display_name
-          }
-        })
-      : []
+    const extra = []
+    if (useDisabled) {
+      extra.push({
+        value: '__disabled',
+        text: 'Disabled'
+      })
+    }
+    if (useAny) {
+      extra.push({
+        value: '__any',
+        text: 'Any'
+      })
+    }
+    return extra.concat(
+      Array.isArray(response)
+        ? response.map((e: any) => {
+            return {
+              value: e.value,
+              text: e.display_name
+            }
+          })
+        : []
+    )
   }
 }

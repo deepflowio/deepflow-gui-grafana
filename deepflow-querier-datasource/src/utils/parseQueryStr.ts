@@ -221,7 +221,7 @@ function selectFormat(data: any): {
 
 function getValueByVariablesName(val: LabelItem, variables: any[], op: string) {
   const isLikeOp = op.toUpperCase().includes('LIKE')
-  const targetField = isLikeOp ? 'text' : 'value'
+  const specVariables = ['__disabled', '__any']
   const isVariable = val?.isVariable
   let result
   if (isVariable) {
@@ -229,8 +229,11 @@ function getValueByVariablesName(val: LabelItem, variables: any[], op: string) {
       return variable.name === val?.value
     })
     const currentValue = _.get(currentVariable, ['current', 'value'], '')
+    const targetField = !specVariables.includes(currentValue) && isLikeOp ? 'text' : 'value'
     if (currentValue.includes('$__all')) {
-      result = currentVariable.options.filter((e: any) => e.value !== '$__all').map((e: any) => _.get(e, [targetField]))
+      result = currentVariable.options
+        .filter((e: any) => e.value !== '$__all' && !specVariables.includes(e.value))
+        .map((e: any) => _.get(e, [targetField]))
     } else {
       result = _.get(currentVariable, ['current', targetField])
     }

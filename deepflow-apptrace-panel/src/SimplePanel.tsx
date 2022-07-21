@@ -126,6 +126,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       .find((dataSource: DataSourceInstanceSettings) => {
         return dataSource.type === 'deepflow-querier-datasource'
       })?.name
+    console.log('@deepFlowName', deepFlowName)
     const deepFlow = await getDataSourceSrv().get(deepFlowName)
     if (!deepFlow) {
       return
