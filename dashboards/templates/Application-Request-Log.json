@@ -24,8 +24,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 58,
-  "iteration": 1658211186090,
+  "id": 132,
+  "iteration": 1658370463035,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -35,25 +35,22 @@
         "uid": "DeepFlow"
       },
       "gridPos": {
-        "h": 2,
+        "h": 3,
         "w": 24,
         "x": 0,
         "y": 0
       },
       "id": 7,
       "options": {
-        "content": "[English doc](https://deepflow.yunshan.net/deepflow-docs/auto-metrics/request-log/?from_deepflow_grafana) | [中文文档](https://deepflow.yunshan.net/deepflow-docs/zh/auto-metrics/request-log/?from_deepflow_grafana) \n",
+        "content": "[English doc](https://deepflow.yunshan.net/docs/auto-metrics/request-log/?from=deepflow_grafana) | [中文文档](https://deepflow.yunshan.net/docs/zh/auto-metrics/request-log/?from=deepflow_grafana) \n",
         "mode": "markdown"
       },
-      "pluginVersion": "9.0.2",
+      "pluginVersion": "9.0.3",
       "title": "Help doc",
       "type": "text"
     },
     {
-      "datasource": {
-        "type": "deepflow-querier-datasource",
-        "uid": "DeepFlow"
-      },
+      "datasource": {},
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -102,13 +99,68 @@
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "l7_protocol"
+            },
+            "properties": [
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "options": {
+                      "0": {
+                        "index": 0,
+                        "text": "Unknow"
+                      },
+                      "1": {
+                        "index": 1,
+                        "text": "Rest"
+                      },
+                      "20": {
+                        "index": 2,
+                        "text": "HTTP"
+                      },
+                      "21": {
+                        "index": 3,
+                        "text": "HTTP2"
+                      },
+                      "40": {
+                        "index": 4,
+                        "text": "Dubbo"
+                      },
+                      "60": {
+                        "index": 5,
+                        "text": "MySQL"
+                      },
+                      "80": {
+                        "index": 6,
+                        "text": "Redis"
+                      },
+                      "100": {
+                        "index": 7,
+                        "text": "Kafka"
+                      },
+                      "120": {
+                        "index": 8,
+                        "text": "DNS"
+                      }
+                    },
+                    "type": "value"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 6,
         "w": 8,
         "x": 0,
-        "y": 2
+        "y": 3
       },
       "id": 2,
       "options": {
@@ -128,7 +180,7 @@
             "type": "deepflow-querier-datasource",
             "uid": "DeepFlow"
           },
-          "queryText": "{\"appType\":\"trafficQuery\",\"db\":\"flow_log\",\"sources\":\"\",\"from\":\"l7_flow_log\",\"select\":[{\"type\":\"metric\",\"key\":\"log_count\",\"func\":\"Sum\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"baf6fa96-e59c-f572-7486-ce275a28f4e3\",\"subFuncs\":[]}],\"where\":[{\"type\":\"tag\",\"key\":\"request_type\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"value\":\"$request_type\",\"label\":\"$request_type\"}],\"as\":\"\",\"params\":[],\"uuid\":\"0e5ed5ea-1b2b-7beb-ec92-64d44af65de7\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"request_resource\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"value\":\"$request_resource\",\"label\":\"$request_resource\"}],\"as\":\"\",\"params\":[],\"uuid\":\"baa9e9d0-babd-8e27-5255-f4967774ca18\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"pod_cluster\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$cluster\",\"value\":\"cluster\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"41004d35-a477-e1d7-40d1-1537189f3164\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"pod_ns\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$namespace\",\"value\":\"namespace\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"f2ebec22-6c8d-f681-3842-d94c34873dba\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"pod_group\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$workload\",\"value\":\"workload\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"8dd5d666-bb06-8e31-88f5-1ddd8898d2f0\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"chost\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$vm\",\"value\":\"vm\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"b76452b2-fc34-de28-a1f7-819995835d40\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"response_status\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$status\",\"value\":\"status\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"7145be3f-04f1-2e0e-da28-63950b186cb3\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"l7_protocol\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$protocol\",\"value\":\"protocol\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"0043a05c-fbe1-0888-0ab5-8616c34c8c5b\",\"subFuncs\":[],\"whereOnly\":false}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"fb7a5836-a9aa-8d6c-24c5-7ebc741939e0\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"ba1f0f84-a5ce-18d7-ea9d-fdf2a2bcbc28\"}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"9a18fb31-d9d6-2269-6e92-971a0970cde1\",\"sort\":\"asc\"}],\"interval\":\"60\",\"limit\":\"\",\"offset\":\"\",\"formatAs\":\"timeSeries\",\"alias\":\"\"}",
+          "queryText": "{\"appType\":\"trafficQuery\",\"db\":\"flow_log\",\"sources\":\"\",\"from\":\"l7_flow_log\",\"select\":[{\"type\":\"metric\",\"key\":\"log_count\",\"func\":\"Sum\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"baf6fa96-e59c-f572-7486-ce275a28f4e3\",\"subFuncs\":[]}],\"where\":[{\"type\":\"tag\",\"key\":\"request_type\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"value\":\"$request_type\",\"label\":\"$request_type\"}],\"as\":\"\",\"params\":[],\"uuid\":\"0e5ed5ea-1b2b-7beb-ec92-64d44af65de7\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"request_resource\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"value\":\"$request_resource\",\"label\":\"$request_resource\"}],\"as\":\"\",\"params\":[],\"uuid\":\"baa9e9d0-babd-8e27-5255-f4967774ca18\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"pod_cluster\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$cluster\",\"value\":\"cluster\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"41004d35-a477-e1d7-40d1-1537189f3164\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"pod_ns\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$namespace\",\"value\":\"namespace\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"f2ebec22-6c8d-f681-3842-d94c34873dba\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"pod_group\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$workload\",\"value\":\"workload\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"8dd5d666-bb06-8e31-88f5-1ddd8898d2f0\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"chost\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$vm\",\"value\":\"vm\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"b76452b2-fc34-de28-a1f7-819995835d40\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"response_status\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$status\",\"value\":\"status\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"7145be3f-04f1-2e0e-da28-63950b186cb3\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"l7_protocol\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$protocol\",\"value\":\"protocol\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"0043a05c-fbe1-0888-0ab5-8616c34c8c5b\",\"subFuncs\":[],\"whereOnly\":false}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"fb7a5836-a9aa-8d6c-24c5-7ebc741939e0\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"2d767e04-c5d8-0e12-7a29-44cf18f1d204\",\"subFuncs\":[],\"whereOnly\":false}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"9a18fb31-d9d6-2269-6e92-971a0970cde1\",\"sort\":\"asc\"}],\"interval\":\"60\",\"limit\":\"\",\"offset\":\"\",\"formatAs\":\"timeSeries\",\"alias\":\"\"}",
           "refId": "A"
         }
       ],
@@ -225,7 +277,7 @@
         "h": 6,
         "w": 8,
         "x": 8,
-        "y": 2
+        "y": 3
       },
       "id": 3,
       "options": {
@@ -245,7 +297,7 @@
             "type": "deepflow-querier-datasource",
             "uid": "DeepFlow"
           },
-          "queryText": "{\"appType\":\"trafficQuery\",\"db\":\"flow_log\",\"sources\":\"\",\"from\":\"l7_flow_log\",\"select\":[{\"type\":\"metric\",\"key\":\"log_count\",\"func\":\"Sum\",\"op\":\"\",\"val\":\"\",\"as\":\"客户端异常-Sum(日志总量)\",\"params\":[],\"uuid\":\"baf6fa96-e59c-f572-7486-ce275a28f4e3\",\"subFuncs\":[]}],\"where\":[{\"type\":\"tag\",\"key\":\"response_status\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"客户端异常\",\"value\":4}],\"as\":\"\",\"params\":[],\"uuid\":\"7bf0189d-5a77-39f1-2cc1-155fa4ded60e\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"request_type\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"value\":\"$request_type\",\"label\":\"$request_type\"}],\"as\":\"\",\"params\":[],\"uuid\":\"0cbf1257-60bc-b97e-a34f-ba9279a6eb88\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"request_resource\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"value\":\"$request_resource\",\"label\":\"$request_resource\"}],\"as\":\"\",\"params\":[],\"uuid\":\"9a84caea-973f-b1e3-7f89-cf8979108ad2\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"pod_cluster\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$cluster\",\"value\":\"cluster\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"33186dbe-0e65-13f0-6eae-d7b66833f87b\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"pod_ns\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$namespace\",\"value\":\"namespace\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"aaa10cee-3317-5a62-6a73-438c1e07ccdb\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"pod_group\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$workload\",\"value\":\"workload\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"0094850f-488f-2a42-2514-f8c0bf3cafcb\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"chost\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$vm\",\"value\":\"vm\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"316cacf2-0423-405b-198c-a6c71ea665d6\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"response_status\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$status\",\"value\":\"status\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"4d166911-2326-4061-453e-f70e65e6865c\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"l7_protocol\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$protocol\",\"value\":\"protocol\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"48ea195d-b115-7619-6ee7-4164982a5efe\",\"subFuncs\":[],\"whereOnly\":false}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"fb7a5836-a9aa-8d6c-24c5-7ebc741939e0\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"b5c331ad-afde-bd6d-b79e-4315f4fc6cf7\",\"subFuncs\":[]}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"9a18fb31-d9d6-2269-6e92-971a0970cde1\",\"sort\":\"asc\"}],\"interval\":\"60\",\"limit\":\"\",\"offset\":\"\",\"formatAs\":\"timeSeries\",\"alias\":\"\"}",
+          "queryText": "{\"appType\":\"trafficQuery\",\"db\":\"flow_log\",\"sources\":\"\",\"from\":\"l7_flow_log\",\"select\":[{\"type\":\"metric\",\"key\":\"log_count\",\"func\":\"Sum\",\"op\":\"\",\"val\":\"\",\"as\":\"客户端异常-Sum(日志总量)\",\"params\":[],\"uuid\":\"baf6fa96-e59c-f572-7486-ce275a28f4e3\",\"subFuncs\":[]}],\"where\":[{\"type\":\"tag\",\"key\":\"response_status\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"客户端异常\",\"value\":4}],\"as\":\"\",\"params\":[],\"uuid\":\"7bf0189d-5a77-39f1-2cc1-155fa4ded60e\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"request_type\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"value\":\"$request_type\",\"label\":\"$request_type\"}],\"as\":\"\",\"params\":[],\"uuid\":\"0cbf1257-60bc-b97e-a34f-ba9279a6eb88\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"request_resource\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"value\":\"$request_resource\",\"label\":\"$request_resource\"}],\"as\":\"\",\"params\":[],\"uuid\":\"9a84caea-973f-b1e3-7f89-cf8979108ad2\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"pod_cluster\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$cluster\",\"value\":\"cluster\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"33186dbe-0e65-13f0-6eae-d7b66833f87b\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"pod_ns\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$namespace\",\"value\":\"namespace\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"aaa10cee-3317-5a62-6a73-438c1e07ccdb\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"pod_group\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$workload\",\"value\":\"workload\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"0094850f-488f-2a42-2514-f8c0bf3cafcb\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"chost\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$vm\",\"value\":\"vm\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"316cacf2-0423-405b-198c-a6c71ea665d6\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"l7_protocol\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$protocol\",\"value\":\"protocol\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"48ea195d-b115-7619-6ee7-4164982a5efe\",\"subFuncs\":[],\"whereOnly\":false}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"fb7a5836-a9aa-8d6c-24c5-7ebc741939e0\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"b5c331ad-afde-bd6d-b79e-4315f4fc6cf7\",\"subFuncs\":[]}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"9a18fb31-d9d6-2269-6e92-971a0970cde1\",\"sort\":\"asc\"}],\"interval\":\"60\",\"limit\":\"\",\"offset\":\"\",\"formatAs\":\"timeSeries\",\"alias\":\"\"}",
           "refId": "A"
         },
         {
@@ -254,7 +306,7 @@
             "uid": "DeepFlow"
           },
           "hide": false,
-          "queryText": "{\"appType\":\"trafficQuery\",\"db\":\"flow_log\",\"sources\":\"\",\"from\":\"l7_flow_log\",\"select\":[{\"type\":\"metric\",\"key\":\"log_count\",\"func\":\"Sum\",\"op\":\"\",\"val\":\"\",\"as\":\"服务端异常-Sum(日志总量)\",\"params\":[],\"uuid\":\"baf6fa96-e59c-f572-7486-ce275a28f4e3\",\"subFuncs\":[]}],\"where\":[{\"type\":\"tag\",\"key\":\"response_status\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"服务端异常\",\"value\":3}],\"as\":\"\",\"params\":[],\"uuid\":\"7bf0189d-5a77-39f1-2cc1-155fa4ded60e\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"pod_cluster\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$cluster\",\"value\":\"cluster\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"78a9d494-a0ef-3602-33ca-2e677efa147c\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"pod_ns\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$namespace\",\"value\":\"namespace\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"1001ab2c-2fcc-23d5-2ca0-4a02ec7ecb97\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"pod_group\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$workload\",\"value\":\"workload\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"3f6f8183-bc2b-d9ab-e9fc-1246c4c09b79\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"chost\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$vm\",\"value\":\"vm\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"7185a11c-4887-9e84-4747-da99c902933d\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"l7_protocol\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$protocol\",\"value\":\"protocol\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"91bb6c10-3b2a-e136-2af5-6b8b832416dc\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"request_type\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$request_type\",\"value\":\"request_type\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"633df6e6-d158-53ed-b5e9-db5232885644\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"request_resource\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$request_resource\",\"value\":\"request_resource\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"6960f850-2939-3004-2e3a-f636e2f44d1c\",\"subFuncs\":[],\"whereOnly\":false}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"fb7a5836-a9aa-8d6c-24c5-7ebc741939e0\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"b5c331ad-afde-bd6d-b79e-4315f4fc6cf7\",\"subFuncs\":[]}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"9a18fb31-d9d6-2269-6e92-971a0970cde1\",\"sort\":\"asc\"}],\"interval\":\"60\",\"limit\":\"\",\"offset\":\"\",\"formatAs\":\"timeSeries\",\"alias\":\"\"}",
+          "queryText": "{\"appType\":\"trafficQuery\",\"db\":\"flow_log\",\"sources\":\"\",\"from\":\"l7_flow_log\",\"select\":[{\"type\":\"metric\",\"key\":\"log_count\",\"func\":\"Sum\",\"op\":\"\",\"val\":\"\",\"as\":\"服务端异常-Sum(日志总量)\",\"params\":[],\"uuid\":\"baf6fa96-e59c-f572-7486-ce275a28f4e3\",\"subFuncs\":[]}],\"where\":[{\"type\":\"tag\",\"key\":\"response_status\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"服务端异常\",\"value\":3}],\"as\":\"\",\"params\":[],\"uuid\":\"7bf0189d-5a77-39f1-2cc1-155fa4ded60e\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"pod_cluster\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$cluster\",\"value\":\"cluster\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"78a9d494-a0ef-3602-33ca-2e677efa147c\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"pod_ns\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$namespace\",\"value\":\"namespace\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"1001ab2c-2fcc-23d5-2ca0-4a02ec7ecb97\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"pod_group\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$workload\",\"value\":\"workload\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"3f6f8183-bc2b-d9ab-e9fc-1246c4c09b79\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"chost\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$vm\",\"value\":\"vm\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"7185a11c-4887-9e84-4747-da99c902933d\",\"subFuncs\":[],\"whereOnly\":true},{\"type\":\"tag\",\"key\":\"l7_protocol\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$protocol\",\"value\":\"protocol\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"91bb6c10-3b2a-e136-2af5-6b8b832416dc\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"request_type\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$request_type\",\"value\":\"request_type\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"633df6e6-d158-53ed-b5e9-db5232885644\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"request_resource\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$request_resource\",\"value\":\"request_resource\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"6960f850-2939-3004-2e3a-f636e2f44d1c\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"response_status\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$status\",\"value\":\"status\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"5f61b61d-c335-fbf7-1d97-21fd91262fd3\",\"subFuncs\":[],\"whereOnly\":false}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"fb7a5836-a9aa-8d6c-24c5-7ebc741939e0\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"b5c331ad-afde-bd6d-b79e-4315f4fc6cf7\",\"subFuncs\":[]}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"9a18fb31-d9d6-2269-6e92-971a0970cde1\",\"sort\":\"asc\"}],\"interval\":\"60\",\"limit\":\"\",\"offset\":\"\",\"formatAs\":\"timeSeries\",\"alias\":\"\"}",
           "refId": "B"
         }
       ],
@@ -319,7 +371,7 @@
         "h": 6,
         "w": 8,
         "x": 16,
-        "y": 2
+        "y": 3
       },
       "id": 4,
       "options": {
@@ -517,7 +569,7 @@
         "h": 19,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 9
       },
       "id": 5,
       "options": {
@@ -536,7 +588,7 @@
           }
         ]
       },
-      "pluginVersion": "9.0.2",
+      "pluginVersion": "9.0.3",
       "targets": [
         {
           "datasource": {
@@ -682,9 +734,9 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "selected": true,
+          "text": [],
+          "value": []
         },
         "datasource": {
           "type": "deepflow-querier-datasource",
@@ -814,6 +866,6 @@
   "timezone": "",
   "title": "Application - Request Log",
   "uid": "Application_Request_Log",
-  "version": 6,
+  "version": 5,
   "weekStart": ""
 }
