@@ -166,7 +166,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         const usingGroupBy = sql.includes('group by') && queryData.formatAs === 'timeSeries'
 
         if (!usingGroupBy) {
-          return [response]
+          return response
         }
         let dataAfterGroupBy = _.groupBy(response, item => {
           return tagKeys
@@ -221,20 +221,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
         return frameArray
       })
-    ) // 返回的可能是 dataframe 或者 array<dataframe>
-      .then(dts => {
-        return dts.reduce((pre, cur) => {
-          if (_.isArray(cur)) {
-            return pre.concat(cur)
-          } else {
-            pre.push(cur)
-            return pre
-          }
-        }, [])
-      })
-      .catch((e: any) => {
-        throw e
-      })
+    ).catch((e: any) => {
+      throw e
+    })
 
     QUERY_DATA_CACHE['config'] = queryConfig
     return { data }

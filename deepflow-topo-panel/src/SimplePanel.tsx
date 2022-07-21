@@ -53,7 +53,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
   }, [request])
   const isMultiRefIds = refIds.length > 1
   const selectedData = useMemo(() => {
-    if (series[targetIndex]?.fields === undefined) {
+    if (series[targetIndex]?.fields === undefined || !series[targetIndex]?.fields?.length) {
       setNoData(true)
       if (chartContainer) {
         chartContainer.selectAll('*').remove()
