@@ -516,8 +516,11 @@ export class QueryEditor extends PureComponent<Props> {
         throw new Error('Params is required')
       }
       if (appType === 'accessRelationship') {
-        if (!groupBy!.find(e => e.sideType === 'from') || !groupBy!.find(e => e.sideType === 'to')) {
-          throw new Error('When using accessRelationship, need to set from and to in GROUP BY')
+        const _resourceGroupBy = groupBy!.filter(e => e.isResourceType)
+        if (!_resourceGroupBy.find(e => e.sideType === 'from') || !_resourceGroupBy.find(e => e.sideType === 'to')) {
+          throw new Error(
+            'When using service map, need select at least one resource type tag as client and server in group by'
+          )
         }
         if (
           !(select as BasicDataWithId[]).filter((item: any) => {
