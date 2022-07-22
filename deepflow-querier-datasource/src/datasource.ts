@@ -64,8 +64,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           .toPromise()
           .then((res: any) => {
             return JSON.parse(
-              res.data.replace(/["]?[+-]?\d+(\.\d+)?e[+-]\d+["]?/g, (a: any) => {
-                return a.startsWith('"') ? a : `"${a}"`
+              res.data.replace(/[\[\,]["]?[+-]?\d+(\.\d+)?e[+-]\d+["]?/g, (a: any) => {
+                const str = a.substring(1)
+                return str.startsWith('"') ? a : `${a[0]}"${str}"`
               })
             )
           })
@@ -416,6 +417,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       }
     } catch (error) {
       console.log(error)
+      return new Error('aaa')
       throw error
     }
   }
