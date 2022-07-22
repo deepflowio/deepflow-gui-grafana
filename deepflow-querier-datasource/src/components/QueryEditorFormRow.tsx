@@ -28,6 +28,7 @@ export interface BasicData {
   subFuncs?: []
   sideType?: 'from' | 'to'
   whereOnly?: boolean
+  isResourceType?: boolean
 }
 
 type Props = {
@@ -270,7 +271,8 @@ export class QueryEditorFormRow extends PureComponent<Props> {
           }
         : {}),
       whereOnly: !!val?.whereOnly,
-      sideType: val?.sideType
+      sideType: val?.sideType,
+      isResourceType: val?.type === 'resource'
     })
   }
 

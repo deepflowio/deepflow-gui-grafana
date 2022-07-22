@@ -95,6 +95,23 @@ export function getMetricFieldNameByAlias(alias: string, mapObj: Record<any, any
   return result
 }
 
+const isServerSide = (key: string) => key.endsWith('_1')
+const isClientSide = (key: string) => key.endsWith('_0')
+
+export const getResourceIdKey = (key: string) => {
+  if (key.includes('ip')) {
+    return key
+  }
+  if (isServerSide(key) || isClientSide(key)) {
+    let slices = key.split('_')
+    slices.splice(slices.length - 1, 0, 'id')
+    key = slices.join('_')
+  } else {
+    key = `${key}_id`
+  }
+  return key
+}
+
 export function getAccessRelationshipeQueryConfig(groupBy: any) {
   const result: {
     from: string[]
@@ -110,10 +127,10 @@ export function getAccessRelationshipeQueryConfig(groupBy: any) {
       const { sideType } = e
       switch (sideType) {
         case 'from':
-          result.from.push(e.key)
+          result.from.push(e.isResourceType ? getResourceIdKey(e.key) : e.key)
           break
         case 'to':
-          result.to.push(e.key)
+          result.to.push(e.isResourceType ? getResourceIdKey(e.key) : e.key)
           break
         default:
           result.common.push(e.key)
