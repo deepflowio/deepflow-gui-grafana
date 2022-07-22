@@ -101,7 +101,6 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     if (!queryConfig?.to?.length) {
       return []
     }
-    console.log()
     return queryConfig.to
   }, [queryConfig])
 
