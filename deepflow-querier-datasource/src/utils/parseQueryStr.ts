@@ -229,7 +229,7 @@ function getValueByVariablesName(val: LabelItem, variables: any[], op: string) {
       return variable.name === val?.value
     })
     const currentValue = _.get(currentVariable, ['current', 'value'], '')
-    const targetField = !specVariables.includes(currentValue) && isLikeOp ? 'text' : 'value'
+    const targetField = isLikeOp ? 'text' : 'value'
     if (currentValue.includes('$__all')) {
       result = currentVariable.options
         .filter((e: any) => e.value !== '$__all' && !specVariables.includes(e.value))

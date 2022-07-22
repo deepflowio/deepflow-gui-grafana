@@ -9,17 +9,6 @@ interface Props {
   }
 }
 
-const SHOW_FIELDS = [
-  'tap_side',
-  'resource_gl0',
-  'process_kname',
-  'l7_protocol',
-  'request_type',
-  'request_resource',
-  'duration',
-  'response_status'
-]
-
 export const FlameTooltip: React.FC<Props> = ({ barData, mousePos }) => {
   const pos = useMemo(() => {
     const { x, y } = mousePos
@@ -35,7 +24,7 @@ export const FlameTooltip: React.FC<Props> = ({ barData, mousePos }) => {
     if (!barData) {
       return {}
     }
-    return _.pick(barData, SHOW_FIELDS)
+    return barData
   }, [barData])
 
   return (

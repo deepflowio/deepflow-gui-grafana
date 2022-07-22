@@ -16,6 +16,7 @@ import qs from 'qs'
 import 'json-bigint-patch'
 import { MyVariableQuery } from 'components/VariableQueryEditor'
 import { getAccessRelationshipeQueryConfig, getMetricFieldNameByAlias, getParamByName } from 'utils/tools'
+import { SELECT_GROUP_BY_DISABLE_TAGS } from 'QueryEditor'
 
 function setTimeKey(
   queryData: any,
@@ -128,7 +129,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           }
         })
         if (!response || !response.length) {
-          return []
+          return [[]]
         }
         // @ts-ignore
         response = querierJs.addResourceFieldsInData(response)
@@ -166,7 +167,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         const usingGroupBy = sql.includes('group by') && queryData.formatAs === 'timeSeries'
 
         if (!usingGroupBy) {
-          return response
+          return [response]
         }
         let dataAfterGroupBy = _.groupBy(response, item => {
           return tagKeys
@@ -221,9 +222,20 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
         return frameArray
       })
-    ).catch((e: any) => {
-      throw e
-    })
+    )
+      .then(dts => {
+        return dts.reduce((pre, cur) => {
+          if (_.isArray(cur)) {
+            return pre.concat(cur)
+          } else {
+            pre.push(cur)
+            return pre
+          }
+        }, [])
+      })
+      .catch((e: any) => {
+        throw e
+      })
 
     QUERY_DATA_CACHE['config'] = queryConfig
     return { data }
@@ -273,50 +285,121 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           return res?.data?.DATA || {}
         })
 
-      let detailList = []
+      let detailList: Record<any, any> = {}
       if (Array.isArray(services) && services.length) {
-        const SELECT = [
-          "newTag('R1-R1') as query_id",
-          "response_duration AS 'response_duration'",
-          '_id',
-          'start_time',
-          'l7_protocol',
-          'request_type',
-          'request_domain',
-          'request_resource',
-          'response_status',
-          'response_code',
-          'response_exception',
-          'tap_side',
-          "node_type(resource_gl0_0) AS 'client_node_type'",
-          "node_type(resource_gl0_0) AS 'resource_gl0_0_node_type'",
-          "icon_id(resource_gl0_0) AS 'client_icon_id'",
-          "icon_id(resource_gl0_0) AS 'resource_gl0_0_icon_id'",
-          'resource_gl0_type_0',
-          'ip_0',
-          "node_type(resource_gl0_1) AS 'server_node_type'",
-          "node_type(resource_gl0_1) AS 'resource_gl0_1_node_type'",
-          "icon_id(resource_gl0_1) AS 'server_icon_id'",
-          "icon_id(resource_gl0_1) AS 'resource_gl0_1_icon_id'",
-          'resource_gl0_type_1',
-          'ip_1',
-          'resource_gl0_0',
-          'resource_gl0_1',
-          'resource_gl0_id_0',
-          'resource_gl0_id_1'
-        ].join(',')
-        const WHERE = tracing
-          .map((e: any) => {
-            return e._ids.map((id: string) => {
-              return `_id='${id}'`
-            })
+        // @ts-ignore
+        const { metrics, tags } = await querierJs.loadTableConfig('l7_flow_log', 'flow_log')
+        const _tags = tags
+          .filter((e: any) => {
+            return !SELECT_GROUP_BY_DISABLE_TAGS.includes(e.value) && e.category !== '原始Attribute'
+          })
+          .map((item: any) => {
+            const { name, client_name, server_name, category } = item
+            if ((name === client_name && name === server_name) || (!client_name && !server_name)) {
+              return {
+                category,
+                value: item.name
+              }
+            }
+            return [
+              ...(item.client_name
+                ? [
+                    {
+                      category,
+                      value: item.client_name
+                    }
+                  ]
+                : []),
+              ...(item.server_name
+                ? [
+                    {
+                      category,
+                      value: item.server_name
+                    }
+                  ]
+                : [])
+            ]
           })
           .flat(Infinity)
-          .join(' OR ')
-        const sql = `select ${SELECT} from l7_flow_log where ${WHERE} AND time>=${time_start} AND time<=${time_end} order by start_time`
-
+        const sqlData = {
+          format: 'sql',
+          db: 'flow_log',
+          tableName: 'l7_flow_log',
+          selects: {
+            TAGS: _tags
+              .filter((e: any) => {
+                return !SELECT_GROUP_BY_DISABLE_TAGS.find((val: string) => {
+                  return (e.value as string).includes(val)
+                })
+              })
+              .map((e: any) => {
+                return e.value
+              }),
+            METRICS: metrics.map((e: any) => {
+              return e.name
+            })
+          },
+          conditions: {
+            RESOURCE_SETS: [
+              {
+                id: '0',
+                isForbidden: false,
+                condition: [
+                  {
+                    type: 'tag',
+                    op: 'OR',
+                    val: tracing
+                      .map((e: any) => e._ids)
+                      .flat(Infinity)
+                      .map((e: any) => {
+                        return {
+                          key: '_id',
+                          op: '=',
+                          val: e
+                        }
+                      })
+                  }
+                ]
+              }
+            ]
+          },
+          orderBy: ['start_time']
+        }
         // @ts-ignore
-        detailList = await querierJs.searchBySql(sql)
+        const querierJsResult = querierJs.dfQuery(sqlData)
+        const { returnMetrics, sql } = querierJsResult.resource[0]
+        // @ts-ignore// @ts-ignore
+        const response = await querierJs.searchBySql(sql, 'flow_log')
+        // const fullKeys = [..._tags, ...returnMetrics]
+
+        const tagCategory = _.groupBy(_tags, 'category')
+        const tagCategoryKeys = Object.keys(tagCategory)
+        response.forEach((e: any) => {
+          const tttt = tagCategoryKeys
+            .map((tagKey: any) => {
+              return [
+                tagKey || 'N/A',
+                Object.fromEntries(
+                  tagCategory[tagKey].map((tagObj: any) => {
+                    const tag = `${tagObj.value}`
+                    return [tag, e[tag]?.toString() ? e[tag].toString() : e[tag]]
+                  })
+                )
+              ]
+            })
+            .concat([
+              [
+                'metrics',
+                Object.fromEntries(
+                  returnMetrics.map((metricObj: any) => {
+                    const metric = `${metricObj.name}`
+                    return [metric, e[metric]]
+                  })
+                )
+              ]
+            ])
+          detailList[e._id.toString()] = Object.fromEntries(tttt)
+        })
       }
       // @ts-ignore
       const l7ProtocolValuesMap = await querierJs.getL7ProtocolValuesMap()
@@ -332,6 +415,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         detailList
       }
     } catch (error) {
+      console.log(error)
       throw error
     }
   }
@@ -370,13 +454,13 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     if (useDisabled) {
       extra.push({
         value: '__disabled',
-        text: 'Disabled'
+        text: '__disabled'
       })
     }
     if (useAny) {
       extra.push({
         value: '__any',
-        text: 'Any'
+        text: '__any'
       })
     }
     return extra.concat(

@@ -50,7 +50,7 @@ export function tarnsArrayToTableData(data: any[]) {
       const textLens: number[] = [
         e === null ? 0 : getStringLen(e),
         ...dataSource.map(d => {
-          return d[e] === null ? 0 : getStringLen(d[e].toString())
+          return d[e] === null || d[e] === undefined ? 0 : getStringLen(d[e].toString())
         })
       ]
       const maxLen = Math.max(...textLens)
@@ -64,4 +64,33 @@ export function tarnsArrayToTableData(data: any[]) {
     columns,
     dataSource
   }
+}
+
+export function formatDetailData(data: any) {
+  const result: any[] = []
+
+  const first = data[0]
+  const cates = Object.keys(first)
+    .map(k => {
+      return new Array(Object.keys(first[k]).length).fill(k)
+    })
+    .flat(Infinity)
+  const keys = Object.keys(first)
+    .map(k => {
+      return Object.keys(first[k])
+    })
+    .flat(Infinity)
+
+  cates.forEach((cate, i) => {
+    result.push({
+      category: cate,
+      keyName: keys[i],
+      ...Object.fromEntries(
+        data.map((col: any, index: number) => {
+          return [`column${index + 1}_value`, _.get(col, [cate, keys[i]])]
+        })
+      )
+    })
+  })
+  return result
 }

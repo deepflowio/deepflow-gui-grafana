@@ -12,7 +12,7 @@ import { getDataSourceSrv } from '@grafana/runtime'
 import { renderTimeBar, addSvg, fitSvgToContainer, TAP_SIDE_OPTIONS_MAP } from 'deepflow-vis-js'
 import { FlameTooltip } from 'components/FlameTooltip'
 import { genServiceId, useDebounce } from 'utils/tools'
-import { calcTableCellWidth, getStringLen, tarnsArrayToTableData } from 'utils/tables'
+import { calcTableCellWidth, getStringLen, formatDetailData, tarnsArrayToTableData } from 'utils/tables'
 
 interface Props extends PanelProps<SimpleOptions> {}
 
@@ -33,7 +33,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
   const [flameChart, setFlameChart] = useState<any>(undefined)
   const [detailFilteIds, setDetailFilteIds] = useState<string[]>([])
 
-  const setFlameDetailFilter = useCallback((serviceId: string, chart: any) => {
+  const setFlameDetailFilter = useCallback((serviceId: string, chart: any, selfAndParent?: any) => {
     setSelectedServiceRowId(serviceId)
     if (serviceId === '') {
       setDetailFilteIds([])
@@ -41,15 +41,26 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
         bar.props.blur = false
       })
     } else {
-      let ids: string[] = []
-      chart.bars.forEach((bar: any) => {
-        const blurBoolean = genServiceId(bar.data) !== serviceId
-        if (!blurBoolean) {
-          ids = [...ids, ...(bar.data._ids || [])]
+      if (selfAndParent) {
+        chart.bars.forEach((bar: any) => {
+          bar.props.blur = true
+        })
+        selfAndParent.self.props.blur = false
+        if (selfAndParent.parent !== undefined) {
+          selfAndParent.parent.props.blur = false
         }
-        bar.props.blur = blurBoolean
-      })
-      setDetailFilteIds(ids)
+        setDetailFilteIds(selfAndParent.self.data._ids)
+      } else {
+        let ids: string[] = []
+        chart.bars.forEach((bar: any) => {
+          const blurBoolean = genServiceId(bar.data) !== serviceId
+          if (!blurBoolean) {
+            ids = [...ids, ...(bar.data._ids || [])]
+          }
+          bar.props.blur = blurBoolean
+        })
+        setDetailFilteIds(ids)
+      }
     }
     chart.renderBars()
   }, [])
@@ -96,7 +107,10 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     renderResult.bars.forEach((bar: any) => {
       bar.container.on('click', (ev: any) => {
         ev.stopPropagation()
-        setFlameDetailFilter(genServiceId(bar.data), renderResult)
+        setFlameDetailFilter(genServiceId(bar.data), renderResult, {
+          self: bar,
+          parent: bar.props.parent
+        })
       })
       bar.container.on('mouseenter', (ev: any) => {
         setHoveredBarData(bar.data)
@@ -126,7 +140,6 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       .find((dataSource: DataSourceInstanceSettings) => {
         return dataSource.type === 'deepflow-querier-datasource'
       })?.name
-    console.log('@deepFlowName', deepFlowName)
     const deepFlow = await getDataSourceSrv().get(deepFlowName)
     if (!deepFlow) {
       return
@@ -137,6 +150,10 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       // @ts-ignore
       const result = await deepFlow.getFlameData({ _id })
       const { services, tracing, detailList } = result
+      if (!result || !services?.length) {
+        setErrMsg('No Data')
+        return
+      }
       setSelectedServiceRowId('')
       setDetailFilteIds([])
       setServiceData(services)
@@ -200,10 +217,6 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     > = [
       ...target.map((e: Field<any, Vector<any>>, i: number) => {
         const textLens: number[] = [
-          // e.name.length,
-          // ...dataSource.map(d => {
-          //   return d[e.name] === null ? 0 : d[e.name].toString().length
-          // })
           e.name === null ? 0 : getStringLen(e.name),
           ...dataSource.map(d => {
             return d[e.name] === null ? 0 : getStringLen(d[e.name].toString())
@@ -249,14 +262,19 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
 
   const [detailData, setDetailData] = useState([])
   const detailTableData = useMemo(() => {
-    const { columns, dataSource } = tarnsArrayToTableData(detailData)
+    if (!Object.keys(detailData)?.length || !detailFilteIds?.length) {
+      return {
+        columns: [],
+        dataSource: []
+      }
+    }
+    const _detailData = detailFilteIds.map((e: any) => {
+      return detailData[e]
+    })
+    const { columns, dataSource } = tarnsArrayToTableData(formatDetailData(_detailData))
     return {
       columns,
-      dataSource: detailFilteIds.length
-        ? dataSource.filter((e: any) => {
-            return detailFilteIds.includes(e._id)
-          })
-        : dataSource
+      dataSource
     }
   }, [detailData, detailFilteIds])
 
@@ -291,12 +309,12 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
             loading={startTableLoading}
           />
         </div>
-        <div className="flame-and-tables">
-          <div className="main">
-            <div className="flame-wrap">
-              <div className="view-title">Flame Graph</div>
-              <div className={`flame ${randomClassName}`}></div>
-            </div>
+        <div className="flame-tables-wrap">
+          <div className="flame-wrap">
+            <div className="view-title">Flame Graph</div>
+            <div className={`flame ${randomClassName}`}></div>
+          </div>
+          <div className="tables-wrap">
             <div className="service-table-wrap">
               <div className="view-title">Service List</div>
               <div className="service-table">
@@ -315,16 +333,16 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
                 />
               </div>
             </div>
-          </div>
-          <div className="detail-table-wrap">
-            <div className="view-title">Request Log</div>
-            <div className="detail-table">
-              <DYTable
-                className={'table-wrap'}
-                panelWidthHeight={panelWidthHeight}
-                columns={detailTableData.columns}
-                dataSource={detailTableData.dataSource}
-              />
+            <div className="detail-table-wrap">
+              <div className="view-title">Request Log</div>
+              <div className="detail-table">
+                <DYTable
+                  className={'table-wrap'}
+                  panelWidthHeight={panelWidthHeight}
+                  columns={detailTableData.columns}
+                  dataSource={detailTableData.dataSource}
+                />
+              </div>
             </div>
           </div>
         </div>
