@@ -64,8 +64,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           .toPromise()
           .then((res: any) => {
             return JSON.parse(
-              res.data.replace(/[+-]?\d+(\.\d+)?e[+-]\d+/g, ($1: any) => {
-                return `"${$1}"`
+              res.data.replace(/["]?[+-]?\d+(\.\d+)?e[+-]\d+["]?/g, (a: any) => {
+                return a.startsWith('"') ? a : `"${a}"`
               })
             )
           })
