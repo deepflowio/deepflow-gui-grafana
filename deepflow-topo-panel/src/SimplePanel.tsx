@@ -5,7 +5,6 @@ import './SimplePanel.css'
 import _ from 'lodash'
 import { Select, Alert } from '@grafana/ui'
 import { getDataSourceSrv } from '@grafana/runtime'
-import { getResourceIdKey } from 'utils/tools'
 import { addSvg, fitSvgToContainer, renderSimpleTreeTopoChart, simpleTopoRender, Node, Link } from 'deepflow-vis-js'
 import { TopoTooltip } from 'components/TopoTooltip'
 
@@ -96,17 +95,14 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     if (!queryConfig?.from?.length) {
       return []
     }
-    return queryConfig.from.map(e => {
-      return getResourceIdKey(e)
-    })
+    return queryConfig.from
   }, [queryConfig])
   const destinationSide = useMemo(() => {
     if (!queryConfig?.to?.length) {
       return []
     }
-    return queryConfig.to.map(e => {
-      return getResourceIdKey(e)
-    })
+    console.log()
+    return queryConfig.to
   }, [queryConfig])
 
   const links: LinkItem[] = useMemo(() => {
@@ -143,7 +139,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
               }
               return e[key]
             })
-            .join('') + e.client_node_type,
+            .join(' ') + ` ${e.client_node_type}`,
         to:
           [...destinationSide, ...queryConfig.common]
             .map(key => {
@@ -155,7 +151,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
               }
               return e[key]
             })
-            .join('') + e.server_node_type,
+            .join(' ') + ` ${e.server_node_type}`,
         metrics: Object.fromEntries(
           queryConfig.returnMetrics.map(metric => {
             const key = metric.name
@@ -178,9 +174,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
           {
             id: e['from'],
             node_type: e['client_node_type'],
-            displayName: _.get(queryConfig, ['from', 0]).includes('resource_gl')
-              ? _.get(e, ['client_resource'], _.get(e, [queryConfig.from[0]], ''))
-              : _.get(e, [queryConfig.from[0]], ''),
+            displayName: _.get(e, ['client_resource']),
             tags: {
               node_type: e['client_node_type'],
               ...Object.fromEntries(
@@ -193,9 +187,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
           {
             id: e['to'],
             node_type: e['server_node_type'],
-            displayName: _.get(queryConfig, ['to', 0]).includes('resource_gl')
-              ? _.get(e, ['server_resource'], _.get(e, [queryConfig.to[0]], ''))
-              : _.get(e, [queryConfig.to[0]], ''),
+            displayName: _.get(e, ['server_resource']),
             tags: {
               node_type: e['server_node_type'],
               ...Object.fromEntries(
