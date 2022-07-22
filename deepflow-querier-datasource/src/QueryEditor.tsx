@@ -247,7 +247,7 @@ const defaultFormData: Omit<QueryDataType, 'appType' | 'db' | 'sources'> = {
 }
 
 // 不支持做分组的 tag: 负载均衡监听器, ingress
-const GROUP_BY_DISABLE_TAGS = ['lb_listener', 'pod_ingress']
+export const SELECT_GROUP_BY_DISABLE_TAGS = ['lb_listener', 'pod_ingress']
 
 const SERVICE_MAP_SUPPORT_DB = ['flow_log', 'flow_metrics']
 const SERVICE_MAP_SUPPORT_TABLE = ['l4_flow_log', 'l7_flow_log', 'vtap_flow_edge_port', 'vtap_app_edge_port']
@@ -1160,7 +1160,12 @@ export class QueryEditor extends PureComponent<Props> {
                             tagOpts={
                               conf.targetDataKey === 'select'
                                 ? this.selectTagOpts.filter(tag => {
-                                    return !tag.whereOnly
+                                    return (
+                                      !tag.whereOnly &&
+                                      !SELECT_GROUP_BY_DISABLE_TAGS.find((val: string) => {
+                                        return (tag.value as string).includes(val)
+                                      })
+                                    )
                                   })
                                 : conf.targetDataKey === 'groupBy'
                                 ? tagOpts
@@ -1175,7 +1180,7 @@ export class QueryEditor extends PureComponent<Props> {
                                       //   : true
                                       const extra = true
                                       return (
-                                        !GROUP_BY_DISABLE_TAGS.find((val: string) => {
+                                        !SELECT_GROUP_BY_DISABLE_TAGS.find((val: string) => {
                                           return (tag.value as string).includes(val)
                                         }) && extra
                                       )

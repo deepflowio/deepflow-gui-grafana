@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Switch } from '@grafana/ui'
+import { Icon, Switch, Tooltip } from '@grafana/ui'
 
 export interface MyVariableQuery {
   database: string
@@ -53,14 +53,38 @@ export const VariableQueryEditor: React.FC<VariableQueryProps> = ({ onChange, qu
         <input name="sql" className="gf-form-input" onBlur={saveQuery} onChange={handleChange} value={state.sql} />
       </div>
       <div className="gf-form">
-        <span className="gf-form-label width-10">USE DISABLED</span>
-        <div className="css-17ab851">
+        <span className="gf-form-label width-10" style={{ fontSize: '12px' }}>
+          Include Disable option
+          <Tooltip content={'The variable is allowed to be disabled (ignored) in SQL statement.'}>
+            <Icon name="info-circle" style={{ color: '#7b8087', fontSize: '12px' }} size="sm" />
+          </Tooltip>
+        </span>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '32px'
+          }}
+        >
           <Switch name="useDisabled" value={state.useDisabled} onChange={handleOnOffChange} />
         </div>
       </div>
       <div className="gf-form">
-        <span className="gf-form-label width-10">USE ANY</span>
-        <div className="css-17ab851">
+        <span className="gf-form-label width-10" style={{ fontSize: '12px' }}>
+          Include Any option
+          <Tooltip content={'The variable supports filtering all optional values without expanding the SQL statement.'}>
+            <Icon name="info-circle" style={{ color: '#7b8087', fontSize: '12px' }} size="sm" />
+          </Tooltip>
+        </span>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: '32px'
+          }}
+        >
           <Switch name="useAny" value={state.useAny} onChange={handleOnOffChange} />
         </div>
       </div>
