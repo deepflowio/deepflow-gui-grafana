@@ -25,14 +25,14 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": 138,
-  "iteration": 1658369893995,
+  "iteration": 1658716570765,
   "links": [],
   "liveNow": false,
   "panels": [
     {
       "datasource": {
         "type": "deepflow-querier-datasource",
-        "uid": "DeepFlow"
+        "uid": "DEEPFLOW"
       },
       "gridPos": {
         "h": 3,
@@ -133,7 +133,7 @@
         {
           "datasource": {
             "type": "deepflow-querier-datasource",
-            "uid": "DEEPFLOW"
+            "uid": "DeepFlow"
           },
           "queryText": "{\"appType\":\"trafficQuery\",\"db\":\"flow_metrics\",\"sources\":\"1m\",\"from\":\"vtap_flow_port\",\"select\":[{\"type\":\"metric\",\"key\":\"byte\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"bps\",\"params\":[],\"uuid\":\"07bd78bf-ccc2-0a55-077b-eca7d7ed9a47\",\"subFuncs\":[{\"func\":\"Math\",\"op\":\"MULTIPLY\",\"params\":8},{\"func\":\"PerSecond\"}]},{\"type\":\"tag\",\"key\":\"pod\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"0c6f49a3-c287-7923-b0dc-f4848e81fd15\",\"subFuncs\":[]}],\"where\":[{\"type\":\"tag\",\"key\":\"pod_cluster\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$cluster\",\"value\":\"cluster\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"ac4f699b-1604-af12-4ff7-d80e88acd44b\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"pod_ns\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$namespace\",\"value\":\"namespace\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"8fe9229f-bfca-a44d-ea9e-747a982e2bad\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"pod_group\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$workload\",\"value\":\"workload\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"1e79bd70-cdbe-acb7-a95d-8fba654b2395\",\"subFuncs\":[]}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"f4abe24a-c5d0-8470-d973-d90e360b47ca\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"pod\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"01ba9039-1c67-7e2b-466c-ce88938c6b47\",\"subFuncs\":[]}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"0bc3c024-df50-02ca-d17b-9ca5f5886119\",\"sort\":\"asc\"}],\"interval\":\"60\",\"limit\":\"\",\"offset\":\"\",\"formatAs\":\"timeSeries\",\"alias\":\"\"}",
           "refId": "A"
@@ -699,23 +699,29 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "selected": true,
+          "text": [
+            "__any"
+          ],
+          "value": [
+            "__any"
+          ]
         },
         "datasource": {
           "type": "deepflow-querier-datasource",
           "uid": "DeepFlow"
         },
-        "definition": "{\"sql\":\"show tag pod_cluster values from vtap_flow_port\",\"database\":\"flow_metrics\"}",
+        "definition": "{\"database\":\"flow_metrics\",\"sql\":\"show tag pod_cluster values from vtap_flow_port\",\"useAny\":true,\"useDisabled\":true}",
         "hide": 0,
-        "includeAll": true,
+        "includeAll": false,
         "multi": true,
         "name": "cluster",
         "options": [],
         "query": {
           "database": "flow_metrics",
-          "sql": "show tag pod_cluster values from vtap_flow_port"
+          "sql": "show tag pod_cluster values from vtap_flow_port",
+          "useAny": true,
+          "useDisabled": true
         },
         "refresh": 1,
         "regex": "",
@@ -725,27 +731,29 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
-            "All"
+            "__any"
           ],
           "value": [
-            "$__all"
+            "__any"
           ]
         },
         "datasource": {
           "type": "deepflow-querier-datasource",
           "uid": "DeepFlow"
         },
-        "definition": "{\"sql\":\"show tag pod_ns values from vtap_flow_port\",\"database\":\"flow_metrics\"}",
+        "definition": "{\"database\":\"flow_metrics\",\"sql\":\"show tag pod_ns values from vtap_flow_port\",\"useAny\":true,\"useDisabled\":true}",
         "hide": 0,
-        "includeAll": true,
+        "includeAll": false,
         "multi": true,
         "name": "namespace",
         "options": [],
         "query": {
           "database": "flow_metrics",
-          "sql": "show tag pod_ns values from vtap_flow_port"
+          "sql": "show tag pod_ns values from vtap_flow_port",
+          "useAny": true,
+          "useDisabled": true
         },
         "refresh": 1,
         "regex": "",
@@ -755,27 +763,29 @@
       },
       {
         "current": {
-          "selected": false,
+          "selected": true,
           "text": [
-            "All"
+            "__any"
           ],
           "value": [
-            "$__all"
+            "__any"
           ]
         },
         "datasource": {
           "type": "deepflow-querier-datasource",
           "uid": "DeepFlow"
         },
-        "definition": "{\"sql\":\"show tag pod_group values from vtap_flow_port\",\"database\":\"flow_metrics\"}",
+        "definition": "{\"database\":\"flow_metrics\",\"sql\":\"show tag pod_group values from vtap_flow_port\",\"useAny\":true,\"useDisabled\":true}",
         "hide": 0,
-        "includeAll": true,
+        "includeAll": false,
         "multi": true,
         "name": "workload",
         "options": [],
         "query": {
           "database": "flow_metrics",
-          "sql": "show tag pod_group values from vtap_flow_port"
+          "sql": "show tag pod_group values from vtap_flow_port",
+          "useAny": true,
+          "useDisabled": true
         },
         "refresh": 1,
         "regex": "",
@@ -793,6 +803,6 @@
   "timezone": "",
   "title": "Network - K8s Pod",
   "uid": "Network_K8s_Pod",
-  "version": 12,
+  "version": 15,
   "weekStart": ""
 }
