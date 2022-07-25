@@ -292,7 +292,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         const { metrics, tags } = await querierJs.loadTableConfig('l7_flow_log', 'flow_log')
         const _tags = tags
           .filter((e: any) => {
-            return !SELECT_GROUP_BY_DISABLE_TAGS.includes(e.value) && e.category !== '原始Attribute'
+            return (
+              !SELECT_GROUP_BY_DISABLE_TAGS.includes(e.name) &&
+              (e.category !== '原始Attribute' || e.name === 'attributes')
+            )
           })
           .map((item: any) => {
             const { name, client_name, server_name, category } = item
@@ -327,15 +330,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           db: 'flow_log',
           tableName: 'l7_flow_log',
           selects: {
-            TAGS: _tags
-              .filter((e: any) => {
-                return !SELECT_GROUP_BY_DISABLE_TAGS.find((val: string) => {
-                  return (e.value as string).includes(val)
-                })
-              })
-              .map((e: any) => {
-                return e.value
-              }),
+            TAGS: _tags.map((e: any) => {
+              return e.value
+            }),
             METRICS: metrics.map((e: any) => {
               return e.name
             })
@@ -369,21 +366,27 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         // @ts-ignore
         const querierJsResult = querierJs.dfQuery(sqlData)
         const { returnMetrics, sql } = querierJsResult.resource[0]
-        // @ts-ignore// @ts-ignore
+        // @ts-ignore
         const response = await querierJs.searchBySql(sql, 'flow_log')
-        // const fullKeys = [..._tags, ...returnMetrics]
 
         const tagCategory = _.groupBy(_tags, 'category')
         const tagCategoryKeys = Object.keys(tagCategory)
         response.forEach((e: any) => {
-          const tttt = tagCategoryKeys
-            .map((tagKey: any) => {
+          const item = tagCategoryKeys
+            .map((tagCate: any) => {
+              const tags =
+                tagCate === '原始Attribute'
+                  ? Object.keys(JSON.parse(e.attributes)).map(attr => {
+                      return { category: '原始Attribute', value: attr }
+                    })
+                  : tagCategory[tagCate]
+              const item = tagCate === '原始Attribute' ? JSON.parse(e.attributes) : e
               return [
-                tagKey || 'N/A',
+                tagCate || 'N/A',
                 Object.fromEntries(
-                  tagCategory[tagKey].map((tagObj: any) => {
+                  tags.map((tagObj: any) => {
                     const tag = `${tagObj.value}`
-                    return [tag, e[tag]?.toString() ? e[tag].toString() : e[tag]]
+                    return [tag, item[tag]?.toString() ? item[tag].toString() : item[tag]]
                   })
                 )
               ]
@@ -399,7 +402,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                 )
               ]
             ])
-          detailList[e._id.toString()] = Object.fromEntries(tttt)
+          detailList[e._id.toString()] = Object.fromEntries(item)
         })
       }
       // @ts-ignore

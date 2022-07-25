@@ -2,7 +2,7 @@ import { ColumnProps } from '@douyinfe/semi-ui/lib/es/table'
 import _ from 'lodash'
 
 export function calcTableCellWidth(num: number) {
-  const ONE_WORD_WIDTH = 75
+  const ONE_WORD_WIDTH = 78
   return (num * ONE_WORD_WIDTH) / 10 + 12 + 1
 }
 
