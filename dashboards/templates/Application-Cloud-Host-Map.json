@@ -24,8 +24,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 12,
-  "iteration": 1658389764286,
+  "id": 16,
+  "iteration": 1658718300969,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -184,7 +184,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": {},
+      "datasource": {
+        "type": "deepflow-querier-datasource",
+        "uid": "DeepFlow"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -264,7 +267,7 @@
             "type": "deepflow-querier-datasource",
             "uid": "DeepFlow"
           },
-          "queryText": "{\"appType\":\"trafficQuery\",\"db\":\"flow_metrics\",\"sources\":\"1m\",\"from\":\"vtap_app_edge_port\",\"select\":[{\"type\":\"metric\",\"key\":\"server_error\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"a6d6ba46-0445-38e4-6667-610c9ca895cb\",\"subFuncs\":[]}],\"where\":[{\"type\":\"tag\",\"key\":\"chost_1\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$vm\",\"value\":\"vm\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"5cbbce88-bcb1-5c76-c7d7-765eb48a47a4\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"l7_protocol\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$protocol\",\"value\":\"protocol\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"45151740-efaf-1e37-24a6-6f45c46e2203\",\"subFuncs\":[],\"whereOnly\":false}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"f4d371ae-d6ab-9fa4-a4e0-4bb514d24a81\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"resource_gl0_0\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"d65b78ec-4696-25a6-1759-30ea0b381f41\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"chost_1\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"71de04e1-5279-4e33-85cf-0db4c7a28659\",\"subFuncs\":[],\"whereOnly\":false,\"sideType\":\"to\"},{\"type\":\"tag\",\"key\":\"l7_protocol\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"84e1ba8b-bb6e-b3fb-ce79-dc16c74af4d2\",\"subFuncs\":[]}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"6b5e81d1-8982-7e6a-7c49-3bf9f6159b26\",\"sort\":\"asc\"}],\"interval\":\"60\",\"limit\":\"\",\"offset\":\"\",\"formatAs\":\"timeSeries\",\"alias\":\"${client_resource} ${chost_1} ${l7_protocol}\"}",
+          "queryText": "{\"appType\":\"trafficQuery\",\"db\":\"flow_metrics\",\"sources\":\"1m\",\"from\":\"vtap_app_edge_port\",\"select\":[{\"type\":\"metric\",\"key\":\"server_error_ratio\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"cf1f68a6-754b-103e-0c7a-b491be76a335\",\"subFuncs\":[],\"whereOnly\":false,\"isResourceType\":false}],\"where\":[{\"type\":\"tag\",\"key\":\"chost_1\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$vm\",\"value\":\"vm\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"5cbbce88-bcb1-5c76-c7d7-765eb48a47a4\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"l7_protocol\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$protocol\",\"value\":\"protocol\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"45151740-efaf-1e37-24a6-6f45c46e2203\",\"subFuncs\":[],\"whereOnly\":false}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"f4d371ae-d6ab-9fa4-a4e0-4bb514d24a81\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"resource_gl0_0\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"d65b78ec-4696-25a6-1759-30ea0b381f41\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"chost_1\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"71de04e1-5279-4e33-85cf-0db4c7a28659\",\"subFuncs\":[],\"whereOnly\":false,\"sideType\":\"to\"},{\"type\":\"tag\",\"key\":\"l7_protocol\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"84e1ba8b-bb6e-b3fb-ce79-dc16c74af4d2\",\"subFuncs\":[]}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"6b5e81d1-8982-7e6a-7c49-3bf9f6159b26\",\"sort\":\"asc\"}],\"interval\":\"60\",\"limit\":\"\",\"offset\":\"\",\"formatAs\":\"timeSeries\",\"alias\":\"${client_resource} ${chost_1} ${l7_protocol}\"}",
           "refId": "A"
         }
       ],
@@ -326,7 +329,7 @@
               }
             ]
           },
-          "unit": "percent"
+          "unit": "µs"
         },
         "overrides": []
       },
@@ -692,7 +695,7 @@
             "h": 15,
             "w": 13,
             "x": 0,
-            "y": 27
+            "y": 28
           },
           "id": 41,
           "targets": [
@@ -752,7 +755,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -768,7 +772,7 @@
             "h": 5,
             "w": 11,
             "x": 13,
-            "y": 27
+            "y": 28
           },
           "id": 43,
           "options": {
@@ -848,7 +852,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -864,7 +869,7 @@
             "h": 5,
             "w": 11,
             "x": 13,
-            "y": 32
+            "y": 33
           },
           "id": 44,
           "options": {
@@ -944,7 +949,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -960,7 +966,7 @@
             "h": 5,
             "w": 11,
             "x": 13,
-            "y": 37
+            "y": 38
           },
           "id": 45,
           "options": {
@@ -1018,7 +1024,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -1115,7 +1122,8 @@
                       "mode": "absolute",
                       "steps": [
                         {
-                          "color": "green"
+                          "color": "green",
+                          "value": null
                         },
                         {
                           "color": "red",
@@ -1150,7 +1158,8 @@
                       "mode": "absolute",
                       "steps": [
                         {
-                          "color": "green"
+                          "color": "green",
+                          "value": null
                         },
                         {
                           "color": "red",
@@ -1193,7 +1202,8 @@
                       "mode": "absolute",
                       "steps": [
                         {
-                          "color": "green"
+                          "color": "green",
+                          "value": null
                         },
                         {
                           "color": "red",
@@ -1210,7 +1220,7 @@
             "h": 8,
             "w": 24,
             "x": 0,
-            "y": 42
+            "y": 43
           },
           "id": 42,
           "options": {
@@ -1326,23 +1336,29 @@
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "selected": true,
+          "text": [
+            "__any"
+          ],
+          "value": [
+            "__any"
+          ]
         },
         "datasource": {
           "type": "deepflow-querier-datasource",
           "uid": "DeepFlow"
         },
-        "definition": "{\"database\":\"flow_metrics\",\"sql\":\"show tag chost values from vtap_app_edge_port\"}",
+        "definition": "{\"database\":\"flow_metrics\",\"sql\":\"show tag chost values from vtap_app_edge_port\",\"useAny\":true,\"useDisabled\":true}",
         "hide": 0,
-        "includeAll": true,
+        "includeAll": false,
         "multi": true,
         "name": "vm",
         "options": [],
         "query": {
           "database": "flow_metrics",
-          "sql": "show tag chost values from vtap_app_edge_port"
+          "sql": "show tag chost values from vtap_app_edge_port",
+          "useAny": true,
+          "useDisabled": true
         },
         "refresh": 1,
         "regex": "",
@@ -1390,6 +1406,6 @@
   "timezone": "",
   "title": "Application - Cloud Host Map",
   "uid": "Application_Cloud_Host_Map",
-  "version": 11,
+  "version": 6,
   "weekStart": ""
 }

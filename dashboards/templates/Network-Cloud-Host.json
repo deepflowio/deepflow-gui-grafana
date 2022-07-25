@@ -24,8 +24,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 15,
-  "iteration": 1658390574827,
+  "id": 19,
+  "iteration": 1658718724493,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -717,25 +717,27 @@
         "current": {
           "selected": true,
           "text": [
-            "All"
+            "__any"
           ],
           "value": [
-            "$__all"
+            "__any"
           ]
         },
         "datasource": {
           "type": "deepflow-querier-datasource",
           "uid": "DeepFlow"
         },
-        "definition": "{\"database\":\"flow_metrics\",\"sql\":\"show tag chost values from vtap_flow_port\"}",
+        "definition": "{\"database\":\"flow_metrics\",\"sql\":\"show tag chost values from vtap_flow_port\",\"useDisabled\":true,\"useAny\":true}",
         "hide": 0,
-        "includeAll": true,
+        "includeAll": false,
         "multi": true,
         "name": "vm",
         "options": [],
         "query": {
           "database": "flow_metrics",
-          "sql": "show tag chost values from vtap_flow_port"
+          "sql": "show tag chost values from vtap_flow_port",
+          "useAny": true,
+          "useDisabled": true
         },
         "refresh": 1,
         "regex": "",

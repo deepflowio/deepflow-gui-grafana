@@ -24,8 +24,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 14,
-  "iteration": 1658389915938,
+  "id": 18,
+  "iteration": 1658718595894,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -925,8 +925,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1019,8 +1018,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1107,8 +1105,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1197,8 +1194,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1263,8 +1259,7 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -1307,8 +1302,7 @@
                       "mode": "absolute",
                       "steps": [
                         {
-                          "color": "green",
-                          "value": null
+                          "color": "green"
                         },
                         {
                           "color": "red",
@@ -1335,8 +1329,7 @@
                       "mode": "absolute",
                       "steps": [
                         {
-                          "color": "green",
-                          "value": null
+                          "color": "green"
                         },
                         {
                           "color": "red",
@@ -1403,8 +1396,7 @@
                       "mode": "absolute",
                       "steps": [
                         {
-                          "color": "green",
-                          "value": null
+                          "color": "green"
                         },
                         {
                           "color": "red",
@@ -1435,8 +1427,7 @@
                       "mode": "absolute",
                       "steps": [
                         {
-                          "color": "green",
-                          "value": null
+                          "color": "green"
                         },
                         {
                           "color": "red",
@@ -1646,21 +1637,27 @@
         "current": {
           "selected": true,
           "text": [
-            "All"
+            "__any"
           ],
           "value": [
-            "$__all"
+            "__any"
           ]
         },
-        "definition": "{\"database\":\"flow_metrics\",\"sql\":\"show tag chost values from vtap_flow_edge_port\"}",
+        "datasource": {
+          "type": "deepflow-querier-datasource",
+          "uid": "DeepFlow"
+        },
+        "definition": "{\"database\":\"flow_metrics\",\"sql\":\"show tag chost values from vtap_flow_edge_port\",\"useAny\":true,\"useDisabled\":true}",
         "hide": 0,
-        "includeAll": true,
+        "includeAll": false,
         "multi": true,
         "name": "vm",
         "options": [],
         "query": {
           "database": "flow_metrics",
-          "sql": "show tag chost values from vtap_flow_edge_port"
+          "sql": "show tag chost values from vtap_flow_edge_port",
+          "useAny": true,
+          "useDisabled": true
         },
         "refresh": 1,
         "regex": "",
@@ -1678,6 +1675,6 @@
   "timezone": "",
   "title": "Network - Cloud Host Map",
   "uid": "Network_Cloud_Host_Map",
-  "version": 14,
+  "version": 2,
   "weekStart": ""
 }
