@@ -24,8 +24,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 56,
-  "iteration": 1658308670369,
+  "id": 136,
+  "iteration": 1658716516331,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -35,7 +35,7 @@
         "uid": "DeepFlow"
       },
       "gridPos": {
-        "h": 2,
+        "h": 3,
         "w": 24,
         "x": 0,
         "y": 0
@@ -109,7 +109,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 2
+        "y": 3
       },
       "id": 4,
       "options": {
@@ -226,7 +226,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 2
+        "y": 3
       },
       "id": 6,
       "options": {
@@ -302,7 +302,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 9
       },
       "id": 12,
       "options": {
@@ -369,7 +369,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 9
       },
       "id": 8,
       "options": {
@@ -686,7 +686,7 @@
         "h": 14,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 15
       },
       "id": 2,
       "options": {
@@ -775,26 +775,28 @@
         "current": {
           "selected": true,
           "text": [
-            "All"
+            "__any"
           ],
           "value": [
-            "$__all"
+            "__any"
           ]
         },
         "datasource": {
           "type": "deepflow-querier-datasource",
           "uid": "DeepFlow"
         },
-        "definition": "{\"database\":\"flow_log\",\"sql\":\"show tag pod_cluster values from l4_flow_log\"}",
+        "definition": "{\"database\":\"flow_log\",\"sql\":\"show tag pod_cluster values from l4_flow_log\",\"useAny\":true,\"useDisabled\":true}",
         "hide": 0,
-        "includeAll": true,
+        "includeAll": false,
         "label": "",
         "multi": true,
         "name": "cluster",
         "options": [],
         "query": {
           "database": "flow_log",
-          "sql": "show tag pod_cluster values from l4_flow_log"
+          "sql": "show tag pod_cluster values from l4_flow_log",
+          "useAny": true,
+          "useDisabled": true
         },
         "refresh": 1,
         "regex": "",
@@ -806,26 +808,28 @@
         "current": {
           "selected": true,
           "text": [
-            "All"
+            "__any"
           ],
           "value": [
-            "$__all"
+            "__any"
           ]
         },
         "datasource": {
           "type": "deepflow-querier-datasource",
           "uid": "DeepFlow"
         },
-        "definition": "{\"database\":\"flow_log\",\"sql\":\"show tag pod_ns values from l4_flow_log\"}",
+        "definition": "{\"database\":\"flow_log\",\"sql\":\"show tag pod_ns values from l4_flow_log\",\"useAny\":true,\"useDisabled\":true}",
         "hide": 0,
-        "includeAll": true,
+        "includeAll": false,
         "label": "",
         "multi": true,
         "name": "namespace",
         "options": [],
         "query": {
           "database": "flow_log",
-          "sql": "show tag pod_ns values from l4_flow_log"
+          "sql": "show tag pod_ns values from l4_flow_log",
+          "useAny": true,
+          "useDisabled": true
         },
         "refresh": 1,
         "regex": "",
@@ -837,26 +841,28 @@
         "current": {
           "selected": true,
           "text": [
-            "All"
+            "__any"
           ],
           "value": [
-            "$__all"
+            "__any"
           ]
         },
         "datasource": {
           "type": "deepflow-querier-datasource",
           "uid": "DeepFlow"
         },
-        "definition": "{\"database\":\"flow_log\",\"sql\":\"show tag pod_group values from l4_flow_log\"}",
+        "definition": "{\"database\":\"flow_log\",\"sql\":\"show tag pod_group values from l4_flow_log\",\"useAny\":true,\"useDisabled\":true}",
         "hide": 0,
-        "includeAll": true,
+        "includeAll": false,
         "label": "",
         "multi": true,
         "name": "workload",
         "options": [],
         "query": {
           "database": "flow_log",
-          "sql": "show tag pod_group values from l4_flow_log"
+          "sql": "show tag pod_group values from l4_flow_log",
+          "useAny": true,
+          "useDisabled": true
         },
         "refresh": 1,
         "regex": "",
@@ -866,23 +872,29 @@
       },
       {
         "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "selected": true,
+          "text": [
+            "__disabled"
+          ],
+          "value": [
+            "__disabled"
+          ]
         },
         "datasource": {
           "type": "deepflow-querier-datasource",
           "uid": "DeepFlow"
         },
-        "definition": "{\"database\":\"flow_log\",\"sql\":\"show tag chost values from l4_flow_log\"}",
+        "definition": "{\"database\":\"flow_log\",\"sql\":\"show tag chost values from l4_flow_log\",\"useAny\":true,\"useDisabled\":true}",
         "hide": 0,
-        "includeAll": true,
+        "includeAll": false,
         "multi": true,
         "name": "vm",
         "options": [],
         "query": {
           "database": "flow_log",
-          "sql": "show tag chost values from l4_flow_log"
+          "sql": "show tag chost values from l4_flow_log",
+          "useAny": true,
+          "useDisabled": true
         },
         "refresh": 1,
         "regex": "",
@@ -900,6 +912,6 @@
   "timezone": "",
   "title": "Network - Flow Log",
   "uid": "Network_Flow_Log",
-  "version": 3,
+  "version": 5,
   "weekStart": ""
 }

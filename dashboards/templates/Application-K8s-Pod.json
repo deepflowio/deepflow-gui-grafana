@@ -25,7 +25,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": 131,
-  "iteration": 1658368358741,
+  "iteration": 1658716307383,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -619,25 +619,27 @@
         "current": {
           "selected": true,
           "text": [
-            "All"
+            "__any"
           ],
           "value": [
-            "$__all"
+            "__any"
           ]
         },
         "datasource": {
           "type": "deepflow-querier-datasource",
           "uid": "DeepFlow"
         },
-        "definition": "{\"sql\":\"show tag pod_cluster values from vtap_flow_port\",\"database\":\"flow_metrics\"}",
+        "definition": "{\"database\":\"flow_metrics\",\"sql\":\"show tag pod_cluster values from vtap_flow_port\",\"useAny\":true,\"useDisabled\":true}",
         "hide": 0,
-        "includeAll": true,
+        "includeAll": false,
         "multi": true,
         "name": "cluster",
         "options": [],
         "query": {
           "database": "flow_metrics",
-          "sql": "show tag pod_cluster values from vtap_flow_port"
+          "sql": "show tag pod_cluster values from vtap_flow_port",
+          "useAny": true,
+          "useDisabled": true
         },
         "refresh": 1,
         "regex": "",
@@ -649,25 +651,27 @@
         "current": {
           "selected": true,
           "text": [
-            "All"
+            "__any"
           ],
           "value": [
-            "$__all"
+            "__any"
           ]
         },
         "datasource": {
           "type": "deepflow-querier-datasource",
           "uid": "DeepFlow"
         },
-        "definition": "{\"sql\":\"show tag pod_ns values from vtap_flow_port\",\"database\":\"flow_metrics\"}",
+        "definition": "{\"database\":\"flow_metrics\",\"sql\":\"show tag pod_ns values from vtap_flow_port\",\"useAny\":true,\"useDisabled\":true}",
         "hide": 0,
-        "includeAll": true,
+        "includeAll": false,
         "multi": true,
         "name": "namespace",
         "options": [],
         "query": {
           "database": "flow_metrics",
-          "sql": "show tag pod_ns values from vtap_flow_port"
+          "sql": "show tag pod_ns values from vtap_flow_port",
+          "useAny": true,
+          "useDisabled": true
         },
         "refresh": 1,
         "regex": "",
@@ -679,25 +683,27 @@
         "current": {
           "selected": true,
           "text": [
-            "All"
+            "__any"
           ],
           "value": [
-            "$__all"
+            "__any"
           ]
         },
         "datasource": {
           "type": "deepflow-querier-datasource",
           "uid": "DeepFlow"
         },
-        "definition": "{\"sql\":\"show tag pod_group values from vtap_flow_port\",\"database\":\"flow_metrics\"}",
+        "definition": "{\"database\":\"flow_metrics\",\"sql\":\"show tag pod_group values from vtap_flow_port\",\"useAny\":true,\"useDisabled\":true}",
         "hide": 0,
-        "includeAll": true,
+        "includeAll": false,
         "multi": true,
         "name": "workload",
         "options": [],
         "query": {
           "database": "flow_metrics",
-          "sql": "show tag pod_group values from vtap_flow_port"
+          "sql": "show tag pod_group values from vtap_flow_port",
+          "useAny": true,
+          "useDisabled": true
         },
         "refresh": 1,
         "regex": "",
@@ -745,6 +751,6 @@
   "timezone": "",
   "title": "Application - K8s Pod",
   "uid": "Application_K8s_Pod",
-  "version": 3,
+  "version": 4,
   "weekStart": ""
 }
