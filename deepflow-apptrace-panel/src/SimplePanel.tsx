@@ -152,14 +152,14 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       const { services, tracing, detailList } = result
       if (!result || !services?.length) {
         setErrMsg('No Data')
-        return
+      } else {
+        setSelectedServiceRowId('')
+        setDetailFilteIds([])
+        setServiceData(services)
+        setDetailData(detailList)
+        setFlameData(tracing)
+        setViewIndex(1)
       }
-      setSelectedServiceRowId('')
-      setDetailFilteIds([])
-      setServiceData(services)
-      setDetailData(detailList)
-      setFlameData(tracing)
-      setViewIndex(1)
     } catch (error: any) {
       const msg = error ? error?.data?.DESCRIPTION : ' Network Error'
       setErrMsg(msg)
