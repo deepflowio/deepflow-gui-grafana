@@ -2,7 +2,7 @@ import _ from 'lodash'
 import React, { useMemo } from 'react'
 
 interface Props {
-  contentData: Record<any, any>
+  contentData: Record<any, any> | Array<Record<any, any>>
   mousePos: {
     x: number
     y: number
@@ -27,17 +27,61 @@ export const TopoTooltip: React.FC<Props> = ({ contentData, mousePos }) => {
         top: pos.top
       }}
     >
-      <div className="labels-wrap">
-        {Object.keys(contentData).map((key: string, index: number) => {
-          return <p key={index}>{key}:</p>
-        })}
-      </div>
-      <div className="values-wrap">
-        {Object.keys(contentData).map((key: any, index: number) => {
-          const val = typeof contentData[key] !== 'undefined' ? contentData[key] : ' '
-          return <p key={index}>{val}</p>
-        })}
-      </div>
+      {Array.isArray(contentData) ? (
+        <>
+          <div className="labels-wrap">
+            {contentData
+              .map((d: any, i: number) => {
+                return Object.keys(d).map((key: string, index: number) => {
+                  return (
+                    <p
+                      key={index}
+                      style={{
+                        borderTop: i > 0 && index === 0 ? '1px solid #fff' : ''
+                      }}
+                    >
+                      {key}:
+                    </p>
+                  )
+                })
+              })
+              .flat()}
+          </div>
+          <div className="values-wrap">
+            {contentData
+              .map((d: any, i: number) => {
+                return Object.keys(d).map((key: string, index: number) => {
+                  const val = typeof d[key] !== 'undefined' ? d[key] : ' '
+                  return (
+                    <p
+                      key={index}
+                      style={{
+                        borderTop: i > 0 && index === 0 ? '1px solid #fff' : ''
+                      }}
+                    >
+                      {val}
+                    </p>
+                  )
+                })
+              })
+              .flat()}
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="labels-wrap">
+            {Object.keys(contentData).map((key: string, index: number) => {
+              return <p key={index}>{key}:</p>
+            })}
+          </div>
+          <div className="values-wrap">
+            {Object.keys(contentData).map((key: any, index: number) => {
+              const val = typeof contentData[key] !== 'undefined' ? contentData[key] : ' '
+              return <p key={index}>{val}</p>
+            })}
+          </div>
+        </>
+      )}
     </div>
   )
 }
