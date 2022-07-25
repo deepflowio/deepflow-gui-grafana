@@ -26,6 +26,7 @@ interface Props extends PanelProps<SimpleOptions> {}
 
 //  ip: 255, internet_ip: 0
 const IP_LIKELY_NODE_TYPE_TDS = [255, 0]
+const NO_GROUP_BY_TAGS = ['tap_side']
 
 export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) => {
   const [errMsg, setErrMsg] = useState('')
@@ -124,11 +125,33 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         fullData[index][e.name] = val
       })
     })
-    const result: LinkItem[] = fullData.map(e => {
-      return {
+    const _commonTags = queryConfig.common.filter((key: string) => {
+      return !NO_GROUP_BY_TAGS.includes(key)
+    })
+    let basicData: any[] = []
+    if (_commonTags.length !== queryConfig.common.length) {
+      const fullDataAfterGroupBy = _.groupBy(fullData, item => {
+        return [...sourceSide, ...destinationSide, ..._commonTags]
+          .map((key: string) => {
+            return item[key]
+          })
+          .join(',')
+      })
+      _.forIn(fullDataAfterGroupBy, (item, key) => {
+        const first = item[0]
+        basicData.push({
+          ...first,
+          metricsGroup: item
+        })
+      })
+    } else {
+      basicData = fullData
+    }
+    const result: LinkItem[] = basicData.map(e => {
+      const item = {
         ...e,
         from:
-          [...sourceSide, ...queryConfig.common]
+          [...sourceSide, ..._commonTags]
             .map(key => {
               if (key.includes('resource_gl')) {
                 const nodeTypeId = e[key.replace('_id', '_type')]
@@ -138,9 +161,9 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
               }
               return e[key]
             })
-            .join(' ') + ` ${e.client_node_type}`,
+            .join(',') + ` ${e.client_node_type}`,
         to:
-          [...destinationSide, ...queryConfig.common]
+          [...destinationSide, ..._commonTags]
             .map(key => {
               if (key.includes('resource_gl')) {
                 const nodeTypeId = e[key.replace('_id', '_type')]
@@ -150,14 +173,55 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
               }
               return e[key]
             })
-            .join(' ') + ` ${e.server_node_type}`,
-        metrics: Object.fromEntries(
-          queryConfig.returnMetrics.map(metric => {
-            const key = metric.name
-            return [[key], e[key]]
-          })
-        ),
-        metricValue: _.get(e, [_.get(queryConfig, ['returnMetrics', 0, 'name'])])
+            .join(',') + ` ${e.server_node_type}`
+      }
+      return {
+        ...item,
+        ...(e.metricsGroup
+          ? {
+              metrics: [
+                [
+                  {
+                    FROM: _.get(item, ['client_resource']),
+                    TO: _.get(item, ['server_resource'])
+                  }
+                ],
+                ...e.metricsGroup.map((g: any) => {
+                  return {
+                    ...Object.fromEntries(
+                      NO_GROUP_BY_TAGS.map(k => {
+                        return [k, g[k]]
+                      })
+                    ),
+                    ...Object.fromEntries(
+                      queryConfig.returnMetrics.map(metric => {
+                        const key = metric.name
+                        return [key, g[key]]
+                      })
+                    )
+                  }
+                })
+              ].flat(),
+              metricValue: Math.max.call(
+                null,
+                ...e.metricsGroup.map((m: any) => {
+                  return _.get(e, [_.get(queryConfig, ['returnMetrics', 0, 'name'])])
+                })
+              )
+            }
+          : {
+              metrics: {
+                FROM: _.get(item, ['client_resource']),
+                TO: _.get(item, ['server_resource']),
+                ...Object.fromEntries(
+                  queryConfig.returnMetrics.map(metric => {
+                    const key = metric.name
+                    return [key, e[key]]
+                  })
+                )
+              },
+              metricValue: _.get(e, [_.get(queryConfig, ['returnMetrics', 0, 'name'])])
+            })
       }
     })
     return result
@@ -167,6 +231,9 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     if (!links?.length || !queryConfig?.from?.length || !queryConfig?.to?.length) {
       return []
     }
+    const _commonTags = queryConfig.common.filter((key: string) => {
+      return !NO_GROUP_BY_TAGS.includes(key)
+    })
     const result: any[] = links
       .map(e => {
         return [
@@ -177,8 +244,8 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
             tags: {
               node_type: e['client_node_type'],
               ...Object.fromEntries(
-                [...queryConfig.from, ...queryConfig.common].map(tag => {
-                  return [[tag], e[tag]]
+                [...queryConfig.from, ..._commonTags].map(tag => {
+                  return [tag, e[tag]]
                 })
               )
             }
@@ -190,8 +257,8 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
             tags: {
               node_type: e['server_node_type'],
               ...Object.fromEntries(
-                [...queryConfig.to, ...queryConfig.common].map(tag => {
-                  return [[tag], e[tag]]
+                [...queryConfig.to, ..._commonTags].map(tag => {
+                  return [tag, e[tag]]
                 })
               )
             }
