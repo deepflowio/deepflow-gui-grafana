@@ -1,7 +1,8 @@
-type SeriesSize = 'sm' | 'md' | 'lg'
+import { TOPO_TYPE } from 'components/TopoTypeSelector'
 
 export interface SimpleOptions {
-  text: string
-  showSeriesCount: boolean
-  seriesCountSize: SeriesSize
+  topoSettings: {
+    type: TOPO_TYPE
+    refId: string
+  }
 }

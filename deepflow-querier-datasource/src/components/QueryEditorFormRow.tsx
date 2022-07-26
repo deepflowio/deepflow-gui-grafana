@@ -358,7 +358,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
     } = this.props
     const tagOptsFilted = config.disableTimeTag
       ? tagOpts.filter(item => {
-          return !(item.value as string).includes('time')
+          return !['start_time', 'end_time'].includes(item.value as string)
         })
       : tagOpts
     const opts = basicData.type === 'tag' ? tagOptsFilted : metricOpts

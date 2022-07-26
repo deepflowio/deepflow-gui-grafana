@@ -3,9 +3,18 @@ import { DataSourceInstanceSettings, PanelProps } from '@grafana/data'
 import { SimpleOptions } from 'types'
 import './SimplePanel.css'
 import _ from 'lodash'
-import { Select, Alert } from '@grafana/ui'
+import { Select, Alert, InlineField } from '@grafana/ui'
 import { getDataSourceSrv } from '@grafana/runtime'
-import { addSvg, fitSvgToContainer, renderSimpleTreeTopoChart, simpleTopoRender, Node, Link } from 'deepflow-vis-js'
+import {
+  addSvg,
+  fitSvgToContainer,
+  renderSimpleTreeTopoChart,
+  simpleTopoRender,
+  Node,
+  Link,
+  renderTreeTopoChart,
+  treeTopoRender
+} from 'deepflow-vis-js'
 import { TopoTooltip } from 'components/TopoTooltip'
 
 type NodeItem = {
@@ -29,6 +38,9 @@ const IP_LIKELY_NODE_TYPE_TDS = [255, 0]
 const NO_GROUP_BY_TAGS = ['tap_side']
 
 export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) => {
+  const topoType = useMemo(() => {
+    return options.topoSettings.type
+  }, [options])
   const [errMsg, setErrMsg] = useState('')
   const [chartContainer, setChartContainer] = useState<any>(undefined)
   const [targetIndex, setTargetIndex] = useState(0)
@@ -57,6 +69,9 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       setNoData(true)
       if (chartContainer) {
         chartContainer.selectAll('*').remove()
+      }
+      return {
+        fields: []
       }
     } else {
       setNoData(false)
@@ -91,6 +106,27 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
   useEffect(() => {
     getConfigByRefId()
   }, [getConfigByRefId, selectedData])
+
+  const [groupTag, setGroupTag] = useState('')
+  const groupTagOpts = useMemo(() => {
+    if (topoType !== 'treeTopoWithGroup' || !queryConfig) {
+      return []
+    }
+    const { from, to, common } = queryConfig
+    return [
+      ...new Set(
+        [...from, ...to].map(e => {
+          return e.replace('_0', '').replace('_1', '').replace('_id', '')
+        })
+      ),
+      ...common
+    ].map(e => {
+      return {
+        label: e,
+        value: e
+      }
+    })
+  }, [queryConfig, topoType])
 
   const sourceSide = useMemo(() => {
     if (!queryConfig?.from?.length) {
@@ -156,24 +192,24 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
               if (key.includes('resource_gl')) {
                 const nodeTypeId = e[key.replace('_id', '_type')]
                 if (IP_LIKELY_NODE_TYPE_TDS.includes(nodeTypeId)) {
-                  return `${e['ip_0']}${e['subnet_id_0']}`
+                  return `ip_0${e['ip_0']}subnet_id_0${e['subnet_id_0']}`
                 }
               }
-              return e[key]
+              return `${key}${e[key]}`
             })
-            .join(',') + ` ${e.client_node_type}`,
+            .join(',') + `-${e.client_node_type}`,
         to:
           [...destinationSide, ..._commonTags]
             .map(key => {
               if (key.includes('resource_gl')) {
                 const nodeTypeId = e[key.replace('_id', '_type')]
                 if (IP_LIKELY_NODE_TYPE_TDS.includes(nodeTypeId)) {
-                  return `${e['ip_1']}${e['subnet_id_1']}`
+                  return `ip_0${e['ip_1']}subnet_id_0${e['subnet_id_1']}`
                 }
               }
-              return e[key]
+              return `${key}${e[key]}`
             })
-            .join(',') + ` ${e.server_node_type}`
+            .join(',') + `-${e.server_node_type}`
       }
       return {
         ...item,
@@ -248,7 +284,13 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
                   return [tag, e[tag]]
                 })
               )
-            }
+            },
+            originalData: _.pick(
+              e,
+              Object.keys(e).filter(key => {
+                return !key.includes('_1')
+              })
+            )
           },
           {
             id: e['to'],
@@ -261,7 +303,13 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
                   return [tag, e[tag]]
                 })
               )
-            }
+            },
+            originalData: _.pick(
+              e,
+              Object.keys(e).filter(key => {
+                return !key.includes('_0')
+              })
+            )
           }
         ]
       })
@@ -283,13 +331,14 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     const container = addSvg('.' + randomClassName)
     fitSvgToContainer(container)
     setChartContainer(container)
-  }, [randomClassName])
+  }, [randomClassName, topoType])
 
   const bodyClassName = document.body.className
   const isDark = useMemo(() => {
     return bodyClassName.includes('theme-dark')
   }, [bodyClassName])
 
+  const [topoHandler, setTopoHandler] = useState<any>(undefined)
   useEffect(() => {
     if (!chartContainer || !nodes.length || !links.length) {
       return
@@ -297,32 +346,83 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     try {
       const titleColor = isDark ? '#bbb' : '#333'
       const nodeAndLinkColor = isDark ? '#206FD6' : '#B6BFD1'
-      chartContainer.selectAll('*').remove()
-      const { nodes: _nodes, links: _links } = renderSimpleTreeTopoChart(
+      chartContainer.selectAll('g').remove()
+      const renderFunction = topoType === 'simpleTopo' ? renderSimpleTreeTopoChart : renderTreeTopoChart
+      const bindEventFunction = topoType === 'simpleTopo' ? simpleTopoRender : treeTopoRender
+
+      const renderOptions: Record<any, any> = {
+        getNodeV: (node: Node<NodeItem>) => 0,
+        getNodeColor: (node: Node<NodeItem>) => nodeAndLinkColor,
+        getNodeIcon: (node: Node<NodeItem>) => node.data.node_type,
+        getNodeTitle: (node: Node<NodeItem>) => node.data.displayName,
+        getLinkV: (link: Link<LinkItem>) => link.data.metricValue,
+        getLinkColor: (link: Link<LinkItem>) => nodeAndLinkColor,
+        titleColor: titleColor,
+        nodeSize: [40, 40],
+        ...(topoType !== 'simpleTopo'
+          ? {
+              nodeSize: [300, 300],
+              getNodeIcon: (d: Node<NodeItem>, AvailableIcons: Record<string | number, any> = {}) => {
+                let icon = d.data.node_type
+                if (icon in AvailableIcons) {
+                  return AvailableIcons[icon]
+                }
+                return AvailableIcons.unknown
+              },
+              getLinkSize: (d: Link<LinkItem>): number => 2,
+              getMetrics: (node: Node<NodeItem>) => {
+                const tags = node.data.tags
+                return Object.keys(tags).map(key => {
+                  return {
+                    key,
+                    value: tags[key]
+                  }
+                })
+              },
+              getGroupName: (d: any): string => {
+                return `分组: ${d}`
+              },
+              getGroupNameColor: () => nodeAndLinkColor
+            }
+          : {})
+      }
+      const handler = renderFunction(
         chartContainer,
         {
           nodes,
           links
         },
-        {
-          getNodeV: (node: Node<NodeItem>) => 0,
-          getNodeColor: (node: Node<NodeItem>) => nodeAndLinkColor,
-          getNodeIcon: (node: Node<NodeItem>) => {
-            return node.data.node_type.includes('ip') ? 'ip' : node.data.node_type
-          },
-          getNodeTitle: (node: Node<NodeItem>) => node.data.displayName,
-          getLinkV: (link: Link<LinkItem>) => link.data.metricValue,
-          getLinkColor: (link: Link<LinkItem>) => nodeAndLinkColor,
-          titleColor: titleColor,
-          nodeSize: [40, 40]
-        }
+        renderOptions
       )
+      const { nodes: _nodes, links: _links } = handler
+      if (topoType !== 'simpleTopo') {
+        handler.render(handler.nodes, handler.links)
+        treeTopoRender.bindDefaultMouseEvent(handler.links, handler.nodes, handler.svg)
+      }
+      if (topoType === 'treeTopoWithGroup') {
+        setTopoHandler(handler)
+      }
+
       _links.forEach((link: Link<LinkItem>) => {
-        simpleTopoRender.bindCustomMouseEvent(link, 'mouseenter', (e: MouseEvent, l: Link<LinkItem>) => {
-          const metricsObj = _.get(l.data, ['metrics'], {})
+        bindEventFunction.bindCustomMouseEvent(link, 'mouseenter', (e: MouseEvent, l: Link<LinkItem>) => {
+          let metricsObj: any
+          if (topoType !== 'simpleTopo') {
+            const type = _.get(link, ['props', 'type'])
+            const currentMetrics = _.get(link, ['data', 'metrics'], {})
+            const otherMetrics = _.get(link, ['data', 'props', 'otherSide', 'data', 'metrics'], {})
+            metricsObj =
+              type === 'single'
+                ? currentMetrics
+                : [
+                    ...(Array.isArray(currentMetrics) ? currentMetrics : [currentMetrics]),
+                    ...(Array.isArray(otherMetrics) ? otherMetrics : [otherMetrics])
+                  ]
+          } else {
+            metricsObj = _.get(link, ['data', 'metrics'], {})
+          }
           setTooltipContent(metricsObj)
         })
-        simpleTopoRender.bindCustomMouseEvent(link, 'mousemove', (e: MouseEvent, l: Link<LinkItem>) => {
+        bindEventFunction.bindCustomMouseEvent(link, 'mousemove', (e: MouseEvent, l: Link<LinkItem>) => {
           setTimeout(() => {
             setMousePos({
               x: e.clientX,
@@ -330,16 +430,16 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
             })
           })
         })
-        simpleTopoRender.bindCustomMouseEvent(link, 'mouseleave', (e: MouseEvent, l: Link<LinkItem>) => {
+        bindEventFunction.bindCustomMouseEvent(link, 'mouseleave', (e: MouseEvent, l: Link<LinkItem>) => {
           setTooltipContent({})
         })
       })
       _nodes.forEach((node: Node<NodeItem>) => {
-        simpleTopoRender.bindCustomMouseEvent(node, 'mouseenter', (e: MouseEvent, n: Node<NodeItem>) => {
-          const tagsObj = _.get(n.data, ['tags'], {})
+        bindEventFunction.bindCustomMouseEvent(node, 'mouseenter', (e: MouseEvent, n: Node<NodeItem>) => {
+          const tagsObj = _.get(node, ['data', 'tags'], {})
           setTooltipContent(tagsObj)
         })
-        simpleTopoRender.bindCustomMouseEvent(node, 'mousemove', (e: MouseEvent, n: Node<NodeItem>) => {
+        bindEventFunction.bindCustomMouseEvent(node, 'mousemove', (e: MouseEvent, n: Node<NodeItem>) => {
           setTimeout(() => {
             setMousePos({
               x: e.clientX,
@@ -347,7 +447,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
             })
           })
         })
-        simpleTopoRender.bindCustomMouseEvent(node, 'mouseleave', (e: MouseEvent, n: Node<NodeItem>) => {
+        bindEventFunction.bindCustomMouseEvent(node, 'mouseleave', (e: MouseEvent, n: Node<NodeItem>) => {
           setTooltipContent({})
         })
       })
@@ -355,20 +455,47 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       console.log(error)
       setErrMsg(error.toString() || 'draw topo failed')
     }
-  }, [nodes, links, chartContainer, isDark])
+  }, [nodes, links, chartContainer, isDark, topoType])
+
+  useEffect(() => {
+    if (!topoHandler || !groupTag) {
+      return
+    }
+    topoHandler.group((data: any) => {
+      const keysArr = [groupTag, groupTag + '_0', groupTag + '_1']
+      const key = keysArr.find((key: string) => {
+        return key in data.originalData
+      })
+      return key ? data.originalData[key] : key
+    })
+  }, [topoHandler, groupTag])
 
   return (
     <div ref={panelRef} className="topo-actions-wrap">
       <div className="actions-warp">
         {isMultiRefIds ? (
-          <Select
-            className={'ref-select'}
-            options={refIds}
-            value={targetIndex}
-            onChange={v => {
-              setTargetIndex(v.value as number)
-            }}
-          ></Select>
+          <InlineField className="custom-label" label="REF ID" labelWidth={7}>
+            <Select
+              options={refIds}
+              value={targetIndex}
+              onChange={v => {
+                setGroupTag('')
+                setTargetIndex(v.value as number)
+              }}
+            ></Select>
+          </InlineField>
+        ) : null}
+        {topoType === 'treeTopoWithGroup' ? (
+          <InlineField className="custom-label" label="GROUP TAG" labelWidth={11}>
+            <Select
+              options={groupTagOpts}
+              value={groupTag}
+              onChange={v => {
+                setGroupTag(v.value as string)
+              }}
+              key={groupTag ? 'groupTagWithVal' : 'groupTagWithoutVal'}
+            ></Select>
+          </InlineField>
         ) : null}
       </div>
       {noData ? <div>No Data</div> : null}

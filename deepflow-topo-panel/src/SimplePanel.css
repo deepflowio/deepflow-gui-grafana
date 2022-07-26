@@ -5,6 +5,7 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
+  overflow: hidden;
 }
 
 .actions-warp {
@@ -13,12 +14,11 @@
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
+  padding: 4px;
 }
 
-.ref-select {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 4px;
+.custom-label > label {
+  color: #33a2e5;
 }
 
 .chart-container {
