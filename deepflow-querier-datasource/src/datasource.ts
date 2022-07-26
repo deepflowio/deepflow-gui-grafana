@@ -129,9 +129,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
               : {})
           }
         })
-        if (!response || !response.length) {
-          return [[]]
-        }
         // @ts-ignore
         response = querierJs.addResourceFieldsInData(response)
         queryConfig[target.refId] = {
@@ -140,7 +137,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           ...(queryData.appType === 'accessRelationship' ? getAccessRelationshipeQueryConfig(queryData.groupBy) : {})
         }
 
-        const keys = Object.keys(response[0]).filter((key: string) => !key.includes('_id'))
+        const firstResponse = response[0] || []
+        const keys = Object.keys(firstResponse).filter((key: string) => !key.includes('_id'))
         const tagKeys: string[] = []
         const timeKeys: string[] = []
         const metricKeys: string[] = []
@@ -168,7 +166,27 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         const usingGroupBy = sql.includes('group by') && queryData.formatAs === 'timeSeries'
 
         if (!usingGroupBy) {
-          return [response]
+          const a = new MutableDataFrame({
+            refId: target.refId,
+            fields: [
+              ...Object.keys(firstResponse).map((key: string) => {
+                let type
+                if (timeKeys.includes(key) && typeof firstResponse[key] === 'number') {
+                  type = FieldType.time
+                } else {
+                  type = returnMetricNames.includes(key) ? FieldType.number : FieldType.string
+                }
+                return {
+                  name: key,
+                  type: type
+                }
+              })
+            ]
+          })
+          response.forEach((e: any) => {
+            a.add(e)
+          })
+          return a
         }
         let dataAfterGroupBy = _.groupBy(response, item => {
           return tagKeys
@@ -181,16 +199,15 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         const frameArray: any = []
         _.forIn(dataAfterGroupBy, (item, groupByKey) => {
           item = _.sortBy(item, [timeTypeKey])
-          const first = item[0]
-          const aliasName = getMetricFieldNameByAlias(queryData.alias, first)
+          const aliasName = getMetricFieldNameByAlias(queryData.alias, firstResponse)
           const keyPrefix = aliasName || groupByKey
 
           const frame = new MutableDataFrame({
             refId: target.refId,
             fields: [
-              ...Object.keys(first).map((key: string) => {
+              ...Object.keys(firstResponse).map((key: string) => {
                 let type
-                if (timeKeys.includes(key) && typeof first[key] === 'number') {
+                if (timeKeys.includes(key) && typeof firstResponse[key] === 'number') {
                   type = FieldType.time
                 } else {
                   type = returnMetricNames.includes(key) ? FieldType.number : FieldType.string
