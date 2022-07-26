@@ -192,10 +192,10 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
               if (key.includes('resource_gl')) {
                 const nodeTypeId = e[key.replace('_id', '_type')]
                 if (IP_LIKELY_NODE_TYPE_TDS.includes(nodeTypeId)) {
-                  return `ip_0${e['ip_0']}subnet_id_0${e['subnet_id_0']}`
+                  return `${e['ip_0']},${e['subnet_id_0']}`
                 }
               }
-              return `${key}${e[key]}`
+              return `${e[key]}`
             })
             .join(',') + `-${e.client_node_type}`,
         to:
@@ -204,10 +204,10 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
               if (key.includes('resource_gl')) {
                 const nodeTypeId = e[key.replace('_id', '_type')]
                 if (IP_LIKELY_NODE_TYPE_TDS.includes(nodeTypeId)) {
-                  return `ip_0${e['ip_1']}subnet_id_0${e['subnet_id_1']}`
+                  return `${e['ip_0']},${e['subnet_id_0']}`
                 }
               }
-              return `${key}${e[key]}`
+              return `${e[key]}`
             })
             .join(',') + `-${e.server_node_type}`
       }
