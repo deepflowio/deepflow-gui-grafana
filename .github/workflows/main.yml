@@ -41,9 +41,9 @@ jobs:
         with:
             version: 7.3.0
       - name: Install dependencies
-        run: 'test -d deepflow-apptrace-panel/dist  || pnpm install'
+        run: 'test -d deepflow-apptracing-panel/dist  || pnpm install'
       - name: Build all
-        run: 'test -d deepflow-apptrace-panel/dist  || pnpm run b:all'
+        run: 'test -d deepflow-apptracing-panel/dist  || pnpm run b:all'
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
         with:

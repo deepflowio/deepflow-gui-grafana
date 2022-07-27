@@ -7,14 +7,14 @@
   ],
   "scripts": {
     "preinstall": "npx only-allow pnpm",
-    "b:apptrace": "pnpm run --filter deepflow-apptrace-panel build",
+    "b:apptracing": "pnpm run --filter deepflow-apptracing-panel build",
     "b:querier": "pnpm run --filter deepflow-querier-datasource build",
     "b:topo": "pnpm run --filter deepflow-topo-panel build",
-    "b-dev:apptrace": "pnpm run --filter deepflow-apptrace-panel builddev",
+    "b-dev:apptracing": "pnpm run --filter deepflow-apptracing-panel builddev",
     "b-dev:querier": "pnpm run --filter deepflow-querier-datasource builddev",
     "b-dev:topo": "pnpm run --filter deepflow-topo-panel builddev",
-    "b-dev:all": "pnpm run b-dev:apptrace && pnpm run b-dev:querier && pnpm run b-dev:topo",
-    "b:all": "pnpm run b:apptrace && pnpm run b:querier && pnpm run b:topo"
+    "b-dev:all": "pnpm run b-dev:apptracing && pnpm run b-dev:querier && pnpm run b-dev:topo",
+    "b:all": "pnpm run b:apptracing && pnpm run b:querier && pnpm run b:topo"
   },
   "dependencies": {
     "@grafana/data": "^8.5.6",
