@@ -29,7 +29,7 @@ importers:
       tslib: 2.4.0
       typescript: 4.7.4
 
-  deepflow-apptrace-panel:
+  deepflow-apptracing-panel:
     specifiers:
       '@douyinfe/semi-icons': ^2.14.0
       '@douyinfe/semi-ui': ^2.14.0
