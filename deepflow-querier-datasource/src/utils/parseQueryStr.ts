@@ -358,13 +358,22 @@ function groupByFormat(data: any) {
 }
 
 function orderByFormat(orderBy: BasicData[]) {
-  const validKeys = ['key', 'func', 'params', 'as', 'sort', 'subFuncs'] as const
+  const validKeys = ['key', 'func', 'params', 'sort', 'subFuncs'] as const
   return orderBy
     .filter((item: BasicData) => {
       return item.key
     })
     .map((item: BasicData) => {
       const result: any = {}
+      if (item.key.startsWith('interval_')) {
+        const intervalTime = item.key.replace('interval_', '')
+        return {
+          func: 'interval',
+          key: 'time',
+          params: intervalTime,
+          desc: item['sort'] === 'desc'
+        }
+      }
       validKeys.forEach(key => {
         if (key === 'sort') {
           result.desc = item[key] === 'desc'
