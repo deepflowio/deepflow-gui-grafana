@@ -29,6 +29,7 @@ export interface BasicData {
   sideType?: 'from' | 'to'
   whereOnly?: boolean
   isResourceType?: boolean
+  isIpType?: boolean
 }
 
 type Props = {
@@ -272,7 +273,8 @@ export class QueryEditorFormRow extends PureComponent<Props> {
         : {}),
       whereOnly: !!val?.whereOnly,
       sideType: val?.sideType,
-      isResourceType: val?.type === 'resource'
+      isResourceType: val?.type === 'resource',
+      isIpType: val?.type === 'ip'
     })
   }
 

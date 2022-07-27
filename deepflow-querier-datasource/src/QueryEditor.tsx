@@ -516,7 +516,7 @@ export class QueryEditor extends PureComponent<Props> {
         throw new Error('Params is required')
       }
       if (appType === 'accessRelationship') {
-        const _resourceGroupBy = groupBy!.filter(e => e.isResourceType)
+        const _resourceGroupBy = groupBy!.filter(e => e.isResourceType || e.isIpType)
         if (!_resourceGroupBy.find(e => e.sideType === 'from') || !_resourceGroupBy.find(e => e.sideType === 'to')) {
           throw new Error(
             'When using service map, need select at least one resource type tag as client and server in group by'
