@@ -127,10 +127,10 @@ export function getAccessRelationshipeQueryConfig(groupBy: any) {
       const { sideType } = e
       switch (sideType) {
         case 'from':
-          result.from.push(e.isResourceType ? getResourceIdKey(e.key) : e.key)
+          result.from.push(e.isResourceType || e.isIpType ? getResourceIdKey(e.key) : e.key)
           break
         case 'to':
-          result.to.push(e.isResourceType ? getResourceIdKey(e.key) : e.key)
+          result.to.push(e.isResourceType || e.isIpType ? getResourceIdKey(e.key) : e.key)
           break
         default:
           result.common.push(e.key)
