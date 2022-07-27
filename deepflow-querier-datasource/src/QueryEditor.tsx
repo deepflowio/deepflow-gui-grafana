@@ -34,7 +34,7 @@ export type FuncSelectOpts = Array<
 
 type MetricOptsItem = LabelItem & {
   operatorOpts: LabelItem[]
-  sideType: 'from' | 'to'
+  sideType?: 'from' | 'to'
   type?: string | number
   is_agg?: boolean
   whereOnly?: boolean
@@ -394,11 +394,29 @@ export class QueryEditor extends PureComponent<Props> {
         .map((item: any) => {
           return item.key
         })
-      return metricOpts.filter((item: any) => {
-        return selectMetricKeys.includes(item.value)
-      })
+      return metricOpts
+        .filter((item: any) => {
+          return selectMetricKeys.includes(item.value)
+        })
+        .concat(
+          interval
+            ? [
+                {
+                  label: 'interval',
+                  value: 'interval_' + interval,
+                  operatorOpts: []
+                }
+              ]
+            : []
+        )
     }
-    return this.basciMetricOpts
+    return this.basciMetricOpts.concat([
+      {
+        label: 'time',
+        value: 'time',
+        operatorOpts: []
+      }
+    ])
   }
 
   get usingGroupBy(): boolean {
@@ -535,7 +553,8 @@ export class QueryEditor extends PureComponent<Props> {
           .concat(having as BasicDataWithId[])
           .concat(orderBy as BasicDataWithId[])
         const funcCheck = funcMetrics.find((item: BasicDataWithId) => {
-          return item.type === 'metric' && item.key !== '' && item.func === ''
+          const isTime = item.key && (item.key === "'time_$__interval_ms'" || item.key.startsWith('interval_'))
+          return item.type === 'metric' && item.key !== '' && !isTime && item.func === ''
         })
         if (funcCheck) {
           throw new Error("When using group by or interval, metric's func is required")
@@ -1176,11 +1195,6 @@ export class QueryEditor extends PureComponent<Props> {
                                       return tag.type !== 'map' && !tag.whereOnly
                                     })
                                     .filter((tag: MetricOptsItem) => {
-                                      // const accessRelationshipAllowTagTypes = ['resource', 'ip']
-                                      // const extra = this.usingAccessRelationshipType
-                                      //   ? accessRelationshipAllowTagTypes.includes(tag.type as string) &&
-                                      //     tag?.sideType === item!.sideType
-                                      //   : true
                                       const extra = true
                                       return (
                                         !SELECT_GROUP_BY_DISABLE_TAGS.find((val: string) => {
