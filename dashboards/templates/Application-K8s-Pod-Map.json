@@ -25,7 +25,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": 130,
-  "iteration": 1658716375332,
+  "iteration": 1658885172563,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -75,13 +75,18 @@
         "y": 4
       },
       "id": 4,
+      "options": {
+        "topoSettings": {
+          "type": "simpleTopo"
+        }
+      },
       "targets": [
         {
           "datasource": {
             "type": "deepflow-querier-datasource",
             "uid": "DeepFlow"
           },
-          "queryText": "{\"appType\":\"accessRelationship\",\"db\":\"flow_metrics\",\"sources\":\"1m\",\"from\":\"vtap_app_edge_port\",\"select\":[{\"type\":\"metric\",\"key\":\"request\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"992060ab-cae6-ccba-7b91-22bf0cc8687a\",\"subFuncs\":[{\"func\":\"PerSecond\"}]},{\"type\":\"metric\",\"key\":\"server_error_ratio\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"6344696d-8779-d710-2f8c-386aaf4efb42\",\"subFuncs\":[]},{\"type\":\"metric\",\"key\":\"rrt\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"7d199436-12bd-1120-261b-7a771340b9f1\",\"subFuncs\":[]}],\"where\":[{\"type\":\"tag\",\"key\":\"pod_cluster_1\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$cluster\",\"value\":\"cluster\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"271eb506-643b-5cfd-4355-bae6d85f55c5\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"pod_ns_1\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$namespace\",\"value\":\"namespace\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"4d3605f5-c4dc-a545-c2f3-c5cbccea12c6\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"pod_group_1\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$workload\",\"value\":\"workload\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"99039168-8060-a317-c409-c5c56256b910\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"l7_protocol\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$protocol\",\"value\":\"protocol\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"a70c090f-97fd-ddb0-16d9-063a5ecf9885\",\"subFuncs\":[],\"whereOnly\":false}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"f4d371ae-d6ab-9fa4-a4e0-4bb514d24a81\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"resource_gl0_0\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"9b99e9fa-a151-8fc8-e158-66e2ab2a9e1e\",\"sideType\":\"from\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"pod_1\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"b367f91e-ab16-6e30-1a7c-66fd47a862b1\",\"sideType\":\"to\",\"subFuncs\":[],\"whereOnly\":false}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"6b5e81d1-8982-7e6a-7c49-3bf9f6159b26\",\"sort\":\"asc\"}],\"interval\":\"\",\"limit\":\"100\",\"offset\":\"\",\"formatAs\":\"\",\"alias\":\"\"}",
+          "queryText": "{\"appType\":\"accessRelationship\",\"db\":\"flow_metrics\",\"sources\":\"1m\",\"from\":\"vtap_app_edge_port\",\"select\":[{\"type\":\"metric\",\"key\":\"request\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"992060ab-cae6-ccba-7b91-22bf0cc8687a\",\"subFuncs\":[{\"func\":\"PerSecond\"}]},{\"type\":\"metric\",\"key\":\"server_error_ratio\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"6344696d-8779-d710-2f8c-386aaf4efb42\",\"subFuncs\":[]},{\"type\":\"metric\",\"key\":\"rrt\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"7d199436-12bd-1120-261b-7a771340b9f1\",\"subFuncs\":[]}],\"where\":[{\"type\":\"tag\",\"key\":\"pod_cluster_1\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$cluster\",\"value\":\"cluster\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"271eb506-643b-5cfd-4355-bae6d85f55c5\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"pod_ns_1\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$namespace\",\"value\":\"namespace\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"4d3605f5-c4dc-a545-c2f3-c5cbccea12c6\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"pod_group_1\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$workload\",\"value\":\"workload\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"99039168-8060-a317-c409-c5c56256b910\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"l7_protocol\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$protocol\",\"value\":\"protocol\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"a70c090f-97fd-ddb0-16d9-063a5ecf9885\",\"subFuncs\":[],\"whereOnly\":false}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"f4d371ae-d6ab-9fa4-a4e0-4bb514d24a81\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"resource_gl0_0\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"85ef1a81-5901-ac73-7493-ec2f3748c58d\",\"sideType\":\"from\",\"subFuncs\":[],\"whereOnly\":false,\"isResourceType\":true},{\"type\":\"tag\",\"key\":\"pod_1\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"736db275-da05-3b9b-e1e7-843c057758e3\",\"sideType\":\"to\",\"subFuncs\":[],\"whereOnly\":false,\"isResourceType\":true},{\"type\":\"tag\",\"key\":\"tap_side\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"5070823d-9f74-25af-f95a-56f8b00e5b36\",\"subFuncs\":[],\"whereOnly\":false,\"isResourceType\":false}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"6b5e81d1-8982-7e6a-7c49-3bf9f6159b26\",\"sort\":\"asc\"}],\"interval\":\"\",\"limit\":\"100\",\"offset\":\"\",\"formatAs\":\"\",\"alias\":\"\"}",
           "refId": "A"
         }
       ],
@@ -699,13 +704,18 @@
             "y": 28
           },
           "id": 41,
+          "options": {
+            "topoSettings": {
+              "type": "simpleTopo"
+            }
+          },
           "targets": [
             {
               "datasource": {
                 "type": "deepflow-querier-datasource",
                 "uid": "DeepFlow"
               },
-              "queryText": "{\"appType\":\"accessRelationship\",\"db\":\"flow_metrics\",\"sources\":\"1m\",\"from\":\"vtap_app_edge_port\",\"select\":[{\"type\":\"metric\",\"key\":\"request\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"992060ab-cae6-ccba-7b91-22bf0cc8687a\",\"subFuncs\":[{\"func\":\"PerSecond\"}]},{\"type\":\"metric\",\"key\":\"server_error_ratio\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"6344696d-8779-d710-2f8c-386aaf4efb42\",\"subFuncs\":[]},{\"type\":\"metric\",\"key\":\"rrt\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"7d199436-12bd-1120-261b-7a771340b9f1\",\"subFuncs\":[]}],\"where\":[{\"type\":\"tag\",\"key\":\"pod_cluster_0\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$cluster\",\"value\":\"cluster\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"80c1f777-0e51-e784-702a-ebc9d6610829\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"pod_ns_0\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$namespace\",\"value\":\"namespace\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"9b424d08-2037-6f73-ec2d-cfdbeb3d7556\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"pod_group_0\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$workload\",\"value\":\"workload\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"1b1126e2-e46e-7e6f-6285-6b1bd8e64924\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"l7_protocol\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$protocol\",\"value\":\"protocol\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"c05aa33b-5530-8b07-0f18-889fd9b14866\",\"subFuncs\":[],\"whereOnly\":false}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"f4d371ae-d6ab-9fa4-a4e0-4bb514d24a81\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"pod_0\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"84b2ee1b-8c05-ab54-5ed1-ef9bbe0c0b61\",\"sideType\":\"from\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"resource_gl0_1\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"cb29f915-1f4f-72ce-9455-c282d60015c7\",\"sideType\":\"to\",\"subFuncs\":[]}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"6b5e81d1-8982-7e6a-7c49-3bf9f6159b26\",\"sort\":\"asc\"}],\"interval\":\"\",\"limit\":\"100\",\"offset\":\"\",\"formatAs\":\"\",\"alias\":\"\"}",
+              "queryText": "{\"appType\":\"accessRelationship\",\"db\":\"flow_metrics\",\"sources\":\"1m\",\"from\":\"vtap_app_edge_port\",\"select\":[{\"type\":\"metric\",\"key\":\"request\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"992060ab-cae6-ccba-7b91-22bf0cc8687a\",\"subFuncs\":[{\"func\":\"PerSecond\"}]},{\"type\":\"metric\",\"key\":\"server_error_ratio\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"6344696d-8779-d710-2f8c-386aaf4efb42\",\"subFuncs\":[]},{\"type\":\"metric\",\"key\":\"rrt\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"7d199436-12bd-1120-261b-7a771340b9f1\",\"subFuncs\":[]}],\"where\":[{\"type\":\"tag\",\"key\":\"pod_cluster_0\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$cluster\",\"value\":\"cluster\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"80c1f777-0e51-e784-702a-ebc9d6610829\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"pod_ns_0\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$namespace\",\"value\":\"namespace\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"9b424d08-2037-6f73-ec2d-cfdbeb3d7556\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"pod_group_0\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$workload\",\"value\":\"workload\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"1b1126e2-e46e-7e6f-6285-6b1bd8e64924\",\"subFuncs\":[]},{\"type\":\"tag\",\"key\":\"l7_protocol\",\"func\":\"\",\"op\":\"IN\",\"val\":[{\"label\":\"$protocol\",\"value\":\"protocol\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"c05aa33b-5530-8b07-0f18-889fd9b14866\",\"subFuncs\":[],\"whereOnly\":false}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"f4d371ae-d6ab-9fa4-a4e0-4bb514d24a81\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"pod_0\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"068d46f4-2710-ad37-dab1-eef91c034897\",\"sideType\":\"from\",\"subFuncs\":[],\"whereOnly\":false,\"isResourceType\":true},{\"type\":\"tag\",\"key\":\"resource_gl0_1\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"bdeb9a03-8013-ca65-97ca-d51d28adac76\",\"sideType\":\"to\",\"subFuncs\":[],\"whereOnly\":false,\"isResourceType\":true},{\"type\":\"tag\",\"key\":\"tap_side\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"c32820a2-48d8-3da5-5f41-7f860d9d0b10\",\"subFuncs\":[],\"whereOnly\":false,\"isResourceType\":false}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"6b5e81d1-8982-7e6a-7c49-3bf9f6159b26\",\"sort\":\"asc\"}],\"interval\":\"\",\"limit\":\"100\",\"offset\":\"\",\"formatAs\":\"\",\"alias\":\"\"}",
               "refId": "A"
             }
           ],
@@ -756,7 +766,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -849,7 +860,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -945,7 +957,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -1460,6 +1473,6 @@
   "timezone": "",
   "title": "Application - K8s Pod Map",
   "uid": "Application_K8s_Pod_Map",
-  "version": 7,
+  "version": 10,
   "weekStart": ""
 }

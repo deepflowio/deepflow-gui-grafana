@@ -25,7 +25,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": 18,
-  "iteration": 1658718595894,
+  "iteration": 1658889685665,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -63,7 +63,10 @@
       "type": "row"
     },
     {
-      "datasource": {},
+      "datasource": {
+        "type": "deepflow-querier-datasource",
+        "uid": "DeepFlow"
+      },
       "gridPos": {
         "h": 20,
         "w": 13,
@@ -71,13 +74,18 @@
         "y": 4
       },
       "id": 41,
+      "options": {
+        "topoSettings": {
+          "type": "simpleTopo"
+        }
+      },
       "targets": [
         {
           "datasource": {
             "type": "deepflow-querier-datasource",
             "uid": "DEEPFLOW"
           },
-          "queryText": "{\"appType\":\"accessRelationship\",\"db\":\"flow_metrics\",\"sources\":\"1m\",\"from\":\"vtap_flow_edge_port\",\"select\":[{\"type\":\"metric\",\"key\":\"byte\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"pps\",\"params\":[],\"uuid\":\"a0f1d533-dff1-5f56-9e08-7e4e4dc6f5e3\",\"subFuncs\":[{\"func\":\"Math\",\"op\":\"MULTIPLY\",\"params\":8},{\"func\":\"PerSecond\"}],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"retrans_ratio\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"93b6c2a3-0fe8-f395-b93f-4bbd34907c69\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"tcp_establish_fail_ratio\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"e4ff95e7-ccc2-a39b-e40a-33b909affb1e\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"rtt\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"798012c7-8ac1-2c95-7951-1437ff0fc5b8\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"art\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"c2d10e25-15f5-8a98-9f10-20af3a947237\",\"subFuncs\":[],\"whereOnly\":false}],\"where\":[{\"type\":\"tag\",\"key\":\"chost_1\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$vm\",\"value\":\"vm\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"49c0581a-7483-82b2-9c77-9120f51d5b59\",\"subFuncs\":[],\"whereOnly\":false,\"sideType\":\"to\"}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"1f4673b2-d389-0cb5-6d2e-c286dc1ed557\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"resource_gl0_0\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"7ae59f67-27a5-d4dc-a88d-153e7d8a07cd\",\"sideType\":\"from\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"chost_1\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"8fd24630-b01c-611e-6ac0-3e7c4f9f750b\",\"sideType\":\"to\",\"subFuncs\":[],\"whereOnly\":false}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"b0d1325b-4cfa-f690-c821-e42caae24525\",\"sort\":\"asc\"}],\"interval\":\"\",\"limit\":\"100\",\"offset\":\"\",\"formatAs\":\"\",\"alias\":\"\"}",
+          "queryText": "{\"appType\":\"accessRelationship\",\"db\":\"flow_metrics\",\"sources\":\"1m\",\"from\":\"vtap_flow_edge_port\",\"select\":[{\"type\":\"metric\",\"key\":\"byte\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"pps\",\"params\":[],\"uuid\":\"a0f1d533-dff1-5f56-9e08-7e4e4dc6f5e3\",\"subFuncs\":[{\"func\":\"Math\",\"op\":\"MULTIPLY\",\"params\":8},{\"func\":\"PerSecond\"}],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"retrans_ratio\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"93b6c2a3-0fe8-f395-b93f-4bbd34907c69\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"tcp_establish_fail_ratio\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"e4ff95e7-ccc2-a39b-e40a-33b909affb1e\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"rtt\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"798012c7-8ac1-2c95-7951-1437ff0fc5b8\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"art\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"c2d10e25-15f5-8a98-9f10-20af3a947237\",\"subFuncs\":[],\"whereOnly\":false}],\"where\":[{\"type\":\"tag\",\"key\":\"chost_1\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$vm\",\"value\":\"vm\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"49c0581a-7483-82b2-9c77-9120f51d5b59\",\"subFuncs\":[],\"whereOnly\":false,\"sideType\":\"to\"}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"1f4673b2-d389-0cb5-6d2e-c286dc1ed557\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"resource_gl0_0\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"69574e7e-78a9-4287-6ee4-293e805da2a5\",\"sideType\":\"from\",\"subFuncs\":[],\"whereOnly\":false,\"isResourceType\":true},{\"type\":\"tag\",\"key\":\"chost_1\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"cbcd0200-6a92-be52-5520-ec04185664fe\",\"sideType\":\"to\",\"subFuncs\":[],\"whereOnly\":false,\"isResourceType\":true},{\"type\":\"tag\",\"key\":\"tap_side\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"d0a1c56d-92f8-0051-07da-c4d011e17af3\",\"subFuncs\":[],\"whereOnly\":false,\"isResourceType\":false}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"b0d1325b-4cfa-f690-c821-e42caae24525\",\"sort\":\"asc\"}],\"interval\":\"\",\"limit\":\"100\",\"offset\":\"\",\"formatAs\":\"\",\"alias\":\"\"}",
           "refId": "A"
         }
       ],
@@ -864,7 +872,10 @@
       "id": 20,
       "panels": [
         {
-          "datasource": {},
+          "datasource": {
+            "type": "deepflow-querier-datasource",
+            "uid": "DeepFlow"
+          },
           "gridPos": {
             "h": 20,
             "w": 13,
@@ -872,13 +883,18 @@
             "y": 32
           },
           "id": 42,
+          "options": {
+            "topoSettings": {
+              "type": "simpleTopo"
+            }
+          },
           "targets": [
             {
               "datasource": {
                 "type": "deepflow-querier-datasource",
                 "uid": "DEEPFLOW"
               },
-              "queryText": "{\"appType\":\"accessRelationship\",\"db\":\"flow_metrics\",\"sources\":\"1m\",\"from\":\"vtap_flow_edge_port\",\"select\":[{\"type\":\"metric\",\"key\":\"byte\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"pps\",\"params\":[],\"uuid\":\"a0f1d533-dff1-5f56-9e08-7e4e4dc6f5e3\",\"subFuncs\":[{\"func\":\"Math\",\"op\":\"MULTIPLY\",\"params\":8},{\"func\":\"PerSecond\"}],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"retrans_ratio\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"93b6c2a3-0fe8-f395-b93f-4bbd34907c69\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"tcp_establish_fail_ratio\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"e4ff95e7-ccc2-a39b-e40a-33b909affb1e\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"rtt\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"798012c7-8ac1-2c95-7951-1437ff0fc5b8\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"art\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"c2d10e25-15f5-8a98-9f10-20af3a947237\",\"subFuncs\":[],\"whereOnly\":false}],\"where\":[{\"type\":\"tag\",\"key\":\"chost_0\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$vm\",\"value\":\"vm\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"b053c8a1-f918-34ad-04de-d0301eb0539d\",\"subFuncs\":[],\"whereOnly\":false,\"sideType\":\"from\"}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"1f4673b2-d389-0cb5-6d2e-c286dc1ed557\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"chost_0\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"6bb4c2f2-7ab1-a24f-b687-2433690b8feb\",\"sideType\":\"from\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"tag\",\"key\":\"resource_gl0_1\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"53f14573-8be6-cbd6-8f62-d25361334244\",\"sideType\":\"to\",\"subFuncs\":[],\"whereOnly\":false}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"b0d1325b-4cfa-f690-c821-e42caae24525\",\"sort\":\"asc\"}],\"interval\":\"\",\"limit\":\"100\",\"offset\":\"\",\"formatAs\":\"\",\"alias\":\"\"}",
+              "queryText": "{\"appType\":\"accessRelationship\",\"db\":\"flow_metrics\",\"sources\":\"1m\",\"from\":\"vtap_flow_edge_port\",\"select\":[{\"type\":\"metric\",\"key\":\"byte\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"pps\",\"params\":[],\"uuid\":\"a0f1d533-dff1-5f56-9e08-7e4e4dc6f5e3\",\"subFuncs\":[{\"func\":\"Math\",\"op\":\"MULTIPLY\",\"params\":8},{\"func\":\"PerSecond\"}],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"retrans_ratio\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"93b6c2a3-0fe8-f395-b93f-4bbd34907c69\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"tcp_establish_fail_ratio\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"e4ff95e7-ccc2-a39b-e40a-33b909affb1e\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"rtt\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"798012c7-8ac1-2c95-7951-1437ff0fc5b8\",\"subFuncs\":[],\"whereOnly\":false},{\"type\":\"metric\",\"key\":\"art\",\"func\":\"Avg\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"c2d10e25-15f5-8a98-9f10-20af3a947237\",\"subFuncs\":[],\"whereOnly\":false}],\"where\":[{\"type\":\"tag\",\"key\":\"chost_0\",\"func\":\"\",\"op\":\"LIKE\",\"val\":[{\"label\":\"$vm\",\"value\":\"vm\",\"isVariable\":true}],\"as\":\"\",\"params\":[],\"uuid\":\"b053c8a1-f918-34ad-04de-d0301eb0539d\",\"subFuncs\":[],\"whereOnly\":false,\"sideType\":\"from\"}],\"having\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"1f4673b2-d389-0cb5-6d2e-c286dc1ed557\"}],\"groupBy\":[{\"type\":\"tag\",\"key\":\"chost_0\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"4c53a8c4-c05d-8d45-6b6c-37d7152b3187\",\"sideType\":\"from\",\"subFuncs\":[],\"whereOnly\":false,\"isResourceType\":true},{\"type\":\"tag\",\"key\":\"resource_gl0_1\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"9165abc4-e3df-c596-c782-46f44aaa5e90\",\"sideType\":\"to\",\"subFuncs\":[],\"whereOnly\":false,\"isResourceType\":true},{\"type\":\"tag\",\"key\":\"tap_side\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"7f1d6f0c-7b12-2f7c-d600-354f7bd2b80d\",\"subFuncs\":[],\"whereOnly\":false,\"isResourceType\":false}],\"orderBy\":[{\"type\":\"metric\",\"key\":\"\",\"func\":\"\",\"op\":\"\",\"val\":\"\",\"as\":\"\",\"params\":[],\"uuid\":\"b0d1325b-4cfa-f690-c821-e42caae24525\",\"sort\":\"asc\"}],\"interval\":\"\",\"limit\":\"100\",\"offset\":\"\",\"formatAs\":\"\",\"alias\":\"\"}",
               "refId": "A"
             }
           ],
@@ -925,7 +941,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -1018,7 +1035,8 @@
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green"
+                    "color": "green",
+                    "value": null
                   },
                   {
                     "color": "red",
@@ -1675,6 +1693,6 @@
   "timezone": "",
   "title": "Network - Cloud Host Map",
   "uid": "Network_Cloud_Host_Map",
-  "version": 2,
+  "version": 5,
   "weekStart": ""
 }
