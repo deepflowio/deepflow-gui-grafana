@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { InlineField, Select } from '@grafana/ui'
 import { StandardEditorProps } from '@grafana/data'
 
@@ -21,23 +21,74 @@ export type TOPO_TYPE = 'simpleTopo' | 'treeTopo' | 'treeTopoWithGroup'
 export const TopoTypeSelector: React.FC<
   StandardEditorProps<{
     type: TOPO_TYPE
+    nodeTags: string[]
   }>
 > = ({ item, value, onChange, context }) => {
+  const nodeTags = useMemo(() => {
+    const customData = context.data[0]?.meta?.custom
+    if (!customData) {
+      return []
+    }
+    const { from, to, common } = context.data[0]?.meta?.custom as {
+      returnMetrics: any[]
+      returnTags: any[]
+      from: string[]
+      to: string[]
+      common: string[]
+    }
+
+    return [
+      'node_type',
+      ...new Set(
+        [...from, ...to].map(e => {
+          return e.replace('_0', '').replace('_1', '').replace('_id', '')
+        })
+      ),
+      ...common
+    ].map(e => {
+      return {
+        label: e,
+        value: e
+      }
+    })
+  }, [context])
+
   return (
-    <div>
-      <InlineField>
+    <div
+      style={{
+        width: '100%'
+      }}
+    >
+      <InlineField label="Type" className="options-custom-label">
         <Select
           options={TOPO_TYPE_OPTS}
           value={value.type}
           onChange={(val: any) => {
             onChange({
               ...value,
-              type: val.value
+              type: val.value,
+              ...(val.value === 'simpleTopo' ? { nodeTags: [] } : {})
             })
           }}
           placeholder="Topo Type"
         />
       </InlineField>
+      {value.type === 'simpleTopo' ? null : (
+        <InlineField label="Node tags" className="options-custom-label">
+          <Select
+            options={nodeTags}
+            value={value.nodeTags}
+            onChange={(val: any) => {
+              onChange({
+                ...value,
+                nodeTags: val.map((e: any) => e.value).slice(0, 4)
+              })
+            }}
+            isMulti
+            placeholder="Node tags"
+          />
+        </InlineField>
+      )}
     </div>
   )
 }

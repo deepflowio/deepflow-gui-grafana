@@ -16,7 +16,7 @@ interface ComProps {
   panelWidthHeight: {
     width: number
     height: number
-    isMultiRefIds: boolean
+    isMultiRefIds?: boolean
   }
   onRowClick?: (item: any) => void
   highLightRow?: (item: any) => { className?: 'high-light' }

@@ -1,10 +1,9 @@
-import React, { useState, useRef, useMemo, useCallback, useEffect } from 'react'
-import { DataSourceInstanceSettings, PanelProps } from '@grafana/data'
+import React, { useState, useRef, useMemo, useEffect } from 'react'
+import { PanelProps } from '@grafana/data'
 import { SimpleOptions } from 'types'
 import './SimplePanel.css'
 import _ from 'lodash'
 import { Select, Alert, InlineField } from '@grafana/ui'
-import { getDataSourceSrv } from '@grafana/runtime'
 import {
   addSvg,
   fitSvgToContainer,
@@ -41,9 +40,12 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
   const topoType = useMemo(() => {
     return options.topoSettings.type
   }, [options])
+  const nodeDisplayTags = useMemo(() => {
+    return options.topoSettings.nodeTags
+  }, [options])
   const [errMsg, setErrMsg] = useState('')
   const [chartContainer, setChartContainer] = useState<any>(undefined)
-  const [targetIndex, setTargetIndex] = useState(0)
+  const targetIndex = 0
   const [noData, setNoData] = useState(false)
 
   const [tooltipContent, setTooltipContent] = useState({})
@@ -63,7 +65,14 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         })
       : []
   }, [request])
-  const isMultiRefIds = refIds.length > 1
+  useEffect(() => {
+    const isMultiRefIds = refIds.length > 1
+    if (isMultiRefIds) {
+      setErrMsg('Not support multi query')
+    } else {
+      setErrMsg('')
+    }
+  }, [refIds])
   const selectedData = useMemo(() => {
     if (series[targetIndex]?.fields === undefined || !series[targetIndex]?.fields?.length) {
       setNoData(true)
@@ -78,34 +87,27 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     }
     setTooltipContent({})
     return series[targetIndex]
-  }, [series, targetIndex, chartContainer])
+  }, [series, chartContainer])
 
-  const [queryConfig, setQueryConfig] = useState<
-    { returnMetrics: any[]; returnTags: any[]; from: string[]; to: string[]; common: string[] } | undefined
-  >(undefined)
-  const getConfigByRefId = useCallback(async () => {
-    const deepFlowName = await getDataSourceSrv()
-      .getList()
-      .find((dataSource: DataSourceInstanceSettings) => {
-        return dataSource.type === 'deepflow-querier-datasource'
-      })?.name
-    const deepFlow = await getDataSourceSrv().get(deepFlowName)
-    const refId = refIds[targetIndex].label
-    const result = deepFlow
-      ? // @ts-ignore
-        (deepFlow.getQueryConfig(refId) as {
-          returnMetrics: any[]
-          returnTags: any[]
-          from: string[]
-          to: string[]
-          common: string[]
-        })
-      : undefined
-    setQueryConfig(result)
-  }, [refIds, targetIndex])
-  useEffect(() => {
-    getConfigByRefId()
-  }, [getConfigByRefId, selectedData])
+  const queryConfig = useMemo(() => {
+    const customData = series[targetIndex]?.meta?.custom
+    if (!customData) {
+      return {
+        returnMetrics: [],
+        returnTags: [],
+        from: [],
+        to: [],
+        common: []
+      }
+    }
+    return series[targetIndex]?.meta?.custom as {
+      returnMetrics: any[]
+      returnTags: any[]
+      from: string[]
+      to: string[]
+      common: string[]
+    }
+  }, [series])
 
   const [groupTag, setGroupTag] = useState('')
   const groupTagOpts = useMemo(() => {
@@ -113,7 +115,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       return []
     }
     const { from, to, common } = queryConfig
-    return [
+    const result = [
       ...new Set(
         [...from, ...to].map(e => {
           return e.replace('_0', '').replace('_1', '').replace('_id', '')
@@ -126,7 +128,18 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         value: e
       }
     })
+    return result
   }, [queryConfig, topoType])
+
+  useEffect(() => {
+    if (
+      !groupTagOpts.find(e => {
+        return e.value === groupTag
+      })
+    ) {
+      setGroupTag('')
+    }
+  }, [groupTagOpts, groupTag])
 
   const sourceSide = useMemo(() => {
     if (!queryConfig?.from?.length) {
@@ -277,11 +290,21 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
             id: e['from'],
             node_type: e['client_node_type'],
             displayName: _.get(e, ['client_resource']),
+            nodeDisplayTags: Object.fromEntries(
+              nodeDisplayTags.map(tag => {
+                if (tag === 'node_type') {
+                  return [tag, e['client_node_type']]
+                }
+                const key = tag in e ? tag : tag + '_0'
+                return [tag, _.get(e, [key], '未知')]
+              })
+            ),
             tags: {
               node_type: e['client_node_type'],
               ...Object.fromEntries(
                 [...queryConfig.from, ..._commonTags].map(tag => {
-                  return [tag, e[tag]]
+                  const _tag = tag.replace('_id', '')
+                  return [_tag.replace('_0', ''), e[_tag]]
                 })
               )
             },
@@ -296,11 +319,21 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
             id: e['to'],
             node_type: e['server_node_type'],
             displayName: _.get(e, ['server_resource']),
+            nodeDisplayTags: Object.fromEntries(
+              nodeDisplayTags.map(tag => {
+                if (tag === 'node_type') {
+                  return [tag, e['server_node_type']]
+                }
+                const key = tag in e ? tag : tag + '_1'
+                return [tag, _.get(e, [key], '未知')]
+              })
+            ),
             tags: {
               node_type: e['server_node_type'],
               ...Object.fromEntries(
                 [...queryConfig.to, ..._commonTags].map(tag => {
-                  return [tag, e[tag]]
+                  const _tag = tag.replace('_id', '')
+                  return [_tag.replace('_1', ''), e[_tag]]
                 })
               )
             },
@@ -315,7 +348,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       })
       .flat(Infinity)
     return _.uniqBy(result, 'id')
-  }, [links, queryConfig])
+  }, [links, queryConfig, nodeDisplayTags])
 
   const panelRef = useRef(null)
   const [randomClassName, setRandomClassName] = useState('')
@@ -372,10 +405,13 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
               getLinkSize: (d: Link<LinkItem>): number => 2,
               getMetrics: (node: Node<NodeItem>) => {
                 const tags = node.data.tags
-                return Object.keys(tags).map(key => {
+                const nodeDisplayTags = node.data.nodeDisplayTags
+                const result = Object.keys(nodeDisplayTags)?.length ? nodeDisplayTags : tags
+
+                return Object.keys(result).map(key => {
                   return {
                     key,
-                    value: tags[key]
+                    value: result[key]
                   }
                 })
               },
@@ -395,7 +431,9 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         renderOptions
       )
       const { nodes: _nodes, links: _links } = handler
-      if (topoType !== 'simpleTopo') {
+      if (topoType === 'simpleTopo') {
+        simpleTopoRender.bindDefaultMouseEvent(handler.links, handler.nodes, chartContainer)
+      } else {
         handler.render(handler.nodes, handler.links)
         treeTopoRender.bindDefaultMouseEvent(handler.links, handler.nodes, handler.svg)
       }
@@ -409,7 +447,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
           if (topoType !== 'simpleTopo') {
             const type = _.get(link, ['props', 'type'])
             const currentMetrics = _.get(link, ['data', 'metrics'], {})
-            const otherMetrics = _.get(link, ['data', 'props', 'otherSide', 'data', 'metrics'], {})
+            const otherMetrics = _.get(link, ['props', 'otherSide', 'data', 'metrics'], {})
             metricsObj =
               type === 'single'
                 ? currentMetrics
@@ -466,27 +504,15 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       const key = keysArr.find((key: string) => {
         return key in data.originalData
       })
-      return key ? data.originalData[key] : key
+      return key ? data.originalData[key] : '未知'
     })
   }, [topoHandler, groupTag])
 
   return (
     <div ref={panelRef} className="topo-actions-wrap">
       <div className="actions-warp">
-        {isMultiRefIds ? (
-          <InlineField className="custom-label" label="REF ID" labelWidth={7}>
-            <Select
-              options={refIds}
-              value={targetIndex}
-              onChange={v => {
-                setGroupTag('')
-                setTargetIndex(v.value as number)
-              }}
-            ></Select>
-          </InlineField>
-        ) : null}
         {topoType === 'treeTopoWithGroup' ? (
-          <InlineField className="custom-label" label="CLUSTER BY" labelWidth={12}>
+          <InlineField label="CLUSTER BY" labelWidth={12}>
             <Select
               options={groupTagOpts}
               value={groupTag}
