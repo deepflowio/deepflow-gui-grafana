@@ -164,7 +164,22 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           })
         })
         const usingGroupBy = sql.includes('group by') && queryData.formatAs === 'timeSeries'
-
+        const meta = {
+          custom: {
+            returnTags: returnTags
+              .filter((e: any) => {
+                return !e.name.includes('time')
+              })
+              .map((e: any) => {
+                return {
+                  ...e,
+                  name: e.name.replace(/'/g, '')
+                }
+              }),
+            returnMetrics,
+            ...(queryData.appType === 'accessRelationship' ? getAccessRelationshipeQueryConfig(queryData.groupBy) : {})
+          }
+        }
         if (!usingGroupBy) {
           const a = new MutableDataFrame({
             refId: target.refId,
@@ -181,7 +196,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                   type: type
                 }
               })
-            ]
+            ],
+            meta
           })
           response.forEach((e: any) => {
             a.add(e)
@@ -224,7 +240,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                   type: type
                 }
               })
-            ]
+            ],
+            meta
           })
           item.forEach((e, i) => {
             _.forIn(e, (val, key) => {
@@ -430,7 +447,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       return {
         services: services,
         tracing: tracing.map((e: any) => {
-          const _l7_protocol = _.get(l7ProtocolValuesMap, [e.l7_protocol, 'display_name'], e.l7_protocol)
+          const _l7_protocol =
+            e + '' === '0' ? '' : _.get(l7ProtocolValuesMap, [e.l7_protocol, 'display_name'], e.l7_protocol)
           return {
             ...e,
             _l7_protocol
@@ -440,7 +458,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       }
     } catch (error) {
       console.log(error)
-      return new Error('aaa')
       throw error
     }
   }

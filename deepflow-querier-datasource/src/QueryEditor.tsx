@@ -1259,7 +1259,7 @@ export class QueryEditor extends PureComponent<Props> {
                       })}
                     </div>
                   </InlineField>
-                  {conf.targetDataKey === 'groupBy' ? (
+                  {conf.targetDataKey === 'groupBy' && !this.usingAppTraceType && !this.usingAccessRelationshipType ? (
                     <InlineField className="custom-label" label="INTERVAL" labelWidth={10}>
                       <div className="w-100-percent">
                         <Select
@@ -1270,7 +1270,6 @@ export class QueryEditor extends PureComponent<Props> {
                           placeholder="TIME"
                           isClearable={true}
                           width={36.5}
-                          disabled={this.usingAppTraceType || this.usingAccessRelationshipType}
                         />
                       </div>
                     </InlineField>

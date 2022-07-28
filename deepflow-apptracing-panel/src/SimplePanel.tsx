@@ -6,7 +6,7 @@ import './SimplePanel.css'
 import { Button } from '@douyinfe/semi-ui'
 import { IconArrowLeft } from '@douyinfe/semi-icons'
 import { ColumnProps } from '@douyinfe/semi-ui/lib/es/table'
-import { Alert, Select } from '@grafana/ui'
+import { Alert } from '@grafana/ui'
 import _ from 'lodash'
 import { getDataSourceSrv } from '@grafana/runtime'
 import { renderTimeBar, addSvg, fitSvgToContainer, TAP_SIDE_OPTIONS_MAP } from 'deepflow-vis-js'
@@ -17,17 +17,27 @@ import { calcTableCellWidth, getStringLen, formatDetailData, tarnsArrayToTableDa
 interface Props extends PanelProps<SimpleOptions> {}
 
 export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
-  const { series, request } = data
-  const refIds = request?.targets
-    ? request.targets.map((target, index) => {
-        return {
-          value: index,
-          label: target.refId
-        }
-      })
-    : []
-
   const [errMsg, setErrMsg] = useState('')
+
+  const { series, request } = data
+  const refIds = useMemo(() => {
+    return request?.targets
+      ? request.targets.map((target, index) => {
+          return {
+            value: index,
+            label: target.refId
+          }
+        })
+      : []
+  }, [request])
+  useEffect(() => {
+    const isMultiRefIds = refIds.length > 1
+    if (isMultiRefIds) {
+      setErrMsg('Not support multi query')
+    } else {
+      setErrMsg('')
+    }
+  }, [refIds])
   const [selectedServiceRowId, setSelectedServiceRowId] = useState('')
   const [flameContainer, setFlameContainer] = useState<any>(undefined)
   const [flameChart, setFlameChart] = useState<any>(undefined)
@@ -167,7 +177,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     setStartTableLoading(false)
   }, [])
 
-  const [targetIndex, setTargetIndex] = useState(0)
+  const [targetIndex] = useState(0)
   const startTableData = useMemo(() => {
     setHoveredBarData(undefined)
     const columnFixedRight = 'right' as const
@@ -277,30 +287,17 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       dataSource
     }
   }, [detailData, detailFilteIds])
-
-  const isMultiRefIds = refIds.length > 1
   const panelWidthHeight = useMemo(() => {
     return {
       width: debouncedWidth,
-      height: debouncedHeight,
-      isMultiRefIds
+      height: debouncedHeight
     }
-  }, [debouncedWidth, debouncedHeight, isMultiRefIds])
+  }, [debouncedWidth, debouncedHeight])
 
   return (
     <div ref={panelRef} className={`deepflow-panel ${isDark ? 'semi-always-dark' : 'semi-always-light'}`}>
       <div className="content" style={contentTranslateX}>
         <div className="table-and-select">
-          {isMultiRefIds ? (
-            <Select
-              className={'ref-select'}
-              options={refIds}
-              value={targetIndex}
-              onChange={v => {
-                setTargetIndex(v.value as number)
-              }}
-            ></Select>
-          ) : null}
           <DYTable
             className={'table-wrap'}
             panelWidthHeight={panelWidthHeight}

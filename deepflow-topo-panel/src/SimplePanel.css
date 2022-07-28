@@ -17,8 +17,13 @@
   padding: 4px;
 }
 
-.custom-label > label {
-  color: #33a2e5;
+.options-custom-label {
+  width: 100%;
+  overflow: hidden;
+}
+
+.options-custom-label > div {
+  flex: 1;
 }
 
 .chart-container {

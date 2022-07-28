@@ -10,7 +10,8 @@ export const plugin = new PanelPlugin<SimpleOptions>(SimplePanel).setPanelOption
     name: 'Topo Settings',
     editor: TopoTypeSelector,
     defaultValue: {
-      type: TOPO_TYPE_OPTS[0].value
+      type: TOPO_TYPE_OPTS[0].value,
+      nodeTags: []
     }
   })
 })
