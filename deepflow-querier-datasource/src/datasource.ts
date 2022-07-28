@@ -287,10 +287,13 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         time_end,
         time_start
       }
+      const debugOnOff = getParamByName('debug') === 'true'
       const { services, tracing } = await getBackendSrv()
         .fetch({
           method: 'POST',
-          url: `${DATA_SOURCE_SETTINGS.basicUrl}/trace/v1/stats/querier/L7FlowTracing`,
+          url: `${DATA_SOURCE_SETTINGS.basicUrl}/trace/v1/stats/querier/L7FlowTracing${
+            debugOnOff ? '?debug=true' : ''
+          }`,
           headers: {
             'Content-Type': 'application/json',
             'X-User-Id': '1',

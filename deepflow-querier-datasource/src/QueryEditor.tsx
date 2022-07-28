@@ -16,6 +16,7 @@ export type LabelItem = {
   label: string
   value: string | number
   isVariable?: boolean
+  variableType?: string
 }
 
 export type SelectOpts = LabelItem[]
@@ -492,6 +493,14 @@ export class QueryEditor extends PureComponent<Props> {
       : null
   }
 
+  get intervalOptsWithVariables(): SelectOpts {
+    return this.state.templateVariableOpts
+      .filter(item => {
+        return item.variableType === 'interval'
+      })
+      .concat(intervalOpts)
+  }
+
   setSourcesChange(val: LabelItem & { dataSources: null | string[] }) {
     const { dataSources } = val
     if (Array.isArray(dataSources)) {
@@ -871,7 +880,8 @@ export class QueryEditor extends PureComponent<Props> {
             return {
               label: `$${item.name}`,
               value: item.name,
-              isVariable: true
+              isVariable: true,
+              variableType: item.type
             }
           })
           .flat(Infinity)
@@ -1172,7 +1182,9 @@ export class QueryEditor extends PureComponent<Props> {
                       {this.state[conf.targetDataKey].map((item: BasicDataWithId, index: number) => {
                         return (
                           <QueryEditorFormRow
-                            templateVariableOpts={templateVariableOpts}
+                            templateVariableOpts={templateVariableOpts.filter(item => {
+                              return item.variableType !== 'interval' && item.variableType !== 'datasource'
+                            })}
                             config={formItemConfigs[conf.targetDataKey]}
                             basicData={item}
                             gotBasicData={this.state.gotBasicData}
@@ -1252,7 +1264,7 @@ export class QueryEditor extends PureComponent<Props> {
                       <div className="w-100-percent">
                         <Select
                           key={this.state.interval ? 'intervalWithVal' : 'intervalWithoutVal'}
-                          options={intervalOpts}
+                          options={this.intervalOptsWithVariables}
                           value={this.state.interval}
                           onChange={(val: any) => this.onFieldChange('interval', val)}
                           placeholder="TIME"
