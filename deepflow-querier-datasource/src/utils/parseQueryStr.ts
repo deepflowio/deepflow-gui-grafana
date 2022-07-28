@@ -4,6 +4,7 @@ import { BasicData } from 'components/QueryEditorFormRow'
 import _ from 'lodash'
 import { LabelItem } from 'QueryEditor'
 import { MyQuery } from 'types'
+import { QUERY_DATA_CACHE } from './cache'
 
 // Secondary Operators and Concatenated Strings Map:
 // {
@@ -241,12 +242,10 @@ function getValueByVariablesName(val: LabelItem, variables: any[], op: string) {
   return result !== undefined ? result : val.value
 }
 
-function whereFormat(data: any) {
+function whereFormat(data: any, variables: any[]) {
   const { where, having } = data
   const fullData = where.concat(having)
   const validKeys = ['type', 'key', 'func', 'op', 'val', 'params', 'subFuncs', 'whereOnly'] as const
-  const templateSrv = getTemplateSrv()
-  const variables = templateSrv.getVariables() as any[]
   const result = fullData
     .filter((item: BasicData) => {
       return item.key
@@ -328,14 +327,60 @@ function whereFormat(data: any) {
   return jointOrAnd(_tags).concat(_metrics)
 }
 
-function groupByFormat(data: any) {
+const UNIT_TO_S: Record<any, (n: number) => number> = {
+  ms: (n: number) => {
+    return n / 1000
+  },
+  s: (n: number) => {
+    return n
+  },
+  m: (n: number) => {
+    return n * 60
+  },
+  h: (n: number) => {
+    return n * 60 * 60
+  },
+  d: (n: number) => {
+    return n * 60 * 60 * 24
+  }
+}
+function intervalTrans(intervalWithUnit: string, variableItem: any) {
+  if (intervalWithUnit === '$__auto_interval_intervaltest') {
+    if (QUERY_DATA_CACHE.time_start === undefined || QUERY_DATA_CACHE.time_end === undefined) {
+      return intervalWithUnit
+    }
+    const range = QUERY_DATA_CACHE.time_end - QUERY_DATA_CACHE!.time_start
+    const { auto_count, auto_min } = variableItem
+    const min_num = parseFloat(auto_min)
+    const min_unit = auto_min.split(`${min_num}`)[1]
+    const min_interval = UNIT_TO_S[min_unit] ? UNIT_TO_S[min_unit](min_num) : 0
+    const _interval = range / auto_count
+    return (_interval < min_interval ? min_interval : _interval) + ''
+  }
+  const num = parseFloat(intervalWithUnit)
+  const unit = intervalWithUnit.split(`${num}`)[1]
+  return UNIT_TO_S[unit] ? UNIT_TO_S[unit](num) + '' : intervalWithUnit
+}
+
+function getInterval(intervalStr: string, variables: any[]) {
+  const variableItem = variables.find(e => {
+    return intervalStr === e.name
+  })
+  if (!variableItem) {
+    return intervalStr
+  }
+  const interval = _.get(variableItem, ['current', 'value'], '')
+  return isNaN(Number(interval)) ? intervalTrans(interval, variableItem) : interval
+}
+
+function groupByFormat(data: any, variables: any[]) {
   return [
     ...(data.interval
       ? [
           {
             func: 'interval',
             key: 'time',
-            params: data.interval,
+            params: getInterval(data.interval, variables),
             as: `time_${data.interval}`
           }
         ]
@@ -409,6 +454,8 @@ function queryTextFormat(queryData: any) {
     [K in KeyTypes]?: string | BasicData[]
   }
   const data = queryData as Data
+  const templateSrv = getTemplateSrv()
+  const variables = templateSrv.getVariables() as any[]
   return {
     format: 'sql',
     db: data.db,
@@ -419,11 +466,11 @@ function queryTextFormat(queryData: any) {
         {
           id: '0',
           isForbidden: false,
-          condition: whereFormat(data)
+          condition: whereFormat(data, variables)
         }
       ]
     },
-    groupBy: groupByFormat(data),
+    groupBy: groupByFormat(data, variables),
     orderBy: orderByFormat(data.orderBy as BasicData[]),
     limit: data.limit,
     offset: data.offset

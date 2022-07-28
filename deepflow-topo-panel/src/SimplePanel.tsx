@@ -486,7 +486,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
           </InlineField>
         ) : null}
         {topoType === 'treeTopoWithGroup' ? (
-          <InlineField className="custom-label" label="CLUSTER BY" labelWidth={11}>
+          <InlineField className="custom-label" label="CLUSTER BY" labelWidth={12}>
             <Select
               options={groupTagOpts}
               value={groupTag}
