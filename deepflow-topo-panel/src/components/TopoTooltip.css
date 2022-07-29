@@ -1,0 +1,44 @@
+.topo-tooltip {
+  position: fixed;
+  z-index: 9999;
+  padding: 2px;
+  background-color: #3B4860;
+  color: #fff;
+  border: 1px solid #566C89;
+  border-radius: 2px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.topo-tooltip p {
+  width: 100%;
+  font-size: 12px;
+  padding: 0 4px;
+  margin: 0;
+  height: 18px;
+}
+
+.topo-tooltip .labels-wrap {
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-end;
+}
+
+.topo-tooltip .labels-wrap p {
+  text-align: right;
+}
+
+.topo-tooltip .values-wrap {
+  flex: 1;
+  word-break: break-all;
+}
+
+.topo-tooltip .divider {
+  width: 100%;
+  height: 1px;
+  background: #fff;
+}

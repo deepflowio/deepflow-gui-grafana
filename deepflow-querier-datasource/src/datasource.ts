@@ -87,7 +87,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     QUERY_DATA_CACHE.time_start = from
     QUERY_DATA_CACHE.time_end = to
 
-    const queryConfig: any = {}
     let data = await Promise.all(
       options.targets.map(async target => {
         if (target.hide || !target.queryText) {
@@ -131,11 +130,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         })
         // @ts-ignore
         response = querierJs.addResourceFieldsInData(response)
-        queryConfig[target.refId] = {
-          returnTags,
-          returnMetrics,
-          ...(queryData.appType === 'accessRelationship' ? getAccessRelationshipeQueryConfig(queryData.groupBy) : {})
-        }
 
         const firstResponse = response[0] || []
         const keys = Object.keys(firstResponse).filter((key: string) => !key.includes('_id'))
@@ -272,7 +266,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         throw e
       })
 
-    QUERY_DATA_CACHE['config'] = queryConfig
     return { data }
   }
 
@@ -322,7 +315,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         .then((res: any) => {
           return res?.data?.DATA || {}
         })
-
+      if (!services || !tracing) {
+        throw new Error('No data')
+      }
       let detailList: Record<any, any> = {}
       if (Array.isArray(services) && services.length) {
         // @ts-ignore
@@ -447,8 +442,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       return {
         services: services,
         tracing: tracing.map((e: any) => {
-          const _l7_protocol =
-            e + '' === '0' ? '' : _.get(l7ProtocolValuesMap, [e.l7_protocol, 'display_name'], e.l7_protocol)
+          const _l7_protocol = [0, 1].includes(e.l7_protocol)
+            ? ''
+            : _.get(l7ProtocolValuesMap, [e.l7_protocol, 'display_name'], e.l7_protocol)
           return {
             ...e,
             _l7_protocol
@@ -458,30 +454,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       }
     } catch (error) {
       console.log(error)
-      throw error
-    }
-  }
-
-  getQueryConfig(refId?: string) {
-    if (!refId) {
-      return QUERY_DATA_CACHE['config']
-    }
-    const { returnTags } = QUERY_DATA_CACHE['config'][refId] || {}
-    const _returnTags = returnTags
-      ? returnTags
-          .filter(e => {
-            return !e.name.includes('time')
-          })
-          .map(e => {
-            return {
-              ...e,
-              name: e.name.replace(/'/g, '')
-            }
-          })
-      : []
-    return {
-      ...(QUERY_DATA_CACHE['config'][refId] || {}),
-      returnTags: _returnTags
+      return error
     }
   }
 
