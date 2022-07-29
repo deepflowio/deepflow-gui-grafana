@@ -1,11 +1,25 @@
 import _ from 'lodash'
 import React, { useMemo } from 'react'
+import ReactDOM from 'react-dom'
+import { formatUsUnit } from '../utils/tools'
+import './FlameTooltip.css'
 
 interface Props {
   barData: {} | undefined
   mousePos: {
     x: number
     y: number
+  }
+}
+
+const getTooltipSpanContent = (data: any) => {
+  if (data._barType === 'network') {
+    const tapPortName = data.tap_port_name ? `(${data.tap_port_name})` : ''
+    return `${data.tap_port} ${tapPortName} ${data.resource_from_vtap}`
+  } else if (data._barType === 'process') {
+    return `${data.process_kname} ${data.resource_gl0}`
+  } else {
+    return `${data.service_instance_id} ${data.service_name}`
   }
 }
 
@@ -19,7 +33,7 @@ export const FlameTooltip: React.FC<Props> = ({ barData, mousePos }) => {
   }, [mousePos])
 
   const content: {
-    [P in string]: string
+    [P in string]: any
   } = useMemo(() => {
     if (!barData) {
       return {}
@@ -27,7 +41,16 @@ export const FlameTooltip: React.FC<Props> = ({ barData, mousePos }) => {
     return barData
   }, [barData])
 
-  return (
+  const getHeaderBg = (response_status: number) => {
+    const RESPONSE_STATUS_STYLE_OPTIONS = {
+      0: '#91a6b7',
+      3: 'rgb(245, 108, 108)',
+      4: 'rgb(230, 162, 60)'
+    }
+    return _.get(RESPONSE_STATUS_STYLE_OPTIONS, [response_status], '')
+  }
+
+  return ReactDOM.createPortal(
     <div
       className="flame-tooltip"
       style={{
@@ -36,17 +59,23 @@ export const FlameTooltip: React.FC<Props> = ({ barData, mousePos }) => {
         top: pos.top
       }}
     >
-      <div className="labels-wrap">
-        {Object.keys(content).map((key: string, index: number) => {
-          return <p key={index}>{key}:</p>
-        })}
-      </div>
-      <div className="values-wrap">
-        {Object.keys(content).map((key: any, index: number) => {
-          const val = typeof content[key] !== 'undefined' ? content[key] : ' '
-          return <p key={index}>{val}</p>
-        })}
-      </div>
-    </div>
+      <p style={{ background: `${getHeaderBg(content.response_status)}` }}>
+        <img className="icon" src={content._icon} />
+        {content._errorIcon ? <img className="error-icon" src={content._errorIcon} /> : null}
+        <span>{content.span_type ? ' ' + content.span_type : ''}</span>
+        <span>{content.tap_side ? ' ' + content.tap_side : ''}</span>
+      </p>
+      <p>
+        {content._l7_protocol ? content._l7_protocol + ' ' : ''}
+        {content.request_type ? content.request_type + ' ' : ''}
+        {content.request_resource}
+      </p>
+      <p>{getTooltipSpanContent(content)}</p>
+      <p>
+        {formatUsUnit(content.duration)}
+        {` ( ${formatUsUnit(content.selftime)} of self time )`}
+      </p>
+    </div>,
+    document.body
   )
 }

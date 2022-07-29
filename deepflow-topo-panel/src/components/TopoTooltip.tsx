@@ -1,5 +1,8 @@
 import _ from 'lodash'
 import React, { useMemo } from 'react'
+import ReactDOM from 'react-dom'
+
+import './TopoTooltip.css'
 
 interface Props {
   contentData: Record<any, any> | Array<Record<any, any>>
@@ -18,7 +21,7 @@ export const TopoTooltip: React.FC<Props> = ({ contentData, mousePos }) => {
     }
   }, [mousePos])
 
-  return (
+  return ReactDOM.createPortal(
     <div
       className="topo-tooltip"
       style={{
@@ -82,6 +85,7 @@ export const TopoTooltip: React.FC<Props> = ({ contentData, mousePos }) => {
           </div>
         </>
       )}
-    </div>
+    </div>,
+    document.body
   )
 }

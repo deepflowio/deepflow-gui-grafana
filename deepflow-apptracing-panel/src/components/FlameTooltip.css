@@ -1,0 +1,46 @@
+.flame-tooltip {
+  position: fixed;
+  z-index: 9999;
+  padding: 2px;
+  background-color: #3B4860;
+  color: #fff;
+  border: 1px solid #566C89;
+  border-radius: 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  min-width: 240px;
+  max-width: 500px;
+}
+
+.flame-tooltip p {
+  width: 100%;
+  font-size: 12px;
+  padding: 0 4px;
+  margin: 0;
+  height: 18px;
+  overflow:hidden;
+	text-overflow:ellipsis;
+	white-space:nowrap
+}
+
+.flame-tooltip .error-icon {
+  position: relative;
+  width: 8px;
+  left: -6px;
+  top: -6px;
+}
+
+.flame-tooltip .labels-wrap {
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-end;
+}
+
+.flame-tooltip .values-wrap {
+  flex: 1;
+  word-break: break-all;
+}

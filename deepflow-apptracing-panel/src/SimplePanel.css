@@ -122,40 +122,6 @@
   background-color: #606266;
 }
 
-.flame-tooltip {
-  position: fixed;
-  z-index: 9999;
-  padding: 2px;
-  background-color: #3B4860;
-  color: #fff;
-  border: 1px solid #566C89;
-  border-radius: 2px;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: flex-start;
-}
-
-.flame-tooltip p {
-  font-size: 12px;
-  padding: 0 4px;
-  margin: 0;
-  height: 18px;
-}
-
-.flame-tooltip .labels-wrap {
-  width: auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: flex-end;
-}
-
-.flame-tooltip .values-wrap {
-  flex: 1;
-  word-break: break-all;
-}
-
 .generic-font {
   font-family: Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
 }

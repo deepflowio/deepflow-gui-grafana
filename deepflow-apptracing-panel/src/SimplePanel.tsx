@@ -2,7 +2,6 @@ import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react'
 import { DataSourceInstanceSettings, Field, PanelProps, Vector } from '@grafana/data'
 import { SimpleOptions } from 'types'
 import { DYTable } from 'components/DYTable'
-import './SimplePanel.css'
 import { Button } from '@douyinfe/semi-ui'
 import { IconArrowLeft } from '@douyinfe/semi-icons'
 import { ColumnProps } from '@douyinfe/semi-ui/lib/es/table'
@@ -13,6 +12,8 @@ import { renderTimeBar, addSvg, fitSvgToContainer, TAP_SIDE_OPTIONS_MAP } from '
 import { FlameTooltip } from 'components/FlameTooltip'
 import { genServiceId, useDebounce } from 'utils/tools'
 import { calcTableCellWidth, getStringLen, formatDetailData, tarnsArrayToTableData } from 'utils/tables'
+
+import './SimplePanel.css'
 
 interface Props extends PanelProps<SimpleOptions> {}
 
@@ -100,6 +101,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
   const [flameData, setFlameData] = useState<undefined | {}>(undefined)
   const debouncedWidth = useDebounce(width, 600)
   const debouncedHeight = useDebounce(height, 600)
+  const [tracingItemId, setTracingItemId] = useState('')
   useEffect(() => {
     if (!flameData || !flameContainer) {
       return
@@ -123,7 +125,12 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
         })
       })
       bar.container.on('mouseenter', (ev: any) => {
-        setHoveredBarData(bar.data)
+        setHoveredBarData({
+          ...bar.data,
+          _barType: bar.props.type,
+          _icon: bar.props.icon,
+          _errorIcon: bar.props.errorIcon
+        })
       })
       bar.container.on('mousemove', (ev: MouseEvent) => {
         setTimeout(() => {
@@ -157,6 +164,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     try {
       setStartTableLoading(true)
       const { _id } = item
+      setTracingItemId(_id)
       // @ts-ignore
       const result = await deepFlow.getFlameData({ _id })
       const { services, tracing, detailList } = result
@@ -308,7 +316,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
         </div>
         <div className="flame-tables-wrap">
           <div className="flame-wrap">
-            <div className="view-title">Flame Graph</div>
+            <div className="view-title">Flame Graph {tracingItemId ? `( _id=${tracingItemId} )` : ''}</div>
             <div className={`flame ${randomClassName}`}></div>
           </div>
           <div className="tables-wrap">
@@ -347,6 +355,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       <IconArrowLeft
         className="goback-icon"
         onClick={() => {
+          setTracingItemId('')
           setViewIndex(viewIndex ? 0 : 1)
         }}
         style={{
