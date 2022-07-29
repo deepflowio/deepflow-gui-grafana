@@ -19,6 +19,8 @@ interface Props extends PanelProps<SimpleOptions> {}
 
 export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
   const [errMsg, setErrMsg] = useState('')
+  const debouncedWidth = useDebounce(width, 600)
+  const debouncedHeight = useDebounce(height, 600)
 
   const { series, request } = data
   const refIds = useMemo(() => {
@@ -85,13 +87,13 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
   }, [panelRef])
 
   useEffect(() => {
-    if (!randomClassName) {
+    if (!randomClassName || !debouncedWidth || !debouncedHeight) {
       return
     }
     const container = addSvg('.' + randomClassName)
     fitSvgToContainer(container)
     setFlameContainer(container)
-  }, [randomClassName])
+  }, [randomClassName, debouncedWidth, debouncedHeight])
 
   const [mousePos, setMousePos] = useState({
     x: 0,
@@ -99,8 +101,6 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
   })
   const [hoveredBarData, setHoveredBarData] = useState<undefined | {}>(undefined)
   const [flameData, setFlameData] = useState<undefined | {}>(undefined)
-  const debouncedWidth = useDebounce(width, 600)
-  const debouncedHeight = useDebounce(height, 600)
   const [tracingItemId, setTracingItemId] = useState('')
   useEffect(() => {
     if (!flameData || !flameContainer) {
@@ -148,7 +148,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       setFlameDetailFilter('', renderResult)
     })
     setFlameChart(renderResult)
-  }, [flameData, flameContainer, debouncedWidth, setFlameDetailFilter, setMousePos])
+  }, [flameData, flameContainer, setFlameDetailFilter, setMousePos])
 
   const [startTableLoading, setStartTableLoading] = useState(false)
   const onActive = useCallback(async (item: any) => {

@@ -15,6 +15,7 @@ import {
   treeTopoRender
 } from 'deepflow-vis-js'
 import { TopoTooltip } from 'components/TopoTooltip'
+import { useDebounce } from 'utils/tools'
 
 type NodeItem = {
   id: string
@@ -37,6 +38,9 @@ const IP_LIKELY_NODE_TYPE_TDS = [255, 0]
 const NO_GROUP_BY_TAGS = ['tap_side']
 
 export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) => {
+  const debouncedWidth = useDebounce(width, 600)
+  const debouncedHeight = useDebounce(height, 600)
+
   const topoType = useMemo(() => {
     return options.topoSettings.type
   }, [options])
@@ -358,13 +362,13 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
   }, [panelRef])
 
   useEffect(() => {
-    if (!randomClassName) {
+    if (!randomClassName || !debouncedWidth || !debouncedHeight) {
       return
     }
     const container = addSvg('.' + randomClassName)
     fitSvgToContainer(container)
     setChartContainer(container)
-  }, [randomClassName, topoType])
+  }, [randomClassName, topoType, debouncedWidth, debouncedHeight])
 
   const bodyClassName = document.body.className
   const isDark = useMemo(() => {
