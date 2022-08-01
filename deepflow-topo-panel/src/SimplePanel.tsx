@@ -293,7 +293,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
           {
             id: e['from'],
             node_type: e['client_node_type'],
-            displayName: _.get(e, ['client_resource']),
+            displayName: _.get(e, ['client_resource'], ''),
             nodeDisplayTags: Object.fromEntries(
               nodeDisplayTags.map(tag => {
                 if (tag === 'node_type') {
@@ -322,7 +322,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
           {
             id: e['to'],
             node_type: e['server_node_type'],
-            displayName: _.get(e, ['server_resource']),
+            displayName: _.get(e, ['server_resource'], ''),
             nodeDisplayTags: Object.fromEntries(
               nodeDisplayTags.map(tag => {
                 if (tag === 'node_type') {
