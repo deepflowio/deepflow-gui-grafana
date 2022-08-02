@@ -152,6 +152,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
 
   const [startTableLoading, setStartTableLoading] = useState(false)
   const onActive = useCallback(async (item: any) => {
+    setErrMsg('')
     const deepFlowName = await getDataSourceSrv()
       .getList()
       .find((dataSource: DataSourceInstanceSettings) => {
@@ -169,7 +170,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       const result = await deepFlow.getFlameData({ _id })
       const { services, tracing, detailList } = result
       if (!result || !services?.length) {
-        setErrMsg('No Data')
+        setErrMsg(result?.data?.message || 'No Data')
       } else {
         setSelectedServiceRowId('')
         setDetailFilteIds([])

@@ -15,7 +15,7 @@ import {
   treeTopoRender
 } from 'deepflow-vis-js'
 import { TopoTooltip } from 'components/TopoTooltip'
-import { useDebounce } from 'utils/tools'
+import { formatUsUnit, numberToShort, useDebounce } from 'utils/tools'
 
 type NodeItem = {
   id: string
@@ -249,7 +249,15 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
                     ...Object.fromEntries(
                       queryConfig.returnMetrics.map(metric => {
                         const key = metric.name
-                        return [key, g[key]]
+                        const type = metric.type
+                        const unit = metric.unit
+                        const val = g[key]
+
+                        if (type === 3) {
+                          return [key, formatUsUnit(val)]
+                        }
+                        const valAfterFormat = numberToShort(val)
+                        return [key, `${valAfterFormat}${valAfterFormat !== null && valAfterFormat !== '' ? unit : ''}`]
                       })
                     )
                   }
@@ -269,7 +277,15 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
                 ...Object.fromEntries(
                   queryConfig.returnMetrics.map(metric => {
                     const key = metric.name
-                    return [key, e[key]]
+                    const type = metric.type
+                    const unit = metric.unit
+                    const val = e[key]
+
+                    if (type === 3) {
+                      return [key, formatUsUnit(val)]
+                    }
+                    const valAfterFormat = numberToShort(val)
+                    return [key, `${valAfterFormat}${valAfterFormat !== null && valAfterFormat !== '' ? unit : ''}`]
                   })
                 )
               },

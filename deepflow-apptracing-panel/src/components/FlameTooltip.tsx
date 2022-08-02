@@ -23,6 +23,12 @@ const getTooltipSpanContent = (data: any) => {
   }
 }
 
+const TOOLTIP_SPAN_TYPE_MAP = {
+  process: '系统',
+  app: '应用',
+  network: '网络'
+}
+
 export const FlameTooltip: React.FC<Props> = ({ barData, mousePos }) => {
   const pos = useMemo(() => {
     const { x, y } = mousePos
@@ -62,7 +68,11 @@ export const FlameTooltip: React.FC<Props> = ({ barData, mousePos }) => {
       <p style={{ background: `${getHeaderBg(content.response_status)}` }}>
         <img className="icon" src={content._icon} />
         {content._errorIcon ? <img className="error-icon" src={content._errorIcon} /> : null}
-        <span>{content.span_type ? ' ' + content.span_type : ''}</span>
+        <span>
+          {_.get(TOOLTIP_SPAN_TYPE_MAP, [content._barType])
+            ? ' ' + _.get(TOOLTIP_SPAN_TYPE_MAP, [content._barType])
+            : ''}
+        </span>
         <span>{content.tap_side ? ' ' + content.tap_side : ''}</span>
       </p>
       <p>
