@@ -15,7 +15,13 @@ import * as querierJs from 'deepflow-sdk-js'
 import qs from 'qs'
 import 'json-bigint-patch'
 import { MyVariableQuery } from 'components/VariableQueryEditor'
-import { getAccessRelationshipeQueryConfig, getMetricFieldNameByAlias, getParamByName } from 'utils/tools'
+import {
+  formatUsUnit,
+  getAccessRelationshipeQueryConfig,
+  getMetricFieldNameByAlias,
+  getParamByName,
+  numberToShort
+} from 'utils/tools'
 import { SELECT_GROUP_BY_DISABLE_TAGS } from 'QueryEditor'
 
 function setTimeKey(
@@ -365,9 +371,13 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             TAGS: _tags.map((e: any) => {
               return e.value
             }),
-            METRICS: metrics.map((e: any) => {
-              return e.name
-            })
+            METRICS: metrics
+              .filter((e: any) => {
+                return e.type !== 6
+              })
+              .map((e: any) => {
+                return e.name
+              })
           },
           conditions: {
             RESOURCE_SETS: [
@@ -395,9 +405,12 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           },
           orderBy: ['start_time']
         }
+        console.log('@sqlData', sqlData)
         // @ts-ignore
         const querierJsResult = querierJs.dfQuery(sqlData)
-        const { returnMetrics, sql } = querierJsResult.resource[0]
+        const { returnTags, returnMetrics, sql } = querierJsResult.resource[0]
+        console.log('@returnTags', returnTags)
+        console.log('@returnMetrics', returnMetrics)
         // @ts-ignore
         const response = await querierJs.searchBySql(sql, 'flow_log')
 
@@ -427,9 +440,17 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
               [
                 'metrics',
                 Object.fromEntries(
-                  returnMetrics.map((metricObj: any) => {
-                    const metric = `${metricObj.name}`
-                    return [metric, e[metric]]
+                  returnMetrics.map((metric: any) => {
+                    const key = metric.name
+                    const type = metric.type
+                    const unit = metric.unit
+                    const val = e[key]
+
+                    if (type === 3) {
+                      return [key, formatUsUnit(val)]
+                    }
+                    const valAfterFormat = numberToShort(val)
+                    return [key, `${valAfterFormat}${valAfterFormat !== null && valAfterFormat !== '' ? unit : ''}`]
                   })
                 )
               ]
@@ -453,7 +474,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         detailList
       }
     } catch (error) {
-      console.log(error)
       return error
     }
   }
@@ -469,13 +489,13 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     if (useDisabled) {
       extra.push({
         value: '__disabled',
-        text: '__disabled'
+        text: 'Disabled'
       })
     }
     if (useAny) {
       extra.push({
         value: '__any',
-        text: '__any'
+        text: 'Any'
       })
     }
     return extra.concat(

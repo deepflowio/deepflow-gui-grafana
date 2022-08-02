@@ -224,22 +224,42 @@ function getValueByVariablesName(val: LabelItem, variables: any[], op: string) {
   const isLikeOp = op.toUpperCase().includes('LIKE')
   const specVariables = ['__disabled', '__any']
   const isVariable = val?.isVariable
-  let result
   if (isVariable) {
     const currentVariable = variables.find((variable: any) => {
       return variable.name === val?.value
     })
     const currentValue = _.get(currentVariable, ['current', 'value'], '')
+    if (currentVariable?.type === undefined) {
+      return val.value
+    }
+    if (['textbox', 'constant'].includes(currentVariable.type)) {
+      return currentValue
+    }
     const targetField = isLikeOp ? 'text' : 'value'
     if (currentValue.includes('$__all')) {
-      result = currentVariable.options
+      return currentVariable.options
         .filter((e: any) => e.value !== '$__all' && !specVariables.includes(e.value))
         .map((e: any) => _.get(e, [targetField]))
+    }
+    if (currentValue.includes('__disabled')) {
+      return '__disabled'
+    }
+
+    if (
+      currentValue === '__any' ||
+      (Array.isArray(currentValue) && currentValue.filter((e: string) => e !== '__any').length <= 0)
+    ) {
+      return '__any'
     } else {
-      result = _.get(currentVariable, ['current', targetField])
+      const result = _.get(currentVariable, ['current', targetField])
+      return typeof result === 'string'
+        ? result
+        : result.filter((e: string) => {
+            return e !== '__any' && e !== 'Any'
+          })
     }
   }
-  return result !== undefined ? result : val.value
+  return val.value
 }
 
 function whereFormat(data: any, variables: any[]) {
@@ -344,6 +364,7 @@ const UNIT_TO_S: Record<any, (n: number) => number> = {
     return n * 60 * 60 * 24
   }
 }
+
 function intervalTrans(intervalWithUnit: string, variableItem: any) {
   if (intervalWithUnit === '$__auto_interval_intervaltest') {
     if (QUERY_DATA_CACHE.time_start === undefined || QUERY_DATA_CACHE.time_end === undefined) {
