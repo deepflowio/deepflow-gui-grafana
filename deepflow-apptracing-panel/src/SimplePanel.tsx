@@ -170,7 +170,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       const result = await deepFlow.getFlameData({ _id })
       const { services, tracing, detailList } = result
       if (!result || !services?.length) {
-        setErrMsg(result?.data?.message || 'No Data')
+        setErrMsg(result?.data?.DESCRIPTION ? `[SERVER ERROR]:${result?.data?.DESCRIPTION}` : 'No Data')
       } else {
         setSelectedServiceRowId('')
         setDetailFilteIds([])
@@ -180,7 +180,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
         setViewIndex(1)
       }
     } catch (error: any) {
-      const msg = error ? error?.data?.DESCRIPTION : ' Network Error'
+      const msg = error ? `[SERVER ERROR]:${error?.data?.DESCRIPTION}` : ' Network Error'
       setErrMsg(msg)
     }
     setStartTableLoading(false)
