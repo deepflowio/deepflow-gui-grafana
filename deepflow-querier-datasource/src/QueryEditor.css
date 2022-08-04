@@ -2,6 +2,14 @@
   width: 100%;
 }
 
+.save-btn-wrap {
+  width: 100%;
+  height: 0;
+  position: sticky;
+  top: 4px;
+  z-index: 9;
+}
+
 .save-btn {
   margin-left: 100%;
   transform: translateX(-100%);
@@ -13,6 +21,10 @@
 
 .custom-label > label {
   color: #33a2e5;
+}
+
+.custom-label > div {
+  flex: 1;
 }
 
 .h32 {
@@ -28,7 +40,7 @@
 
 .editor-form-row {
   display: flex;
-  justify-content: space-between;
+  align-items: flex-start;
   align-items: flex-start;
   margin-bottom: 4px;
 }
@@ -38,7 +50,7 @@
 }
 
 .editor-form-row .content {
-  flex: 1;
+  /* flex: 1; */
   display: flex;
   align-items: flex-start;
   max-width: 740px;
