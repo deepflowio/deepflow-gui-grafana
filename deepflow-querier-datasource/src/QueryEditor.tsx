@@ -282,6 +282,7 @@ export class QueryEditor extends PureComponent<Props> {
     showErrorAlert: boolean
     gotBasicData: boolean
     templateVariableOpts: SelectOpts
+    runQueryWarning: boolean
   }
   editor: any | undefined
   constructor(props: any) {
@@ -340,7 +341,8 @@ export class QueryEditor extends PureComponent<Props> {
       errorMsg: '',
       showErrorAlert: false,
       gotBasicData: false,
-      templateVariableOpts: []
+      templateVariableOpts: [],
+      runQueryWarning: false
     }
   }
 
@@ -580,6 +582,9 @@ export class QueryEditor extends PureComponent<Props> {
         ...this.props.query,
         queryText: JSON.stringify(dataObj)
       })
+      this.setState({
+        runQueryWarning: false
+      })
       this.props.onRunQuery()
     } catch (error: any) {
       console.log(error)
@@ -725,7 +730,8 @@ export class QueryEditor extends PureComponent<Props> {
         ...this.groupBySelectCheck(target, state.interval, result),
         ...this.selectOrderByCheck(target, state.interval, result),
         errorMsg: '',
-        showErrorAlert: false
+        showErrorAlert: false,
+        runQueryWarning: true
       }
     })
   }
@@ -845,12 +851,14 @@ export class QueryEditor extends PureComponent<Props> {
       this.getBasicData(table)
     } else if (field === 'interval') {
       this.setState({
+        runQueryWarning: true,
         [field]: result,
         ...this.groupBySelectCheck('groupBy', result as string, this.state.groupBy),
         ...this.selectOrderByCheck('select', result as string, this.state.select)
       })
     } else if (field === 'limit') {
       this.setState({
+        runQueryWarning: true,
         [field]: result,
         ...(!result
           ? {
@@ -860,10 +868,12 @@ export class QueryEditor extends PureComponent<Props> {
       })
     } else if (field === 'timeSeries') {
       this.setState({
+        runQueryWarning: true,
         [field]: val
       })
     } else {
       this.setState({
+        runQueryWarning: true,
         [field]: result
       })
     }
@@ -1112,20 +1122,33 @@ export class QueryEditor extends PureComponent<Props> {
   render() {
     const { formConfig, tagOpts, funcOpts, subFuncOpts, appTypeOpts, errorMsg, showErrorAlert, templateVariableOpts } =
       this.state
-    const formStyle = {
-      width: '900px',
-      maxWidth: '900px'
-    }
 
     return (
       <Form
         onSubmit={() => {
           this.onSubmit()
         }}
-        style={formStyle}
+        style={{
+          width: '900px',
+          maxWidth: '900px',
+          position: 'relative',
+          paddingBottom: '24px'
+        }}
       >
         {() => (
           <>
+            <div className="save-btn-wrap">
+              <Button
+                type="submit"
+                className="save-btn"
+                style={{
+                  background: this.state.runQueryWarning ? '#F5B73D' : '',
+                  border: this.state.runQueryWarning ? '1px solid #F5B73D' : ''
+                }}
+              >
+                Run Query
+              </Button>
+            </div>
             {showErrorAlert ? <Alert title={errorMsg} severity="error" onRemove={this.onAlertRemove} /> : null}
             <InlineField className="custom-label" label="APP" labelWidth={10}>
               <div>
@@ -1323,9 +1346,6 @@ export class QueryEditor extends PureComponent<Props> {
                 ) : null}
               </div>
             ) : null}
-            <Button type="submit" className="save-btn">
-              Run Query
-            </Button>
           </>
         )}
       </Form>
