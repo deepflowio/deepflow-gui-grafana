@@ -10,6 +10,8 @@ on:
       - main
       - 'feature-**'
       - latest
+    tags:
+      - '*'
   workflow_dispatch:
     inputs:
       ref:
