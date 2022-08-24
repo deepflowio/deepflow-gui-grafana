@@ -88,8 +88,8 @@ export function formatTagOperators(operators: string[], item: any) {
 
 export function getMetricFieldNameByAlias(alias: string, mapObj: Record<any, any>) {
   const result = alias.replace(/\$\{.*?\}/g, ($1: string) => {
-    const keyMatchArr = $1.match(/(?<=\$\{).*?(?=\})/)
-    const key = keyMatchArr ? keyMatchArr[0] : $1
+    const keyMatchArr = $1.match(/\$\{(\S*)\}/)
+    const key = Array.isArray(keyMatchArr) && keyMatchArr?.length >= 2 ? keyMatchArr[1] : $1
     return mapObj[key] || key
   })
   return result
