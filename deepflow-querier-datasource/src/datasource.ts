@@ -215,7 +215,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         const frameArray: any = []
         _.forIn(dataAfterGroupBy, (item, groupByKey) => {
           item = _.sortBy(item, [timeTypeKey])
-          const aliasName = getMetricFieldNameByAlias(queryData.alias, firstResponse)
+          const aliasName = getMetricFieldNameByAlias(queryData.alias, _.get(item, [0], {}))
           const keyPrefix = aliasName || groupByKey
 
           const frame = new MutableDataFrame({
