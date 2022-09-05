@@ -34,10 +34,21 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+      - name: Checkout Deepflow Dashboards
+        uses: actions/checkout@v3
+        with:
+          repository: deepflowys/deepflow-dashboards
+          path: './deepflow-dashboards'
+      - name: Copy Dashboards To Datasource
+        run: mkdir ./deepflow-querier-datasource/src/dashboards && cp -r ./deepflow-dashboards/dashboards/* ./deepflow-querier-datasource/src/dashboards
       - name: Set up node
         uses: actions/setup-node@v3
         with:
           node-version: 14.0
+      - name: Update Plugin.json
+        run: node ./deepflow-querier-datasource/src/update-dashboards.js
+      - name: Review Plugin.json
+        run: cat ./deepflow-querier-datasource/src/plugin.json
       - name: Set up pnpm
         uses: pnpm/action-setup@v2.2.2
         with:
