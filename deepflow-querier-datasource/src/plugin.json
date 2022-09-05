@@ -61,5 +61,92 @@
   "dependencies": {
     "grafanaDependency": ">=8.0.0",
     "plugins": []
-  }
+  },
+  "includes": [
+    {
+      "type": "dashboard",
+      "name": "ClickHouse Cluster Analysis",
+      "path": "dashboards/DeepFlow-System/Clickhouse-Cluster-Analysis.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "ClickHouse Data Analysis",
+      "path": "dashboards/DeepFlow-System/Clickhouse-Data-Analysis.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "ClickHouse Query Analysis",
+      "path": "dashboards/DeepFlow-System/Clickhouse-Query-Analysis.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "ClickHouse Tags",
+      "path": "dashboards/DeepFlow-System/Clickhouse-Tags.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "DeepFlow Server - Ingester",
+      "path": "dashboards/DeepFlow-System/DeepFlow-Server-Ingester.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "MySQL Tables",
+      "path": "dashboards/DeepFlow-System/MySQL-Tables.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Application - Cloud Host Map",
+      "path": "dashboards/DeepFlow-Templates/Application-Cloud-Host-Map.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Application - Cloud Host",
+      "path": "dashboards/DeepFlow-Templates/Application-Cloud-Host.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Application - K8s Pod Map",
+      "path": "dashboards/DeepFlow-Templates/Application-K8s-Pod-Map.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Application - K8s Pod",
+      "path": "dashboards/DeepFlow-Templates/Application-K8s-Pod.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Application - Request Log",
+      "path": "dashboards/DeepFlow-Templates/Application-Request-Log.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Distributed Tracing",
+      "path": "dashboards/DeepFlow-Templates/Distributed-Tracing.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Network - Cloud Host Map",
+      "path": "dashboards/DeepFlow-Templates/Network-Cloud-Host-Map.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Network - Cloud Host",
+      "path": "dashboards/DeepFlow-Templates/Network-Cloud-Host.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Network - Flow Log",
+      "path": "dashboards/DeepFlow-Templates/Network-Flow-Log.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Network - K8s Pod Map",
+      "path": "dashboards/DeepFlow-Templates/Network-K8s-Pod-Map.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Network - K8s Pod",
+      "path": "dashboards/DeepFlow-Templates/Network-K8s-Pod.json"
+    }
+  ]
 }
