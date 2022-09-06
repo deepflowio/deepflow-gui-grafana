@@ -3,12 +3,24 @@ import { QueryEditorProps, VariableModel } from '@grafana/data'
 import { DataSource } from './datasource'
 import { MyDataSourceOptions, MyQuery } from './types'
 import { Button, Form, InlineField, Select, Input, Alert } from '@grafana/ui'
-import { BasicData, QueryEditorFormRow, RowConfig } from './components/QueryEditorFormRow'
+import { QueryEditorFormRow } from './components/QueryEditorFormRow'
 import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
 import './QueryEditor.css'
 import { formatTagOperators, uuid } from 'utils/tools'
 import { getTemplateSrv } from '@grafana/runtime'
+import {
+  BasicDataWithId,
+  defaultFormData,
+  defaultFormDB,
+  formatAsOpts,
+  formItemConfigs,
+  FormKeys,
+  intervalOpts,
+  SELECT_GROUP_BY_DISABLE_TAGS,
+  SERVICE_MAP_SUPPORT_DB,
+  SERVICE_MAP_SUPPORT_TABLE
+} from 'consts'
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>
 
@@ -43,217 +55,12 @@ type MetricOptsItem = LabelItem & {
 
 export type MetricOpts = MetricOptsItem[]
 
-const formatAsOpts: SelectOpts = [
-  {
-    label: 'Time series',
-    value: 'timeSeries'
-  },
-  {
-    label: 'Table',
-    value: 'table'
-  }
-]
-const intervalOpts: SelectOpts = [
-  {
-    label: '$__interval',
-    value: '$__interval_ms'
-  },
-  {
-    label: '1s',
-    value: '1'
-  },
-  {
-    label: '10s',
-    value: '10'
-  },
-  {
-    label: '30s',
-    value: '30'
-  },
-  {
-    label: '1m',
-    value: '60'
-  },
-  {
-    label: '10m',
-    value: '600'
-  },
-  {
-    label: '30m',
-    value: '1800'
-  },
-  {
-    label: '1h',
-    value: '3600'
-  },
-  {
-    label: '6h',
-    value: '21600'
-  },
-  {
-    label: '12h',
-    value: '43200'
-  },
-  {
-    label: '1d',
-    value: '86400'
-  },
-  {
-    label: '7d',
-    value: '604800'
-  }
-]
-
-type FormKeys = 'select' | 'where' | 'having' | 'groupBy' | 'orderBy'
-
-type Configs = Record<FormKeys, RowConfig>
-
-const formItemConfigs: Configs = {
-  groupBy: {
-    type: false,
-    func: false,
-    op: false,
-    val: false,
-    as: false
-  },
-  select: {
-    type: true,
-    func: true,
-    op: false,
-    val: false,
-    as: true
-  },
-  where: {
-    type: false,
-    func: false,
-    op: true,
-    val: true,
-    as: false,
-    disableTimeTag: true
-  },
-  having: {
-    type: false,
-    func: true,
-    op: true,
-    val: true,
-    as: false
-  },
-  orderBy: {
-    type: false,
-    func: true,
-    op: false,
-    val: false,
-    as: false,
-    sort: true
-  }
-}
-
 interface FormConfigItem {
   label: string
   labelWidth: number
   targetDataKey: FormKeys
 }
 
-export type BasicDataWithId = BasicData & { uuid: string }
-
-export type QueryDataType = {
-  appType: string
-  db: string
-  sources: string
-  from: string
-  select: BasicDataWithId[]
-  where: BasicDataWithId[]
-  having: BasicDataWithId[]
-  groupBy: BasicDataWithId[]
-  orderBy: BasicDataWithId[]
-  interval: string
-  limit: string
-  offset: string
-  formatAs: 'timeSeries' | 'table' | ''
-  alias: string
-}
-
-const defaultFormDB: Pick<QueryDataType, 'db' | 'sources'> = {
-  db: '',
-  sources: ''
-}
-const defaultFormData: Omit<QueryDataType, 'appType' | 'db' | 'sources'> = {
-  from: '',
-  select: [
-    {
-      type: 'metric',
-      key: '',
-      func: '',
-      op: '',
-      val: '',
-      as: '',
-      params: [],
-      uuid: uuid()
-    }
-  ],
-  where: [
-    {
-      type: 'tag',
-      key: '',
-      func: '',
-      op: '',
-      val: '',
-      as: '',
-      params: [],
-      uuid: uuid()
-    }
-  ],
-  having: [
-    {
-      type: 'metric',
-      key: '',
-      func: '',
-      op: '',
-      val: '',
-      as: '',
-      params: [],
-      uuid: uuid()
-    }
-  ],
-  groupBy: [
-    {
-      type: 'tag',
-      key: '',
-      func: '',
-      op: '',
-      val: '',
-      as: '',
-      params: [],
-      uuid: uuid()
-    }
-  ],
-  orderBy: [
-    {
-      type: 'metric',
-      key: '',
-      func: '',
-      op: '',
-      val: '',
-      as: '',
-      params: [],
-      uuid: uuid(),
-      sort: 'asc'
-    }
-  ],
-  interval: '',
-  limit: '100',
-  offset: '',
-  formatAs: 'timeSeries',
-  alias: ''
-}
-
-// 不支持做分组的 tag: 负载均衡监听器, ingress
-export const SELECT_GROUP_BY_DISABLE_TAGS = ['lb_listener', 'pod_ingress']
-
-const SERVICE_MAP_SUPPORT_DB = ['flow_log', 'flow_metrics']
-const SERVICE_MAP_SUPPORT_TABLE = ['l4_flow_log', 'l7_flow_log', 'vtap_flow_edge_port', 'vtap_app_edge_port']
-
-export type QueryDataKeys = keyof QueryDataType
 export class QueryEditor extends PureComponent<Props> {
   state: {
     formConfig: FormConfigItem[]
@@ -1088,14 +895,6 @@ export class QueryEditor extends PureComponent<Props> {
 
   getRemoveBtnDisabled(parent: BasicDataWithId[], current: BasicDataWithId, targetKey?: string) {
     return parent.length <= 1
-    // return (
-    //   parent.length <= 1 ||
-    //   (targetKey === 'groupBy' &&
-    //     this.usingAccessRelationshipType &&
-    //     parent.filter(parentItem => {
-    //       return parentItem.sideType === current.sideType
-    //     }).length <= 1)
-    // )
   }
 
   showSideType(parent: BasicDataWithId[], current: BasicDataWithId, targetKey?: string) {
@@ -1247,7 +1046,6 @@ export class QueryEditor extends PureComponent<Props> {
                             funcOpts={funcOpts}
                             subFuncOpts={subFuncOpts}
                             key={item.uuid}
-                            showSideType={this.showSideType(this.state[conf.targetDataKey], item, conf.targetDataKey)}
                             keySelectDisabled={
                               (conf.targetDataKey === 'groupBy' && this.usingAppTraceType) ||
                               (conf.targetDataKey === 'orderBy' && this.usingAccessRelationshipType)

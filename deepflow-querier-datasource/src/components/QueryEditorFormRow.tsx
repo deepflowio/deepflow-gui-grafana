@@ -5,7 +5,6 @@ import { FuncSelectOpts, LabelItem, MetricOpts, SelectOpts, SelectOptsWithString
 import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
 import { SubFuncsEditor } from './SubFuncsEditor'
-import { uuid } from 'utils/tools'
 
 export interface RowConfig {
   type: boolean
@@ -37,7 +36,6 @@ type Props = {
   basicData: BasicData
   onRowValChange: any
   onActiveBtnClick: any
-  showSideType?: boolean
   addBtnDisabled?: boolean
   removeBtnDisabled?: boolean
   typeSelectDisabled?: boolean
@@ -196,9 +194,28 @@ const INPUT_TAG_VAL_TYPES = ['int', 'string', 'ip', 'mac']
 const SELECT_TAG_VAL_OPS = ['=', '!=', 'IN', 'NOT IN']
 
 export class QueryEditorFormRow extends PureComponent<Props> {
+  state: {
+    funcsCache?: {
+      func: string
+      params: string[]
+      subFuncs: any[]
+    }
+  }
   static defaultProps = {}
   constructor(props: any) {
     super(props)
+    const { type, func, params, subFuncs } = this.props.basicData
+    if (type === 'metric') {
+      this.state = {
+        funcsCache: {
+          func,
+          params,
+          subFuncs: subFuncs || []
+        }
+      }
+    } else {
+      this.state = {}
+    }
   }
 
   get operatorOpts(): SelectOpts {
@@ -251,21 +268,38 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       func: '',
       val: '',
       params: [],
-      subFuncs: [],
-      uuid: uuid()
+      subFuncs: []
     })
   }
 
   onColumnSelect = (val: any) => {
     const result = val ? val.value : ''
+    const { metricOpts, funcOpts } = this.props
+    const metricType = metricOpts.find(item => {
+      return item.value === result
+    })?.type as number
+
+    const newFuncOpts = funcOpts.filter(item => {
+      return item.support_metric_types?.includes(metricType)
+    })
+    const { funcsCache } = this.state
+    const hasCurrentFunc =
+      funcsCache &&
+      newFuncOpts.find(item => {
+        return item.value === funcsCache.func
+      })
+
     this.props.onRowValChange({
       key: result,
       op: '',
-      func: '',
       val: '',
-      params: [],
-      subFuncs: [],
-      uuid: uuid(),
+      ...(hasCurrentFunc
+        ? funcsCache
+        : {
+            func: '',
+            params: [],
+            subFuncs: []
+          }),
       ...(result.includes('resource_gl')
         ? {
             as: ''
@@ -289,6 +323,13 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       func: result,
       params: new Array(paramsLen).fill('')
     })
+    this.setState({
+      funcsCache: {
+        ...this.state.funcsCache,
+        func: result,
+        params: new Array(paramsLen).fill('')
+      }
+    })
   }
 
   onFuncParamChange = (ev: any, index: number) => {
@@ -297,6 +338,12 @@ export class QueryEditorFormRow extends PureComponent<Props> {
     this.props.onRowValChange({
       params: Array.isArray(result) ? result : []
     })
+    this.setState({
+      funcsCache: {
+        ...this.state.funcsCache,
+        params: Array.isArray(result) ? result : []
+      }
+    })
   }
 
   onOperatorChange = (val: any) => {
@@ -304,8 +351,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
 
     this.props.onRowValChange({
       op: result,
-      val: this.props.basicData.type === 'tag' ? [] : '',
-      uuid: uuid()
+      val: this.props.basicData.type === 'tag' ? [] : ''
     })
   }
 
@@ -337,6 +383,12 @@ export class QueryEditorFormRow extends PureComponent<Props> {
     this.props.onRowValChange({
       subFuncs: val
     })
+    this.setState({
+      funcsCache: {
+        ...this.state.funcsCache,
+        subFuncs: val
+      }
+    })
   }
 
   onActiveBtnClick = (ev: React.MouseEvent<HTMLButtonElement, MouseEvent>, type: 'add' | 'remove') => {
@@ -356,7 +408,6 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       keySelectDisabled,
       typeSelectDisabled,
       subFuncOpts
-      // showSideType
     } = this.props
     const tagOptsFilted = config.disableTimeTag
       ? tagOpts.filter(item => {
@@ -381,9 +432,6 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       <div>
         <div className="editor-form-row">
           <div className="content">
-            {/* {basicData.sideType ? (
-              <span style={{ width: '30px' }}>{showSideType ? `${basicData.sideType}:` : ''}</span>
-            ) : null} */}
             {config.type ? (
               <div>
                 <Select
@@ -405,6 +453,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                 value={basicData.key}
                 isClearable={true}
                 disabled={keySelectDisabled}
+                key={basicData.key ? 'keyWithVal' : 'keyWithoutVal'}
               />
             </div>
             {config.func && basicData.type === 'metric' ? (
@@ -417,7 +466,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                     placeholder="FUNC"
                     value={basicData.func}
                     isClearable={true}
-                    key={'funcSelect'}
+                    key={basicData.func ? 'funcWithVal' : 'funcWithoutVal'}
                     disabled={keySelectDisabled}
                   />
                 </div>
@@ -456,6 +505,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                   placeholder="OP"
                   value={basicData.op}
                   className="op-selector"
+                  key={basicData.op ? 'opWithVal' : 'opWithoutVal'}
                 />
               </div>
             ) : null}
