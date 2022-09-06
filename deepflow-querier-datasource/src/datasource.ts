@@ -22,7 +22,7 @@ import {
   getParamByName,
   numberToShort
 } from 'utils/tools'
-import { SELECT_GROUP_BY_DISABLE_TAGS } from 'QueryEditor'
+import { SELECT_GROUP_BY_DISABLE_TAGS } from 'consts'
 
 function setTimeKey(
   queryData: any,

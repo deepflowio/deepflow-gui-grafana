@@ -1,5 +1,5 @@
+import { BasicDataWithId } from 'consts'
 import _ from 'lodash'
-import { BasicDataWithId } from 'QueryEditor'
 
 export function uuid() {
   function s4() {
