@@ -15,7 +15,7 @@ import {
   defaultFormDB,
   formatAsOpts,
   formItemConfigs,
-  FormKeys,
+  FormTypes,
   intervalOpts,
   SELECT_GROUP_BY_DISABLE_TAGS,
   SERVICE_MAP_SUPPORT_DB,
@@ -51,6 +51,7 @@ type MetricOptsItem = LabelItem & {
   type?: string | number
   is_agg?: boolean
   whereOnly?: boolean
+  fromSelect?: BasicDataWithId
 }
 
 export type MetricOpts = MetricOptsItem[]
@@ -58,7 +59,7 @@ export type MetricOpts = MetricOptsItem[]
 interface FormConfigItem {
   label: string
   labelWidth: number
-  targetDataKey: FormKeys
+  targetDataKey: FormTypes
 }
 
 export class QueryEditor extends PureComponent<Props> {
@@ -170,6 +171,58 @@ export class QueryEditor extends PureComponent<Props> {
     return tagOpts
   }
 
+  get tagsFromSelect(): MetricOpts {
+    const { select, tagOpts } = this.state
+    if (!tagOpts?.length) {
+      return []
+    }
+    const result = select
+      .filter(e => {
+        return e.type === 'tag' && !!e.key && e.as !== ''
+      })
+      .map((e, i) => {
+        const orgOpt = tagOpts.find(opt => {
+          return opt.value === e.key
+        }) as MetricOptsItem
+        if (!orgOpt) {
+          return orgOpt
+        }
+        return {
+          ...orgOpt,
+          value: `fromSelect${i}`,
+          label: `${e.as} ( #${i + 1} From Select )`,
+          fromSelect: e
+        }
+      })
+    return result
+  }
+
+  get metricsFromSelect(): MetricOpts {
+    const { select, metricOpts } = this.state
+    if (!metricOpts?.length) {
+      return []
+    }
+    const result = select
+      .filter(e => {
+        return e.type === 'metric' && !!e.key
+      })
+      .map((e, i) => {
+        const orgOpt = metricOpts.find(opt => {
+          return opt.value === e.key
+        }) as MetricOptsItem
+        if (!orgOpt) {
+          return orgOpt
+        }
+        return {
+          ...orgOpt,
+          value: `fromSelect${i}`,
+          label: e.as ? `${e.as} ( #${i + 1} From Select )` : `${e.key} ( #${i + 1} From Select )`,
+          fromSelect: e
+        }
+      })
+    return result.filter(e => e !== undefined)
+  }
+
   get basciMetricOpts(): MetricOpts {
     const { groupBy, metricOpts, interval } = this.state
     const groupByKeys = groupBy
@@ -197,30 +250,34 @@ export class QueryEditor extends PureComponent<Props> {
         return item.key
       })
     if (groupByKeys.length > 0 || interval) {
-      const selectMetricKeys = select
-        .filter((item: any) => {
-          return item.type === 'metric'
+      const optsFromSelect = select
+        .filter(e => {
+          return e.type === 'metric' && !!e.key
         })
-        .map((item: any) => {
-          return item.key
-        })
-      return metricOpts
-        .filter((item: any) => {
-          return selectMetricKeys.includes(item.value)
-        })
-        .concat(
-          interval
-            ? [
-                {
-                  label: 'interval',
-                  value: 'interval_' + interval,
-                  operatorOpts: []
-                }
-              ]
-            : []
-        )
+        .map((e, i) => {
+          const orgOpt = metricOpts.find(opt => {
+            return opt.value === e.key
+          }) as MetricOptsItem
+          return {
+            ...orgOpt,
+            value: `fromSelect${i}`,
+            label: e.as ? `${e.as} ( #${i + 1} From Select )` : `${e.key} ( #${i + 1} From Select )`,
+            fromSelect: e
+          }
+        }) as MetricOpts
+      return optsFromSelect.concat(
+        interval
+          ? [
+              {
+                label: 'interval',
+                value: 'interval_' + interval,
+                operatorOpts: []
+              }
+            ]
+          : []
+      )
     }
-    return this.basciMetricOpts.concat([
+    return this.metricsFromSelect.concat(this.basciMetricOpts).concat([
       {
         label: 'time',
         value: 'time',
@@ -402,102 +459,6 @@ export class QueryEditor extends PureComponent<Props> {
     }
   }
 
-  // groupBy || interval 时,
-  // select 的可选 tag 为 groupBy 内选中的值
-  groupBySelectCheck = (target: any, interval: string, result: any) => {
-    let obj = {}
-    if (target === 'groupBy') {
-      const groupByKeys = result.map((e: any) => e.key)
-      const useGroupBy = groupByKeys.filter((e: any) => e).length
-      if (!useGroupBy && !interval) {
-        return obj
-      }
-      const newSelect = this.state.select.filter((item: any) => {
-        return item.type === 'metric' || !item.key || groupByKeys.includes(item.key)
-      })
-      obj = {
-        select: newSelect.length
-          ? newSelect
-          : [
-              {
-                type: 'metric',
-                key: '',
-                func: '',
-                op: '',
-                val: '',
-                as: '',
-                params: [],
-                uuid: uuid()
-              }
-            ]
-      }
-    }
-    return obj
-  }
-
-  // groupBy || interval 时,
-  // orderBy 的可选 metric 为 select 内选中的值
-  selectOrderByCheck = (target: any, interval: string, result: any) => {
-    let obj = {}
-    if (target === 'select' || target === 'groupBy') {
-      const groupBy = target === 'select' ? this.state.groupBy : result
-      const groupByKeys = groupBy.map((e: any) => e.key)
-      const useGroupBy = groupByKeys.filter((e: any) => e).length
-      const select = target === 'select' ? result : this.state.select
-      if (!useGroupBy && !interval) {
-        return {
-          select: select.map((e: any) => {
-            return {
-              ...e,
-              func: '',
-              params: []
-            }
-          }),
-          having: this.state.having.map((e: any) => {
-            return {
-              ...e,
-              func: '',
-              params: []
-            }
-          }),
-          orderBy: this.state.orderBy.map((e: any) => {
-            return {
-              ...e,
-              func: '',
-              params: []
-            }
-          })
-        }
-      }
-      const selectKeys = select
-        .filter((item: any) => {
-          return item.type === 'metric'
-        })
-        .map((e: any) => e.key)
-      const newOrderBy = this.state.orderBy.filter((item: any) => {
-        return !item.key || selectKeys.includes(item.key)
-      })
-      obj = {
-        orderBy: newOrderBy.length
-          ? newOrderBy
-          : [
-              {
-                type: 'metric',
-                key: '',
-                func: '',
-                op: '',
-                val: '',
-                as: '',
-                params: [],
-                uuid: uuid(),
-                sort: 'asc'
-              }
-            ]
-      }
-    }
-    return obj
-  }
-
   accessRelationshipTypeCheck(apptype: string) {
     return apptype === 'accessRelationship'
       ? {
@@ -534,8 +495,6 @@ export class QueryEditor extends PureComponent<Props> {
       }
       return {
         [target]: result,
-        ...this.groupBySelectCheck(target, state.interval, result),
-        ...this.selectOrderByCheck(target, state.interval, result),
         errorMsg: '',
         showErrorAlert: false,
         runQueryWarning: true
@@ -570,9 +529,7 @@ export class QueryEditor extends PureComponent<Props> {
         result.splice(index, 1)
       }
       return {
-        [target]: result,
-        ...this.groupBySelectCheck(target, state.interval, result),
-        ...this.selectOrderByCheck(target, state.interval, result)
+        [target]: result
       }
     })
   }
@@ -656,13 +613,6 @@ export class QueryEditor extends PureComponent<Props> {
       })
       const table = { db: db as string, from: result as string }
       this.getBasicData(table)
-    } else if (field === 'interval') {
-      this.setState({
-        runQueryWarning: true,
-        [field]: result,
-        ...this.groupBySelectCheck('groupBy', result as string, this.state.groupBy),
-        ...this.selectOrderByCheck('select', result as string, this.state.select)
-      })
     } else if (field === 'limit') {
       this.setState({
         runQueryWarning: true,
@@ -1036,26 +986,28 @@ export class QueryEditor extends PureComponent<Props> {
                                         }) && extra
                                       )
                                     })
-                                : tagOpts.filter(tag => {
-                                    return tag.type !== 'map'
-                                  })
+                                : this.tagsFromSelect.concat(
+                                    tagOpts.filter(tag => {
+                                      return tag.type !== 'map'
+                                    })
+                                  )
                             }
                             metricOpts={
-                              conf.targetDataKey === 'orderBy' ? this.orderByMetricOpts : this.basciMetricOpts
+                              conf.targetDataKey === 'orderBy'
+                                ? this.orderByMetricOpts
+                                : conf.targetDataKey === 'having'
+                                ? this.metricsFromSelect.concat(this.basciMetricOpts)
+                                : this.basciMetricOpts
                             }
                             funcOpts={funcOpts}
                             subFuncOpts={subFuncOpts}
                             key={item.uuid}
-                            keySelectDisabled={
-                              (conf.targetDataKey === 'groupBy' && this.usingAppTraceType) ||
-                              (conf.targetDataKey === 'orderBy' && this.usingAccessRelationshipType)
-                            }
                             removeBtnDisabled={this.getRemoveBtnDisabled(
                               this.state[conf.targetDataKey],
                               item,
                               conf.targetDataKey
                             )}
-                            // addBtnDisabled={conf.targetDataKey === 'groupBy' && this.usingAccessRelationshipType}
+                            rowType={conf.targetDataKey}
                             typeSelectDisabled={conf.targetDataKey === 'select' && this.usingAccessRelationshipType}
                             onRowValChange={(obj: any) =>
                               this.onRowValChange(

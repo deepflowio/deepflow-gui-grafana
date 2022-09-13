@@ -5,6 +5,7 @@ import _ from 'lodash'
 import { LabelItem } from 'QueryEditor'
 import { MyQuery } from 'types'
 import { QUERY_DATA_CACHE } from './cache'
+import { getRealKey } from './tools'
 
 // Secondary Operators and Concatenated Strings Map:
 // {
@@ -271,6 +272,7 @@ function whereFormat(data: any, variables: any[]) {
       return item.key
     })
     .map((item: BasicData) => {
+      item.key = getRealKey(item)
       const result: any = {}
       validKeys.forEach(key => {
         if (typeof item[key] === 'boolean' || _.isNumber(item[key]) || !_.isEmpty(item[key])) {
@@ -430,6 +432,7 @@ function orderByFormat(orderBy: BasicData[]) {
       return item.key
     })
     .map((item: BasicData) => {
+      item.key = getRealKey(item)
       const result: any = {}
       if (item.key.startsWith('interval_')) {
         const intervalTime = item.key.replace('interval_', '')

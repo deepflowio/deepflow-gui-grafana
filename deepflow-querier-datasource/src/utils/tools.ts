@@ -1,3 +1,4 @@
+import { BasicData } from 'components/QueryEditorFormRow'
 import { BasicDataWithId } from 'consts'
 import _ from 'lodash'
 
@@ -264,4 +265,8 @@ export function formatUsUnit(num: any, unit = 1000, digits = 2, lang = 'en') {
     }
   }
   return num
+}
+
+export function getRealKey(item: BasicData) {
+  return item?.fromSelect ? item.fromSelect?.key : item.key
 }
