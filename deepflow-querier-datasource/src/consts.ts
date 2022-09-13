@@ -1,4 +1,4 @@
-import { BasicData, RowConfig } from 'components/QueryEditorFormRow'
+import { BasicData } from 'components/QueryEditorFormRow'
 import { SelectOpts } from 'QueryEditor'
 import { uuid } from 'utils/tools'
 
@@ -69,11 +69,7 @@ export const intervalOpts: SelectOpts = [
   }
 ]
 
-export type FormKeys = 'select' | 'where' | 'having' | 'groupBy' | 'orderBy'
-
-type Configs = Record<FormKeys, RowConfig>
-
-export const formItemConfigs: Configs = {
+export const formItemConfigs = {
   groupBy: {
     type: false,
     func: false,
@@ -111,7 +107,9 @@ export const formItemConfigs: Configs = {
     as: false,
     sort: true
   }
-}
+} as const
+
+export type FormTypes = keyof typeof formItemConfigs
 
 export type BasicDataWithId = BasicData & { uuid: string }
 

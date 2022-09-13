@@ -405,12 +405,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           },
           orderBy: ['start_time']
         }
-        console.log('@sqlData', sqlData)
         // @ts-ignore
         const querierJsResult = querierJs.dfQuery(sqlData)
-        const { returnTags, returnMetrics, sql } = querierJsResult.resource[0]
-        console.log('@returnTags', returnTags)
-        console.log('@returnMetrics', returnMetrics)
+        const { returnMetrics, sql } = querierJsResult.resource[0]
         // @ts-ignore
         const response = await querierJs.searchBySql(sql, 'flow_log')
 
