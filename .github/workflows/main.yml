@@ -22,41 +22,49 @@ on:
 env:
   IMAGE: "deepflow-init-grafana"
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
     steps:
+      - name: abc
+        run: echo ${{github.ref}}
       - name: Checkout
         uses: actions/checkout@v3
         with:
           submodules: recursive
           fetch-depth: 0
+
       - name: Checkout Deepflow Dashboards
         uses: actions/checkout@v3
         with:
           repository: deepflowys/deepflow-dashboards
           path: './deepflow-dashboards'
+
       - name: Copy Dashboards To Datasource
         run: mkdir ./deepflow-querier-datasource/src/dashboards && cp -r ./deepflow-dashboards/dashboards/* ./deepflow-querier-datasource/src/dashboards
+
       - name: Set up node
         uses: actions/setup-node@v3
         with:
           node-version: 14.0
-      - name: Update Plugin.json
+
+      - name: Update plugin.json
         run: node ./deepflow-querier-datasource/src/update-dashboards.js
-      - name: Review Plugin.json
+
+      - name: Review plugin.json
         run: cat ./deepflow-querier-datasource/src/plugin.json
+
       - name: Set up pnpm
         uses: pnpm/action-setup@v2.2.2
         with:
             version: 7.3.0
+
       - name: Install dependencies
         run: 'test -d deepflow-apptracing-panel/dist  || pnpm install'
+
       - name: Build all
         run: 'test -d deepflow-apptracing-panel/dist  || pnpm run b:all'
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
         with:
@@ -67,6 +75,7 @@ jobs:
           repository: "grafana/clickhouse-datasource"
           tag: "v1.1.2"
           fileName: "grafana-clickhouse-datasource-1.1.2.zip"
+
       - name: Unzip grafana clickhouse datasource
         run: unzip grafana-clickhouse-datasource-1.1.2.zip
 
@@ -117,3 +126,34 @@ jobs:
             "deepflowce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}"
             "${{ secrets.REGISTRY_ALIYUN_ADDR }}/dev/${{ env.IMAGE }}-ce:${{ env.IMAGE_TAG_PREFIX }}-${{ env.IMAGE_TAG }}"
             "${{ secrets.REGISTRY_ALIYUN_ADDR }}/dev/${{ env.IMAGE }}-ce:${{ env.IMAGE_TAG_PREFIX }}"
+
+      - name: Build tar.gz
+        run: |
+          tar -zcvf deepflow-apptracing-panel.tar.gz deepflow-apptracing-panel/dist/*
+          tar -zcvf deepflow-querier-datasource.tar.gz deepflow-querier-datasource/dist/*
+          tar -zcvf deepflow-topo-panel.tar.gz deepflow-topo-panel/dist/*
+          mkdir release
+          mv deepflow-apptracing-panel.tar.gz ./release/
+          mv deepflow-querier-datasource.tar.gz ./release/
+          mv deepflow-topo-panel.tar.gz ./release/
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: manyuanrong/setup-ossutil@v2.0
+        if: startsWith(github.ref, 'refs/heads/main')
+        with:
+          endpoint: "oss-accelerate.aliyuncs.com"
+          access-key-id: "${{ secrets.ALIYUN_OSS_ACCESS_KEY }}"
+          access-key-secret: "${{ secrets.ALIYUN_OSS_SECRETS_KEY }}"
+      - name: upload artifacts
+        if: startsWith(github.ref, 'refs/heads/main')
+        run: |
+          cd release
+          tar -zcvf deepflow-gui-grafana.tar.gz *
+          ossutil cp -rf deepflow-gui-grafana.tar.gz  oss://deepflow-ce/bin/agent/main/linux/amd64/deepflow-gui-grafana.tar.gz
