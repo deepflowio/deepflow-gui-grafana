@@ -135,3 +135,15 @@ export function formatUsUnit(num: any, unit = 1000, digits = 2, lang = 'en') {
   }
   return num
 }
+
+export function dealPercentageValue(v: unknown) {
+  if (_.isNull(v)) {
+    return '--'
+  } else if (!_.isNumber(v)) {
+    return v
+  } else if (v === 0 || v === 100) {
+    return v + '%'
+  } else {
+    return v.toFixed(2) + '%'
+  }
+}

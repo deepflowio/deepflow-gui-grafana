@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import React, { useMemo } from 'react'
 import ReactDOM from 'react-dom'
-import { formatUsUnit } from '../utils/tools'
+import { dealPercentageValue, formatUsUnit } from '../utils/tools'
 import './FlameTooltip.css'
 
 interface Props {
@@ -21,6 +21,14 @@ const getTooltipSpanContent = (data: any) => {
   } else {
     return `${data.service_instance_id} ${data.service_name}`
   }
+}
+
+const selfTimePercent = (content: any) => {
+  const res = (content.selftime / content.duration) * 100
+  if (_.isNaN(res)) {
+    return '--'
+  }
+  return dealPercentageValue(res)
 }
 
 const TOOLTIP_SPAN_TYPE_MAP = {
@@ -83,7 +91,7 @@ export const FlameTooltip: React.FC<Props> = ({ barData, mousePos }) => {
       <p>{getTooltipSpanContent(content)}</p>
       <p>
         {formatUsUnit(content.duration)}
-        {` ( ${formatUsUnit(content.selftime)} of self time )`}
+        {` ( ${selfTimePercent(content)} of self time )`}
       </p>
     </div>,
     document.body
