@@ -22,7 +22,7 @@
     ],
     "screenshots": [],
     "version": "1.0.0",
-    "updated": "2022-09-13"
+    "updated": "2022-09-14"
   },
   "dependencies": {
     "grafanaDependency": ">=8.0.0",
