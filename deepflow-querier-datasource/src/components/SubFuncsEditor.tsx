@@ -94,7 +94,12 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
   }
 
   return (
-    <div className={`${props.customClassName || ''} sub-functions-wrap`}>
+    <div
+      className={`${props.customClassName || ''} sub-functions-wrap`}
+      style={{
+        marginBottom: '4px'
+      }}
+    >
       <div className="sub-functions-editor">
         <p className="sub-functions-title">SUB FUNCTIONS:</p>
         <Select
