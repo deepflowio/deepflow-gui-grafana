@@ -189,7 +189,7 @@ export class QueryEditor extends PureComponent<Props> {
         }
         return {
           ...orgOpt,
-          value: `fromSelect${i}`,
+          value: `fromSelect${e.uuid}`,
           label: `${e.as} ( #${i + 1} From Select )`,
           fromSelect: e
         }
@@ -215,7 +215,7 @@ export class QueryEditor extends PureComponent<Props> {
         }
         return {
           ...orgOpt,
-          value: `fromSelect${i}`,
+          value: `fromSelect${e.uuid}`,
           label: e.as ? `${e.as} ( #${i + 1} From Select )` : `${e.key} ( #${i + 1} From Select )`,
           fromSelect: e
         }
@@ -733,9 +733,7 @@ export class QueryEditor extends PureComponent<Props> {
 
       // @ts-ignore
       const { metrics, tags, functions } = await querierJs.loadTableConfig(from, db)
-      this.setState({
-        gotBasicData: true
-      })
+
       const funcs: any[] = []
       const subFuncs: any[] = []
       functions.forEach((e: any) => {
@@ -836,7 +834,8 @@ export class QueryEditor extends PureComponent<Props> {
         tagOpts,
         metricOpts,
         funcOpts,
-        subFuncOpts
+        subFuncOpts,
+        gotBasicData: true
       })
     } catch (error) {
       console.log(error)

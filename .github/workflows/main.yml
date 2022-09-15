@@ -26,8 +26,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: abc
-        run: echo ${{github.ref}}
       - name: Checkout
         uses: actions/checkout@v3
         with:

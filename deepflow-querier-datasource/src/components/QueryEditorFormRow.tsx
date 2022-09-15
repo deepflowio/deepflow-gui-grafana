@@ -6,6 +6,7 @@ import _ from 'lodash'
 import { SubFuncsEditor } from './SubFuncsEditor'
 import { BasicDataWithId, FormTypes } from 'consts'
 import { TagValueSelector } from './TagValueSelector'
+import { getRealKey } from 'utils/tools'
 
 export interface RowConfig {
   type: boolean
@@ -91,7 +92,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
     const result: MetricOpts = basicData.type === 'tag' ? tagOpts : metricOpts
     return (
       result.find(item => {
-        return item.value === basicData.key
+        return item.value === getRealKey(basicData)
       })?.operatorOpts || []
     )
   }
@@ -101,7 +102,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
 
     return (
       (tagOpts.find(item => {
-        return item.value === basicData.key
+        return item.value === getRealKey(basicData)
       })?.type as string) || ''
     )
   }
@@ -109,7 +110,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
   get currentFuncOpts(): SelectOpts {
     const { basicData, metricOpts, funcOpts } = this.props
     const metricType = metricOpts.find(item => {
-      return item.value === basicData.key
+      return item.value === getRealKey(basicData)
     })?.type as number
 
     return funcOpts.filter(item => {
@@ -271,7 +272,8 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       addBtnDisabled,
       removeBtnDisabled,
       typeSelectDisabled,
-      subFuncOpts
+      subFuncOpts,
+      gotBasicData
     } = this.props
     const tagOptsFilted = config.disableTimeTag
       ? tagOpts.filter(item => {
@@ -283,12 +285,11 @@ export class QueryEditorFormRow extends PureComponent<Props> {
 
     // 当 key 存在, 且 opts 存在
     // 检查当前值是否存在在 opts 内, 若不存在, 置空 key 的值
-    if (basicData.key && metricOpts.length && rowType !== 'groupBy') {
-      const optsTarget = basicData.type === 'metric' ? metricOpts : tagOpts
-      const hasCurrentMetric = optsTarget.find((e: any) => {
+    if (basicData.key && rowType !== 'groupBy' && gotBasicData) {
+      const hasCurrentItem = opts.find((e: any) => {
         return e.value === basicData.key
       })
-      if (!hasCurrentMetric) {
+      if (!hasCurrentItem) {
         this.onColumnSelect('')
       } else {
         const current = _.pick(basicData, ['func', 'params', 'subFuncs'])
@@ -308,12 +309,20 @@ export class QueryEditorFormRow extends PureComponent<Props> {
               })
             }
           }
+        } else if (rowType === 'where') {
+          if (hasCurrentItem.fromSelect && hasCurrentItem.fromSelect.key !== getRealKey(basicData)) {
+            this.props.onRowValChange({
+              op: '',
+              val: '',
+              fromSelect: hasCurrentItem.fromSelect
+            })
+          }
         } else {
-          if (usingGroupBy && basicData.type === 'metric' && hasCurrentMetric.fromSelect) {
-            const latest = _.pick(hasCurrentMetric.fromSelect, ['func', 'params', 'subFuncs'])
-            if (!_.isEqual(current, latest)) {
+          if (basicData.type === 'metric' && hasCurrentItem.fromSelect) {
+            const latest = _.pick(hasCurrentItem.fromSelect, ['func', 'params', 'subFuncs'])
+            if (hasCurrentItem.fromSelect.key !== getRealKey(basicData) || !_.isEqual(current, latest)) {
               this.props.onRowValChange({
-                fromSelect: hasCurrentMetric.fromSelect,
+                fromSelect: hasCurrentItem.fromSelect,
                 ...latest,
                 cache: {
                   ...latest
@@ -326,7 +335,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
     }
 
     return (
-      <div>
+      <>
         <div className="editor-form-row">
           <div className="content">
             {config.type ? (
@@ -458,7 +467,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
             onSubFuncsChange={this.onSubFuncsChange}
           ></SubFuncsEditor>
         ) : null}
-      </div>
+      </>
     )
   }
 }
