@@ -324,39 +324,55 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       if (!services || !tracing) {
         throw new Error('No data')
       }
-      let detailList: Record<any, any> = {}
+      const detailList: Record<any, any> = {}
       if (Array.isArray(services) && services.length) {
         // @ts-ignore
         const { metrics, tags } = await querierJs.loadTableConfig('l7_flow_log', 'flow_log')
+        const JSON_TAGS = [
+          {
+            category: '原始Attribute',
+            groupName: 'attributes'
+          },
+          {
+            category: '标签',
+            groupName: 'labels'
+          }
+        ]
         const _tags = tags
-          .filter((e: any) => {
-            return (
-              !SELECT_GROUP_BY_DISABLE_TAGS.includes(e.name) &&
-              (e.category !== '原始Attribute' || e.name === 'attributes')
-            )
-          })
           .map((item: any) => {
+            const isJSONTag = JSON_TAGS.find(jsonTag => {
+              return item.category === jsonTag.category
+            })
+            const isMainJSONTag = JSON_TAGS.find(jsonTag => {
+              return item.name === jsonTag.groupName
+            })
+            if (SELECT_GROUP_BY_DISABLE_TAGS.includes(item.name) || (isJSONTag && !isMainJSONTag)) {
+              return []
+            }
             const { name, client_name, server_name, category } = item
             if ((name === client_name && name === server_name) || (!client_name && !server_name)) {
               return {
                 category,
-                value: item.name
+                value: item.name,
+                isJSONTag
               }
             }
             return [
               ...(item.client_name
                 ? [
                     {
-                      category,
-                      value: item.client_name
+                      category: isJSONTag ? `客户端${category}` : category,
+                      value: item.client_name,
+                      isJSONTag
                     }
                   ]
                 : []),
               ...(item.server_name
                 ? [
                     {
-                      category,
-                      value: item.server_name
+                      category: isJSONTag ? `服务端${category}` : category,
+                      value: item.server_name,
+                      isJSONTag
                     }
                   ]
                 : [])
@@ -411,24 +427,31 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         // @ts-ignore
         const response = await querierJs.searchBySql(sql, 'flow_log')
 
-        const tagCategory = _.groupBy(_tags, 'category')
-        const tagCategoryKeys = Object.keys(tagCategory)
+        const tagsGroupbyCategory = _.groupBy(_tags, 'category')
+        const tagCategoryKeys = Object.keys(tagsGroupbyCategory)
         response.forEach((e: any) => {
           const item = tagCategoryKeys
             .map((tagCate: any) => {
-              const tags =
-                tagCate === '原始Attribute'
-                  ? Object.keys(JSON.parse(e.attributes)).map(attr => {
-                      return { category: '原始Attribute', value: attr }
-                    })
-                  : tagCategory[tagCate]
-              const item = tagCate === '原始Attribute' ? JSON.parse(e.attributes) : e
+              const isJSONTag = tagsGroupbyCategory[tagCate][0].isJSONTag
+              let tags = []
+              let resData: Record<any, any>
+              if (isJSONTag) {
+                const tagValue = tagsGroupbyCategory[tagCate][0]['value']
+                resData = JSON.parse(e[tagValue] === '' ? '{}' : e[tagValue])
+                tags = Object.keys(resData).map(attr => {
+                  return { category: tagCate, value: attr }
+                })
+              } else {
+                tags = tagsGroupbyCategory[tagCate]
+                resData = e
+              }
               return [
                 tagCate || 'N/A',
                 Object.fromEntries(
-                  tags.map((tagObj: any) => {
+                  tags.map(tagObj => {
                     const tag = `${tagObj.value}`
-                    return [tag, item[tag]?.toString() ? item[tag].toString() : item[tag]]
+
+                    return [tag, resData[tag]?.toString() ? resData[tag].toString() : resData[tag]]
                   })
                 )
               ]
