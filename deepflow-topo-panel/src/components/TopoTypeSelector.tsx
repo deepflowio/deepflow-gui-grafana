@@ -32,20 +32,26 @@ export const TopoTypeSelector: React.FC<
     const { from, to, common } = context.data[0]?.meta?.custom as {
       returnMetrics: any[]
       returnTags: any[]
-      from: string[]
-      to: string[]
-      common: string[]
+      from: string[] | undefined
+      to: string[] | undefined
+      common: string[] | undefined
     }
 
-    return [
-      'node_type',
+    const _from = from?.length ? from : []
+    const _to = to?.length ? to : []
+    const _common = common?.length ? common : []
+    const result = [
       ...new Set(
-        [...from, ...to].map(e => {
+        [..._from, ..._to].map(e => {
           return e.replace('_0', '').replace('_1', '').replace('_id', '')
         })
       ),
-      ...common
-    ].map(e => {
+      ..._common
+    ]
+    if (result.length) {
+      result.unshift('node_type')
+    }
+    return result.map(e => {
       return {
         label: e,
         value: e

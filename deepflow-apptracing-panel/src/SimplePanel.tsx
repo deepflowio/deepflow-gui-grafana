@@ -8,7 +8,7 @@ import { ColumnProps } from '@douyinfe/semi-ui/lib/es/table'
 import { Alert } from '@grafana/ui'
 import _ from 'lodash'
 import { getDataSourceSrv } from '@grafana/runtime'
-import { renderTimeBar, addSvg, fitSvgToContainer, TAP_SIDE_OPTIONS_MAP } from 'deepflow-vis-js'
+import { renderTimeBar, addSvg, fitSvgToContainer, TAP_SIDE_OPTIONS_MAP, miniMap } from 'deepflow-vis-js'
 import { FlameTooltip } from 'components/FlameTooltip'
 import { genServiceId, useDebounce } from 'utils/tools'
 import { calcTableCellWidth, getStringLen, formatDetailData, tarnsArrayToTableData } from 'utils/tables'
@@ -43,6 +43,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
   }, [refIds])
   const [selectedServiceRowId, setSelectedServiceRowId] = useState('')
   const [flameContainer, setFlameContainer] = useState<any>(undefined)
+  const [miniMapContainer, setMiniMapContainer] = useState<any>(undefined)
   const [flameChart, setFlameChart] = useState<any>(undefined)
   const [detailFilteIds, setDetailFilteIds] = useState<string[]>([])
 
@@ -93,6 +94,15 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     const container = addSvg('.' + randomClassName)
     fitSvgToContainer(container)
     setFlameContainer(container)
+    const _miniMapContainer = addSvg('.' + randomClassName, false)
+    _miniMapContainer
+      .attr('width', debouncedWidth / 4)
+      .attr('height', debouncedHeight / 4)
+      .attr('viewBox', `0 0 ${debouncedWidth / 4} ${debouncedHeight / 4}`)
+      .style('position', 'absolute')
+      .style('bottom', 0)
+      .style('left', 0)
+    setMiniMapContainer(_miniMapContainer)
   }, [randomClassName, debouncedWidth, debouncedHeight])
 
   const [mousePos, setMousePos] = useState({
@@ -107,6 +117,10 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       return
     }
     flameContainer.selectAll('*').remove()
+    miniMapContainer.selectAll('*').remove()
+    const handleZoomEvent = (event: any) => {
+      miniRender(event)
+    }
     const renderResult = renderTimeBar(flameData)(flameContainer, {
       formatBarName: (data: any, type: string) => {
         if (type === 'app' || type === 'process') {
@@ -114,7 +128,8 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
         } else {
           return _.get(TAP_SIDE_OPTIONS_MAP, [data.tap_side, 'label'], data.tap_side)
         }
-      }
+      },
+      watchZoomEvent: (event: any) => handleZoomEvent(event)
     })
     renderResult.bars.forEach((bar: any) => {
       bar.container.on('click', (ev: any) => {
@@ -148,7 +163,13 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       setFlameDetailFilter('', renderResult)
     })
     setFlameChart(renderResult)
-  }, [flameData, flameContainer, setFlameDetailFilter, setMousePos])
+
+    let miniRender = miniMap(renderResult.bars, [], miniMapContainer, flameContainer, renderResult.zoom, {
+      nodeType: 'rect',
+      scaleType: 'xy'
+    })
+    miniRender()
+  }, [flameData, flameContainer, miniMapContainer, setFlameDetailFilter, setMousePos])
 
   const [startTableLoading, setStartTableLoading] = useState(false)
   const onActive = useCallback(async (item: any) => {
