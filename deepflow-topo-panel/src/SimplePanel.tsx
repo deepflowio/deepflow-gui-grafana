@@ -12,7 +12,8 @@ import {
   Node,
   Link,
   renderTreeTopoChart,
-  treeTopoRender
+  treeTopoRender,
+  miniMap
 } from 'deepflow-vis-js'
 import { TopoTooltip } from 'components/TopoTooltip'
 import { formatUsUnit, numberToShort, useDebounce } from 'utils/tools'
@@ -49,6 +50,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
   }, [options])
   const [errMsg, setErrMsg] = useState('')
   const [chartContainer, setChartContainer] = useState<any>(undefined)
+  const [miniMapContainer, setMiniMapContainer] = useState<any>(undefined)
   const targetIndex = 0
   const [noData, setNoData] = useState(false)
 
@@ -107,9 +109,9 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     return series[targetIndex]?.meta?.custom as {
       returnMetrics: any[]
       returnTags: any[]
-      from: string[]
-      to: string[]
-      common: string[]
+      from: string[] | undefined
+      to: string[] | undefined
+      common: string[] | undefined
     }
   }, [series])
 
@@ -119,13 +121,16 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       return []
     }
     const { from, to, common } = queryConfig
+    const _from = from?.length ? from : []
+    const _to = to?.length ? to : []
+    const _common = common?.length ? common : []
     const result = [
       ...new Set(
-        [...from, ...to].map(e => {
+        [..._from, ..._to].map(e => {
           return e.replace('_0', '').replace('_1', '').replace('_id', '')
         })
       ),
-      ...common
+      ..._common
     ].map(e => {
       return {
         label: e,
@@ -163,7 +168,11 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       return []
     }
     const filedNames = selectedData.fields.map(field => field.name)
-    const dataIsMatched = [...sourceSide, ...destinationSide, ...queryConfig.common].every(e => {
+    const dataIsMatched = [
+      ...sourceSide,
+      ...destinationSide,
+      ...(Array.isArray(queryConfig.common) ? queryConfig.common : [])
+    ].every(e => {
       return filedNames.includes(e)
     })
     if (!dataIsMatched) {
@@ -178,11 +187,13 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         fullData[index][e.name] = val
       })
     })
-    const _commonTags = queryConfig.common.filter((key: string) => {
-      return !NO_GROUP_BY_TAGS.includes(key)
-    })
+    const _commonTags = Array.isArray(queryConfig.common)
+      ? queryConfig.common.filter((key: string) => {
+          return !NO_GROUP_BY_TAGS.includes(key)
+        })
+      : []
     let basicData: any[] = []
-    if (_commonTags.length !== queryConfig.common.length) {
+    if (_commonTags.length !== queryConfig.common?.length) {
       const fullDataAfterGroupBy = _.groupBy(fullData, item => {
         return [...sourceSide, ...destinationSide, ..._commonTags]
           .map((key: string) => {
@@ -300,9 +311,11 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     if (!links?.length || !queryConfig?.from?.length || !queryConfig?.to?.length) {
       return []
     }
-    const _commonTags = queryConfig.common.filter((key: string) => {
-      return !NO_GROUP_BY_TAGS.includes(key)
-    })
+    const _commonTags = Array.isArray(queryConfig.common)
+      ? queryConfig.common.filter((key: string) => {
+          return !NO_GROUP_BY_TAGS.includes(key)
+        })
+      : []
     const result: any[] = links
       .map(e => {
         return [
@@ -322,7 +335,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
             tags: {
               node_type: e['client_node_type'],
               ...Object.fromEntries(
-                [...queryConfig.from, ..._commonTags].map(tag => {
+                [...(Array.isArray(queryConfig.from) ? queryConfig.from : []), ..._commonTags].map(tag => {
                   const _tag = tag.replace('_id', '')
                   return [_tag.replace('_0', ''), e[_tag]]
                 })
@@ -351,7 +364,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
             tags: {
               node_type: e['server_node_type'],
               ...Object.fromEntries(
-                [...queryConfig.to, ..._commonTags].map(tag => {
+                [...(Array.isArray(queryConfig.to) ? queryConfig.to : []), ..._commonTags].map(tag => {
                   const _tag = tag.replace('_id', '')
                   return [_tag.replace('_1', ''), e[_tag]]
                 })
@@ -384,6 +397,15 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     const container = addSvg('.' + randomClassName)
     fitSvgToContainer(container)
     setChartContainer(container)
+    const _miniMapContainer = addSvg('.' + randomClassName, false)
+    _miniMapContainer
+      .attr('width', debouncedWidth / 4)
+      .attr('height', debouncedHeight / 4)
+      .attr('viewBox', `0 0 ${debouncedWidth / 4} ${debouncedHeight / 4}`)
+      .style('position', 'absolute')
+      .style('bottom', 0)
+      .style('left', 0)
+    setMiniMapContainer(_miniMapContainer)
   }, [randomClassName, topoType, debouncedWidth, debouncedHeight])
 
   const bodyClassName = document.body.className
@@ -400,9 +422,13 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       const titleColor = isDark ? '#bbb' : '#333'
       const nodeAndLinkColor = isDark ? '#206FD6' : '#B6BFD1'
       chartContainer.selectAll('g').remove()
+      miniMapContainer.selectAll('*').remove()
       const renderFunction = topoType === 'simpleTopo' ? renderSimpleTreeTopoChart : renderTreeTopoChart
       const bindEventFunction = topoType === 'simpleTopo' ? simpleTopoRender : treeTopoRender
 
+      const handleZoomEvent = (event: any) => {
+        miniRender(event)
+      }
       const renderOptions: Record<any, any> = {
         getNodeV: (node: Node<NodeItem>) => 0,
         getNodeColor: (node: Node<NodeItem>) => nodeAndLinkColor,
@@ -412,6 +438,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         getLinkColor: (link: Link<LinkItem>) => nodeAndLinkColor,
         titleColor: titleColor,
         nodeSize: [40, 40],
+        watchZoomEvent: (event: any) => handleZoomEvent(event),
         ...(topoType !== 'simpleTopo'
           ? {
               nodeSize: [300, 300],
@@ -450,7 +477,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         },
         renderOptions
       )
-      const { nodes: _nodes, links: _links } = handler
+      const { nodes: _nodes, links: _links, zoom } = handler
       if (topoType === 'simpleTopo') {
         simpleTopoRender.bindDefaultMouseEvent(handler.links, handler.nodes, chartContainer)
       } else {
@@ -509,11 +536,35 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
           setTooltipContent({})
         })
       })
+
+      const miniRender = miniMap(
+        _nodes,
+        _links,
+        miniMapContainer,
+        chartContainer,
+        zoom,
+        topoType === 'simpleTopo'
+          ? {
+              getNodeColor: (node: Node<NodeItem>) => {
+                return nodeAndLinkColor
+              },
+              getLinkColor: (link: Link<LinkItem>) => {
+                return nodeAndLinkColor
+              }
+            }
+          : {
+              nodeType: 'rect',
+              lineGenerator: (link: Link<LinkItem>) => {
+                return treeTopoRender.getPathD(link)
+              }
+            }
+      )
+      miniRender()
     } catch (error: any) {
       console.log(error)
       setErrMsg(error.toString() || 'draw topo failed')
     }
-  }, [nodes, links, chartContainer, isDark, topoType])
+  }, [nodes, links, chartContainer, miniMapContainer, isDark, topoType])
 
   useEffect(() => {
     if (!topoHandler || !groupTag) {

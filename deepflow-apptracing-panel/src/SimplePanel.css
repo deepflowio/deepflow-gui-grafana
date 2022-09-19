@@ -80,6 +80,10 @@
   padding-bottom: 6px;
 }
 
+.flame-tables-wrap .flame {
+  position: relative;
+}
+
 .flame-tables-wrap .flame,
 .flame-tables-wrap .service-table,
 .flame-tables-wrap .detail-table {
