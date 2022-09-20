@@ -281,7 +281,6 @@ export class QueryEditorFormRow extends PureComponent<Props> {
         })
       : tagOpts
     const opts = basicData.type === 'tag' ? tagOptsFilted : metricOpts
-    const columnWidthFix = config.type ? 0 : 10.5
 
     // 当 key 存在, 且 opts 存在
     // 检查当前值是否存在在 opts 内, 若不存在, 置空 key 的值
@@ -339,20 +338,18 @@ export class QueryEditorFormRow extends PureComponent<Props> {
         <div className="editor-form-row">
           <div className="content">
             {config.type ? (
-              <div>
-                <Select
-                  width={10}
-                  options={columnTypeOpts}
-                  onChange={this.onColumnTypeSelect}
-                  placeholder="type"
-                  value={basicData.type}
-                  disabled={typeSelectDisabled}
-                />
-              </div>
+              <Select
+                width="auto"
+                options={columnTypeOpts}
+                onChange={this.onColumnTypeSelect}
+                placeholder="type"
+                value={basicData.type}
+                disabled={typeSelectDisabled}
+              />
             ) : null}
             <div>
               <Select
-                width={basicData.type === 'tag' ? 45.5 + columnWidthFix : 26 + columnWidthFix}
+                width="auto"
                 options={opts}
                 onChange={this.onColumnSelect}
                 placeholder={`${basicData.type.toUpperCase()}`}
@@ -365,7 +362,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
               usingGroupBy ? (
                 <div>
                   <Select
-                    width={19}
+                    width="auto"
                     options={this.currentFuncOpts}
                     onChange={this.onFuncChange}
                     placeholder="FUNC"
@@ -378,7 +375,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
               ) : (
                 <div>
                   <Select
-                    width={19}
+                    width="auto"
                     options={[]}
                     onChange={() => {}}
                     placeholder="FUNC"
@@ -397,22 +394,21 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                       key={index}
                       onChange={ev => this.onFuncParamChange(ev, index)}
                       placeholder={`param${index + 1}`}
+                      width={12}
                     ></Input>
                   )
                 })
               : null}
             {config.op ? (
-              <div>
-                <Select
-                  width={8}
-                  options={this.operatorOpts}
-                  onChange={this.onOperatorChange}
-                  placeholder="OP"
-                  value={basicData.op}
-                  className="op-selector"
-                  key={basicData.op ? 'opWithVal' : 'opWithoutVal'}
-                />
-              </div>
+              <Select
+                width="auto"
+                options={this.operatorOpts}
+                onChange={this.onOperatorChange}
+                placeholder="OP"
+                value={basicData.op}
+                className="op-selector"
+                key={basicData.op ? 'opWithVal' : 'opWithoutVal'}
+              />
             ) : null}
             {config.val ? (
               basicData.type === 'tag' ? (
@@ -426,7 +422,11 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                   }
                 ></TagValueSelector>
               ) : (
-                <Input value={basicData.val as string} onChange={(ev: any) => this.onValueChange('input', ev)}></Input>
+                <Input
+                  value={basicData.val as string}
+                  onChange={(ev: any) => this.onValueChange('input', ev)}
+                  width={12}
+                ></Input>
               )
             ) : null}
             {config.as ? (
@@ -436,6 +436,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                   value={basicData.as}
                   onChange={this.onAsInput}
                   disabled={basicData.key.includes('resource_gl')}
+                  width={12}
                 ></Input>
               </>
             ) : null}
