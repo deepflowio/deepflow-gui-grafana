@@ -103,7 +103,7 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
       <div className="sub-functions-editor">
         <p className="sub-functions-title">SUB FUNCTIONS:</p>
         <Select
-          width={15}
+          width="auto"
           options={subFuncOpts}
           value={func}
           onChange={ev => {
@@ -115,7 +115,7 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
         ></Select>
         {func === 'Math' ? (
           <Select
-            width={8}
+            width="auto"
             options={mathOpreatorOpts}
             value={op}
             onChange={ev => {
@@ -126,7 +126,7 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
         ) : null}
         {func === 'Math' && op ? (
           <Input
-            width={10}
+            width={12}
             type="number"
             value={params}
             onKeyDown={e => {

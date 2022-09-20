@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 
-import { Select, AsyncSelect } from '@grafana/ui'
+import { Select, AsyncSelect, Input } from '@grafana/ui'
 import { SelectOpts } from 'QueryEditor'
 import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
@@ -91,6 +91,7 @@ export const TagValueSelector = (props: {
         onChange={v => {
           props.onChange(v)
         }}
+        width="auto"
       />
     ) : useInput ? (
       <Select
@@ -110,6 +111,7 @@ export const TagValueSelector = (props: {
           }
         }}
         isMulti={props.isMulti}
+        width="auto"
       />
     ) : (
       <AsyncSelect
@@ -120,7 +122,10 @@ export const TagValueSelector = (props: {
           props.onChange(v)
         }}
         isMulti={props.isMulti}
+        width="auto"
       />
     )
-  ) : null
+  ) : (
+    <Input width={12} placeholder="VALUE" disabled />
+  )
 }

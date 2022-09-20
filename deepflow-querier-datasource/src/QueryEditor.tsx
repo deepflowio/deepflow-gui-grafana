@@ -899,25 +899,24 @@ export class QueryEditor extends PureComponent<Props> {
             </div>
             {showErrorAlert ? <Alert title={errorMsg} severity="error" onRemove={this.onAlertRemove} /> : null}
             <InlineField className="custom-label" label="APP" labelWidth={10}>
-              <div>
-                <Select
-                  options={appTypeOpts}
-                  value={this.state.appType}
-                  onChange={(val: any) => this.onFieldChange('appType', val)}
-                  placeholder="APP TYPE"
-                  width={22}
-                />
-              </div>
+              <Select
+                options={appTypeOpts}
+                value={this.state.appType}
+                onChange={(val: any) => this.onFieldChange('appType', val)}
+                placeholder="APP TYPE"
+                width="auto"
+              />
             </InlineField>
             <InlineField className="custom-label" label="DATABASE" labelWidth={10}>
-              <div className="row-start-center">
+              <div className="row-start-center database-selectors">
                 <Select
                   options={this.databaseOptsAfterFilter}
                   value={this.state.db}
                   onChange={(val: any) => this.onFieldChange('db', val)}
                   placeholder="DATABASE"
                   key={this.state.db ? 'dbWithVal' : 'dbWithoutVal'}
-                  width={15}
+                  width="auto"
+                  className="mr-4"
                 />
                 <Select
                   options={this.tableOptsAfterFilter}
@@ -928,7 +927,8 @@ export class QueryEditor extends PureComponent<Props> {
                   }}
                   placeholder="TABLE"
                   key={this.state.from ? 'fromWithVal' : 'fromWithoutVal'}
-                  width={22.5}
+                  width="auto"
+                  className="mr-4"
                 />
                 {this.dataSourcesTypeOpts ? (
                   <Select
@@ -937,7 +937,7 @@ export class QueryEditor extends PureComponent<Props> {
                     onChange={(val: any) => this.onFieldChange('sources', val)}
                     placeholder="DATA_INTERVAL"
                     key={this.state.sources ? 'sourceWithVal' : 'sourceWithoutVal'}
-                    width={14}
+                    width="auto"
                   />
                 ) : null}
               </div>
@@ -1041,7 +1041,7 @@ export class QueryEditor extends PureComponent<Props> {
                           onChange={(val: any) => this.onFieldChange('interval', val)}
                           placeholder="TIME"
                           isClearable={true}
-                          width={36.5}
+                          width="auto"
                         />
                       </div>
                     </InlineField>
@@ -1056,7 +1056,7 @@ export class QueryEditor extends PureComponent<Props> {
                     value={this.state.limit}
                     onChange={(ev: any) => this.onFieldChange('limit', ev.target)}
                     placeholder="LIMIT"
-                    width={6}
+                    width={12}
                   />
                 </div>
               </InlineField>
@@ -1067,7 +1067,7 @@ export class QueryEditor extends PureComponent<Props> {
                     onChange={(ev: any) => this.onFieldChange('offset', ev.target)}
                     placeholder="OFFSET"
                     disabled={!this.state.limit}
-                    width={9}
+                    width={12}
                   />
                 </div>
               </InlineField>
@@ -1081,6 +1081,7 @@ export class QueryEditor extends PureComponent<Props> {
                     onChange={(val: any) => this.onFieldChange('formatAs', val)}
                     placeholder="FORMAT_AS"
                     key={this.state.formatAs ? 'formatAsWithVal' : 'formatAsWithoutVal'}
+                    width="auto"
                   />
                 </InlineField>
                 {this.state.formatAs === 'timeSeries' ? (
