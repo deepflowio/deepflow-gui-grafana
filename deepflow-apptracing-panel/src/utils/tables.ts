@@ -69,7 +69,7 @@ export function tarnsArrayToTableData(data: any[]) {
 export function formatDetailData(data: any) {
   const result: any[] = []
 
-  const first = data[0]
+  const first = data[0] || {}
   const cates = Object.keys(first)
     .map(k => {
       return new Array(Object.keys(first[k]).length).fill(k)
