@@ -17,6 +17,8 @@ import './SimplePanel.css'
 
 interface Props extends PanelProps<SimpleOptions> {}
 
+let MINIMAP_CONATAINER_CACHE: undefined | HTMLElement = undefined
+
 export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
   const [errMsg, setErrMsg] = useState('')
   const debouncedWidth = useDebounce(width, 600)
@@ -43,7 +45,6 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
   }, [refIds])
   const [selectedServiceRowId, setSelectedServiceRowId] = useState('')
   const [flameContainer, setFlameContainer] = useState<any>(undefined)
-  const [miniMapContainer, setMiniMapContainer] = useState<any>(undefined)
   const [flameChart, setFlameChart] = useState<any>(undefined)
   const [detailFilteIds, setDetailFilteIds] = useState<string[]>([])
 
@@ -94,15 +95,6 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     const container = addSvg('.' + randomClassName)
     fitSvgToContainer(container)
     setFlameContainer(container)
-    const _miniMapContainer = addSvg('.' + randomClassName, false)
-    _miniMapContainer
-      .attr('width', debouncedWidth / 4)
-      .attr('height', debouncedHeight / 4)
-      .attr('viewBox', `0 0 ${debouncedWidth / 4} ${debouncedHeight / 4}`)
-      .style('position', 'absolute')
-      .style('bottom', 0)
-      .style('left', 0)
-    setMiniMapContainer(_miniMapContainer)
   }, [randomClassName, debouncedWidth, debouncedHeight])
 
   const [mousePos, setMousePos] = useState({
@@ -117,10 +109,8 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       return
     }
     flameContainer.selectAll('*').remove()
-    miniMapContainer.selectAll('*').remove()
-    const handleZoomEvent = (event: any) => {
-      miniRender(event)
-    }
+
+    let handleZoomEvent: any
     const renderResult = renderTimeBar(flameData)(flameContainer, {
       formatBarName: (data: any, type: string) => {
         if (type === 'app' || type === 'process') {
@@ -164,12 +154,27 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     })
     setFlameChart(renderResult)
 
-    let miniRender = miniMap(renderResult.bars, [], miniMapContainer, flameContainer, renderResult.zoom, {
+    if (MINIMAP_CONATAINER_CACHE) {
+      MINIMAP_CONATAINER_CACHE.remove()
+    }
+    const _miniMapContainer = addSvg('.' + randomClassName, false)
+    _miniMapContainer
+      .attr('width', debouncedWidth / 4)
+      .attr('height', debouncedHeight / 4)
+      .attr('viewBox', `0 0 ${debouncedWidth / 4} ${debouncedHeight / 4}`)
+      .style('position', 'absolute')
+      .style('bottom', 0)
+      .style('left', 2)
+    MINIMAP_CONATAINER_CACHE = _miniMapContainer
+    let miniRender = miniMap(renderResult.bars, [], _miniMapContainer, flameContainer, renderResult.zoom, {
       nodeType: 'rect',
       scaleType: 'xy'
     })
     miniRender()
-  }, [flameData, flameContainer, miniMapContainer, setFlameDetailFilter, setMousePos])
+    handleZoomEvent = (event: any) => {
+      miniRender(event)
+    }
+  }, [flameData, flameContainer, randomClassName, debouncedWidth, debouncedHeight, setFlameDetailFilter, setMousePos])
 
   const [startTableLoading, setStartTableLoading] = useState(false)
   const onActive = useCallback(async (item: any) => {

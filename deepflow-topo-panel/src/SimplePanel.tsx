@@ -38,6 +38,8 @@ interface Props extends PanelProps<SimpleOptions> {}
 const IP_LIKELY_NODE_TYPE_TDS = [255, 0]
 const NO_GROUP_BY_TAGS = ['tap_side']
 
+let MINIMAP_CONATAINER_CACHE: undefined | HTMLElement = undefined
+
 export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) => {
   const debouncedWidth = useDebounce(width, 600)
   const debouncedHeight = useDebounce(height, 600)
@@ -50,7 +52,6 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
   }, [options])
   const [errMsg, setErrMsg] = useState('')
   const [chartContainer, setChartContainer] = useState<any>(undefined)
-  const [miniMapContainer, setMiniMapContainer] = useState<any>(undefined)
   const targetIndex = 0
   const [noData, setNoData] = useState(false)
 
@@ -397,15 +398,6 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     const container = addSvg('.' + randomClassName)
     fitSvgToContainer(container)
     setChartContainer(container)
-    const _miniMapContainer = addSvg('.' + randomClassName, false)
-    _miniMapContainer
-      .attr('width', debouncedWidth / 4)
-      .attr('height', debouncedHeight / 4)
-      .attr('viewBox', `0 0 ${debouncedWidth / 4} ${debouncedHeight / 4}`)
-      .style('position', 'absolute')
-      .style('bottom', 0)
-      .style('left', 0)
-    setMiniMapContainer(_miniMapContainer)
   }, [randomClassName, topoType, debouncedWidth, debouncedHeight])
 
   const bodyClassName = document.body.className
@@ -422,7 +414,6 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       const titleColor = isDark ? '#bbb' : '#333'
       const nodeAndLinkColor = isDark ? '#206FD6' : '#B6BFD1'
       chartContainer.selectAll('g').remove()
-      miniMapContainer.selectAll('*').remove()
       const renderFunction = topoType === 'simpleTopo' ? renderSimpleTreeTopoChart : renderTreeTopoChart
       const bindEventFunction = topoType === 'simpleTopo' ? simpleTopoRender : treeTopoRender
 
@@ -537,10 +528,23 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         })
       })
 
+      if (MINIMAP_CONATAINER_CACHE) {
+        MINIMAP_CONATAINER_CACHE.remove()
+      }
+      const _miniMapContainer = addSvg('.' + randomClassName, false)
+      _miniMapContainer
+        .attr('width', debouncedWidth / 4)
+        .attr('height', debouncedHeight / 4)
+        .attr('viewBox', `0 0 ${debouncedWidth / 4} ${debouncedHeight / 4}`)
+        .style('position', 'absolute')
+        .style('bottom', 0)
+        .style('left', 0)
+      MINIMAP_CONATAINER_CACHE = _miniMapContainer
+
       const miniRender = miniMap(
         _nodes,
         _links,
-        miniMapContainer,
+        _miniMapContainer,
         chartContainer,
         zoom,
         topoType === 'simpleTopo'
@@ -564,7 +568,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       console.log(error)
       setErrMsg(error.toString() || 'draw topo failed')
     }
-  }, [nodes, links, chartContainer, miniMapContainer, isDark, topoType])
+  }, [nodes, links, chartContainer, randomClassName, debouncedWidth, debouncedHeight, isDark, topoType])
 
   useEffect(() => {
     if (!topoHandler || !groupTag) {
