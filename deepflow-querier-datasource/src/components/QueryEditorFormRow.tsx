@@ -4,7 +4,7 @@ import { Select, Button, Input, RadioButtonGroup } from '@grafana/ui'
 import { FuncSelectOpts, LabelItem, MetricOpts, SelectOpts, SelectOptsWithStringValue } from 'QueryEditor'
 import _ from 'lodash'
 import { SubFuncsEditor } from './SubFuncsEditor'
-import { BasicDataWithId, FormTypes } from 'consts'
+import { BasicDataWithId, FormTypes, MAP_METRIC_TYPE_NUM } from 'consts'
 import { TagValueSelector } from './TagValueSelector'
 import { getRealKey } from 'utils/tools'
 
@@ -435,7 +435,10 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                 <Input
                   value={basicData.as}
                   onChange={this.onAsInput}
-                  disabled={basicData.key.includes('resource_gl')}
+                  disabled={
+                    basicData.key.includes('resource_gl') ||
+                    metricOpts.find(e => e.value === basicData.key)?.type === MAP_METRIC_TYPE_NUM
+                  }
                   width={12}
                 ></Input>
               </>

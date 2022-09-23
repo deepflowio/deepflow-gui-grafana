@@ -17,9 +17,11 @@ import {
   formItemConfigs,
   FormTypes,
   intervalOpts,
+  MAP_METRIC_TYPE_NUM,
   SELECT_GROUP_BY_DISABLE_TAGS,
   SERVICE_MAP_SUPPORT_DB,
-  SERVICE_MAP_SUPPORT_TABLE
+  SERVICE_MAP_SUPPORT_TABLE,
+  TAG_METRIC_TYPE_NUM
 } from 'consts'
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>
@@ -233,7 +235,9 @@ export class QueryEditor extends PureComponent<Props> {
         return item.key
       })
     if (groupByKeys.length > 0 || interval) {
-      return metricOpts
+      return metricOpts.filter((item: any) => {
+        return item.type !== MAP_METRIC_TYPE_NUM
+      })
     }
     return metricOpts.filter((item: any) => {
       return !item.is_agg
@@ -277,13 +281,18 @@ export class QueryEditor extends PureComponent<Props> {
           : []
       )
     }
-    return this.metricsFromSelect.concat(this.basciMetricOpts).concat([
-      {
-        label: 'time',
-        value: 'time',
-        operatorOpts: []
-      }
-    ])
+    return this.metricsFromSelect
+      .concat(this.basciMetricOpts)
+      .concat([
+        {
+          label: 'time',
+          value: 'time',
+          operatorOpts: []
+        }
+      ])
+      .filter(item => {
+        return item.type !== MAP_METRIC_TYPE_NUM
+      })
   }
 
   get usingGroupBy(): boolean {
@@ -744,7 +753,6 @@ export class QueryEditor extends PureComponent<Props> {
         }
       })
 
-      const TAG_METRIC_TYPE_NUM = 6
       const metricOpts = metrics
         .filter((item: any) => {
           return item.type !== TAG_METRIC_TYPE_NUM
@@ -995,7 +1003,9 @@ export class QueryEditor extends PureComponent<Props> {
                               conf.targetDataKey === 'orderBy'
                                 ? this.orderByMetricOpts
                                 : conf.targetDataKey === 'having'
-                                ? this.metricsFromSelect.concat(this.basciMetricOpts)
+                                ? this.metricsFromSelect.concat(this.basciMetricOpts).filter(item => {
+                                    return item.type !== MAP_METRIC_TYPE_NUM
+                                  })
                                 : this.basciMetricOpts
                             }
                             funcOpts={funcOpts}

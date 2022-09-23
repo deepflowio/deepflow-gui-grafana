@@ -22,7 +22,7 @@ import {
   getParamByName,
   numberToShort
 } from 'utils/tools'
-import { SELECT_GROUP_BY_DISABLE_TAGS } from 'consts'
+import { MAP_METRIC_TYPE_NUM, SELECT_GROUP_BY_DISABLE_TAGS, TAG_METRIC_TYPE_NUM } from 'consts'
 
 function setTimeKey(
   queryData: any,
@@ -189,7 +189,13 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                 if (timeKeys.includes(key) && typeof firstResponse[key] === 'number') {
                   type = FieldType.time
                 } else {
-                  type = returnMetricNames.includes(key) ? FieldType.number : FieldType.string
+                  type =
+                    returnMetricNames.includes(key) &&
+                    returnMetrics.find((e: any) => {
+                      return e.name === key
+                    })?.type !== MAP_METRIC_TYPE_NUM
+                      ? FieldType.number
+                      : FieldType.string
                 }
                 return {
                   name: key,
@@ -379,6 +385,11 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             ]
           })
           .flat(Infinity)
+        const mapTypeMetricNames = metrics
+          .filter((e: any) => {
+            return e.type === MAP_METRIC_TYPE_NUM
+          })
+          .map((e: any) => e.name)
         const sqlData = {
           format: 'sql',
           db: 'flow_log',
@@ -389,7 +400,12 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             }),
             METRICS: metrics
               .filter((e: any) => {
-                return e.type !== 6
+                const isItemInMapTypeMetric =
+                  e.name.includes('.') &&
+                  !!mapTypeMetricNames.find((name: string) => {
+                    return e.name.startsWith(name)
+                  })
+                return e.type !== TAG_METRIC_TYPE_NUM && !isItemInMapTypeMetric
               })
               .map((e: any) => {
                 return e.name
@@ -430,6 +446,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         const tagsGroupbyCategory = _.groupBy(_tags, 'category')
         const tagCategoryKeys = Object.keys(tagsGroupbyCategory)
         response.forEach((e: any) => {
+          let JSONMetrics = {}
           const item = tagCategoryKeys
             .map((tagCate: any) => {
               const isJSONTag = tagsGroupbyCategory[tagCate][0].isJSONTag
@@ -459,20 +476,33 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             .concat([
               [
                 'metrics',
-                Object.fromEntries(
-                  returnMetrics.map((metric: any) => {
-                    const key = metric.name
-                    const type = metric.type
-                    const unit = metric.unit
-                    const val = e[key]
+                {
+                  ...Object.fromEntries(
+                    returnMetrics
+                      .map((metric: any) => {
+                        const key = metric.name
+                        const type = metric.type
+                        const unit = metric.unit
+                        const val = e[key]
 
-                    if (type === 3) {
-                      return [key, formatUsUnit(val)]
-                    }
-                    const valAfterFormat = numberToShort(val)
-                    return [key, `${valAfterFormat}${valAfterFormat !== null && valAfterFormat !== '' ? unit : ''}`]
-                  })
-                )
+                        if (type === MAP_METRIC_TYPE_NUM) {
+                          const _vals = JSON.parse(val || {})
+                          JSONMetrics = {
+                            ...JSONMetrics,
+                            ..._vals
+                          }
+                          return undefined
+                        }
+                        if (type === 3) {
+                          return [key, formatUsUnit(val)]
+                        }
+                        const valAfterFormat = numberToShort(val)
+                        return [key, `${valAfterFormat}${valAfterFormat !== null && valAfterFormat !== '' ? unit : ''}`]
+                      })
+                      .filter((e: undefined | any[]) => !!e)
+                  ),
+                  ...JSONMetrics
+                }
               ]
             ])
           detailList[e._id.toString()] = Object.fromEntries(item)
@@ -494,6 +524,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         detailList
       }
     } catch (error) {
+      console.log(error)
       return error
     }
   }
