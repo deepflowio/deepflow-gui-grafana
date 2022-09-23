@@ -144,14 +144,20 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: manyuanrong/setup-ossutil@v2.0
-        if: startsWith(github.ref, 'refs/heads/main')
         with:
           endpoint: "oss-accelerate.aliyuncs.com"
           access-key-id: "${{ secrets.ALIYUN_OSS_ACCESS_KEY }}"
           access-key-secret: "${{ secrets.ALIYUN_OSS_SECRETS_KEY }}"
-      - name: upload artifacts
-        if: startsWith(github.ref, 'refs/heads/main')
+      - name: upload latest artifacts
         run: |
           cd release
           tar -zcvf deepflow-gui-grafana.tar.gz *
+          ossutil cp -rf deepflow-gui-grafana.tar.gz  oss://deepflow-ce/bin/agent/latest/linux/amd64/deepflow-gui-grafana.tar.gz
+      - name: upload main artifacts
+        if: startsWith(github.ref, 'refs/heads/main')
+        run: |
           ossutil cp -rf deepflow-gui-grafana.tar.gz  oss://deepflow-ce/bin/agent/main/linux/amd64/deepflow-gui-grafana.tar.gz
+      - name: upload stable artifacts
+        if: "startsWith(github.ref, 'refs/tags/')"
+        run: |
+          ossutil cp -rf deepflow-gui-grafana.tar.gz  oss://deepflow-ce/bin/agent/stable/linux/amd64/deepflow-gui-grafana.tar.gz
