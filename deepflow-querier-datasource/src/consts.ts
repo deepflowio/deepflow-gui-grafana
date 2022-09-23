@@ -8,6 +8,9 @@ export const SELECT_GROUP_BY_DISABLE_TAGS = ['lb_listener', 'pod_ingress']
 export const SERVICE_MAP_SUPPORT_DB = ['flow_log', 'flow_metrics']
 export const SERVICE_MAP_SUPPORT_TABLE = ['l4_flow_log', 'l7_flow_log', 'vtap_flow_edge_port', 'vtap_app_edge_port']
 
+export const TAG_METRIC_TYPE_NUM = 6
+export const MAP_METRIC_TYPE_NUM = 7
+
 export const formatAsOpts: SelectOpts = [
   {
     label: 'Time series',
