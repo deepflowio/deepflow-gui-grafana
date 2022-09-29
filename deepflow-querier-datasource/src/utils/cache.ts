@@ -35,3 +35,11 @@ export const METRIC_CACHE = _.get(querierJs, 'MetricCache', {})
 export const METRIC_MAP_CACHE = _.get(querierJs, 'MetricMapCache', {})
 export const METRIC_FUNCTION_CACHE = _.get(querierJs, 'MetricFunctionCache', {})
 export const METRIC_FUNCTION_MAP_CACHE = _.get(querierJs, 'MetricFunctionMapCache', {})
+
+export const getTagMapCache = (db: string, from: string, tag: string) => {
+  return (
+    _.get(TAG_MAP_CACHE, [db, from, tag]) ||
+    _.get(CLIENT_TAG_MAP_CACHE, [db, from, tag]) ||
+    _.get(SERVER_TAG_MAP_CACHE, [db, from, tag])
+  )
+}

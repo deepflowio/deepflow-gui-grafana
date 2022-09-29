@@ -270,3 +270,36 @@ export function formatUsUnit(num: any, unit = 1000, digits = 2, lang = 'en') {
 export function getRealKey(item: BasicData) {
   return item?.fromSelect ? item.fromSelect?.key : item.key
 }
+
+export function genGetTagValuesSql(
+  {
+    tagName,
+    tagType,
+    from,
+    keyword
+  }: {
+    tagName: string
+    tagType?: string
+    from: string
+    keyword: string | Array<number | string>
+  },
+  useEqual?: boolean
+) {
+  let cond: string
+  if (useEqual) {
+    cond = (keyword as Array<number | string>)
+      .map(kw => {
+        return `value=${typeof kw === 'number' ? kw : `'${kw}'`}`
+      })
+      .join(' OR ')
+  } else {
+    const ONLY_USE_LIKE_TAG_TYPES = ['resource', 'int_enum']
+    const likeVal = (keyword as string).replace("'", "\\'") || '*'
+    cond = ['display_name', ...(ONLY_USE_LIKE_TAG_TYPES.includes(tagType as string) ? [] : ['value'])]
+      .map(e => {
+        return `${e} LIKE '*${likeVal}*'`
+      })
+      .join(' OR ')
+  }
+  return `show tag ${tagName} values FROM ${from} WHERE ${cond}${!useEqual ? ' LIMIT 0,100' : ''}`
+}
