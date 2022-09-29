@@ -59,7 +59,8 @@
 
 .flame-tables-wrap .service-table-wrap {
   width: 100%;
-  flex: 1;
+  /* flex: 1; */
+  height: 28%;
 }
 
 .flame-tables-wrap .view-title {
@@ -97,12 +98,13 @@
   height: 100%;
   margin-left: 16px;
   display: flex;
+  jusituify-content: space-between;
 }
 
 .flame-tables-wrap .detail-table-wrap {
   width: 100%;
   height: 68%;
-  margin-top: 6px;
+  /* margin-top: 6px; */
   display: flex;
 }
 

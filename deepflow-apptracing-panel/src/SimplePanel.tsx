@@ -108,71 +108,75 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     if (!flameData || !flameContainer) {
       return
     }
-    flameContainer.selectAll('*').remove()
+    try {
+      flameContainer.selectAll('*').remove()
 
-    let handleZoomEvent: any
-    const renderResult = renderTimeBar(flameData)(flameContainer, {
-      formatBarName: (data: any, type: string) => {
-        if (type === 'app' || type === 'process') {
-          return `${data._l7_protocol} ${data.request_type || ''} ${data.request_resource || ''}`
-        } else {
-          return _.get(TAP_SIDE_OPTIONS_MAP, [data.tap_side, 'label'], data.tap_side)
-        }
-      },
-      watchZoomEvent: (event: any) => handleZoomEvent(event)
-    })
-    renderResult.bars.forEach((bar: any) => {
-      bar.container.on('click', (ev: any) => {
-        ev.stopPropagation()
-        setFlameDetailFilter(genServiceId(bar.data), renderResult, {
-          self: bar,
-          parent: bar.props.parent
-        })
+      let handleZoomEvent: any
+      const renderResult = renderTimeBar(flameData)(flameContainer, {
+        formatBarName: (data: any, type: string) => {
+          if (type === 'app' || type === 'process') {
+            return `${data._l7_protocol} ${data.request_type || ''} ${data.request_resource || ''}`
+          } else {
+            return _.get(TAP_SIDE_OPTIONS_MAP, [data.tap_side, 'label'], data.tap_side)
+          }
+        },
+        watchZoomEvent: (event: any) => handleZoomEvent(event)
       })
-      bar.container.on('mouseenter', (ev: any) => {
-        setHoveredBarData({
-          ...bar.data,
-          _barType: bar.props.type,
-          _icon: bar.props.icon,
-          _errorIcon: bar.props.errorIcon
-        })
-      })
-      bar.container.on('mousemove', (ev: MouseEvent) => {
-        setTimeout(() => {
-          setMousePos({
-            x: ev.clientX,
-            y: ev.clientY
+      renderResult.bars.forEach((bar: any) => {
+        bar.container.on('click', (ev: any) => {
+          ev.stopPropagation()
+          setFlameDetailFilter(genServiceId(bar.data), renderResult, {
+            self: bar,
+            parent: bar.props.parent
           })
         })
+        bar.container.on('mouseenter', (ev: any) => {
+          setHoveredBarData({
+            ...bar.data,
+            _barType: bar.props.type,
+            _icon: bar.props.icon,
+            _errorIcon: bar.props.errorIcon
+          })
+        })
+        bar.container.on('mousemove', (ev: MouseEvent) => {
+          setTimeout(() => {
+            setMousePos({
+              x: ev.clientX,
+              y: ev.clientY
+            })
+          })
+        })
+        bar.container.on('mouseleave', () => {
+          setHoveredBarData(undefined)
+        })
       })
-      bar.container.on('mouseleave', () => {
-        setHoveredBarData(undefined)
+      flameContainer.on('click', () => {
+        setFlameDetailFilter('', renderResult)
       })
-    })
-    flameContainer.on('click', () => {
-      setFlameDetailFilter('', renderResult)
-    })
-    setFlameChart(renderResult)
+      setFlameChart(renderResult)
 
-    if (MINIMAP_CONATAINER_CACHE) {
-      MINIMAP_CONATAINER_CACHE.remove()
-    }
-    const _miniMapContainer = addSvg('.' + randomClassName, false)
-    _miniMapContainer
-      .attr('width', debouncedWidth / 4)
-      .attr('height', debouncedHeight / 4)
-      .attr('viewBox', `0 0 ${debouncedWidth / 4} ${debouncedHeight / 4}`)
-      .style('position', 'absolute')
-      .style('bottom', 0)
-      .style('left', 2)
-    MINIMAP_CONATAINER_CACHE = _miniMapContainer
-    let miniRender = miniMap(renderResult.bars, [], _miniMapContainer, flameContainer, renderResult.zoom, {
-      nodeType: 'rect',
-      scaleType: 'xy'
-    })
-    miniRender()
-    handleZoomEvent = (event: any) => {
-      miniRender(event)
+      if (MINIMAP_CONATAINER_CACHE) {
+        MINIMAP_CONATAINER_CACHE.remove()
+      }
+      const _miniMapContainer = addSvg('.' + randomClassName, false)
+      _miniMapContainer
+        .attr('width', debouncedWidth / 4)
+        .attr('height', debouncedHeight / 4)
+        .attr('viewBox', `0 0 ${debouncedWidth / 4} ${debouncedHeight / 4}`)
+        .style('position', 'absolute')
+        .style('bottom', 0)
+        .style('left', 2)
+      MINIMAP_CONATAINER_CACHE = _miniMapContainer
+      let miniRender = miniMap(renderResult.bars, [], _miniMapContainer, flameContainer, renderResult.zoom, {
+        nodeType: 'rect',
+        scaleType: 'xy'
+      })
+      miniRender()
+      handleZoomEvent = (event: any) => {
+        miniRender(event)
+      }
+    } catch (error) {
+      console.log(error)
     }
   }, [flameData, flameContainer, randomClassName, debouncedWidth, debouncedHeight, setFlameDetailFilter, setMousePos])
 

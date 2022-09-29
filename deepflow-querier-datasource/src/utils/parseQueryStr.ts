@@ -4,7 +4,7 @@ import { BasicData } from 'components/QueryEditorFormRow'
 import _ from 'lodash'
 import { LabelItem } from 'QueryEditor'
 import { MyQuery } from 'types'
-import { QUERY_DATA_CACHE } from './cache'
+import { getTagMapCache, QUERY_DATA_CACHE } from './cache'
 import { getRealKey } from './tools'
 
 // Secondary Operators and Concatenated Strings Map:
@@ -264,7 +264,7 @@ function getValueByVariablesName(val: LabelItem, variables: any[], op: string) {
 }
 
 function whereFormat(data: any, variables: any[]) {
-  const { where, having } = data
+  const { db, from, where, having } = data
   const fullData = where.concat(having)
   const validKeys = ['type', 'key', 'func', 'op', 'val', 'params', 'subFuncs', 'whereOnly'] as const
   const result = fullData
@@ -291,6 +291,8 @@ function whereFormat(data: any, variables: any[]) {
           }
         }
       })
+      const tagMapItem = getTagMapCache(db, from, result.key)
+      const isEnumTag = result.type === 'tag' && _.get(tagMapItem, 'type', '').toLocaleLowerCase().includes('enum')
       return {
         isForbidden: false,
         ...(result.type === 'tag' || !result?.subFuncs?.length
@@ -299,9 +301,15 @@ function whereFormat(data: any, variables: any[]) {
               type: result.type,
               op: result.op,
               val: [formatWithsubFuncs(result), result.val]
-            })
+            }),
+        ...(isEnumTag && (result.op.toUpperCase().includes('LIKE') || result.op.toUpperCase().includes('REGEXP'))
+          ? {
+              func: 'Enum'
+            }
+          : {})
       }
     })
+
   const _tags: any[] = []
   const _metrics: any[] = []
   result.forEach((e: any) => {
@@ -346,6 +354,7 @@ function whereFormat(data: any, variables: any[]) {
       _tags.push(e)
     }
   })
+
   return jointOrAnd(_tags).concat(_metrics)
 }
 

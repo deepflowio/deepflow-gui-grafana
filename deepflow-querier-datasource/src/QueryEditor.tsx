@@ -7,7 +7,7 @@ import { QueryEditorFormRow } from './components/QueryEditorFormRow'
 import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
 import './QueryEditor.css'
-import { formatTagOperators, uuid } from 'utils/tools'
+import { formatTagOperators, genGetTagValuesSql, uuid } from 'utils/tools'
 import { getTemplateSrv } from '@grafana/runtime'
 import {
   BasicDataWithId,
@@ -23,6 +23,8 @@ import {
   SERVICE_MAP_SUPPORT_TABLE,
   TAG_METRIC_TYPE_NUM
 } from 'consts'
+import { getTagMapCache } from 'utils/cache'
+import { INPUT_TAG_VAL_TYPES, SELECT_TAG_VAL_OPS } from 'components/TagValueSelector'
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>
 
@@ -693,6 +695,50 @@ export class QueryEditor extends PureComponent<Props> {
     }
   }
 
+  updateWhereTagValueLabel = async (formData: any) => {
+    const { db, from, where } = formData
+    const tagValuesGroup: Record<any, any[]> = {}
+    where.forEach((item: BasicDataWithId) => {
+      const tagMapItem = getTagMapCache(db, from, item.key)
+      const tagName = tagMapItem.name
+      const tagType = _.get(tagMapItem, 'type')
+      if (!INPUT_TAG_VAL_TYPES.includes(tagType) && SELECT_TAG_VAL_OPS.includes(item.op)) {
+        if (!tagValuesGroup[tagName]) {
+          tagValuesGroup[tagName] = []
+        }
+        tagValuesGroup[tagName] = [...tagValuesGroup[tagName], ...(item.val as LabelItem[])]
+      }
+    })
+    const tagValuesGroupsKeys = Object.keys(tagValuesGroup)
+    for (let index = 0; index < tagValuesGroupsKeys.length; index++) {
+      const tagName = tagValuesGroupsKeys[index]
+      const tagValues = tagValuesGroup[tagName]
+      // @ts-ignore
+      const data = await querierJs.searchBySql(
+        genGetTagValuesSql(
+          {
+            tagName,
+            from,
+            keyword: [...new Set(tagValues.map(e => e.value))]
+          },
+          true
+        ),
+        db,
+        (d: any) => {
+          return {
+            ...d,
+            // add requestId to cancel request
+            requestId: uuid
+          }
+        }
+      )
+      const tagValueMap = _.keyBy(data, 'value')
+      tagValues.forEach(e => {
+        e.label = _.get(tagValueMap, [e.value, 'display_name'], e.label)
+      })
+    }
+  }
+
   initFormData = async () => {
     this.setState({
       databaseOpts: []
@@ -717,11 +763,12 @@ export class QueryEditor extends PureComponent<Props> {
         }
         if (from) {
           const table = { db: db as string, from: from as string }
-          this.getBasicData(table)
-          this.setState({
-            ...formData
-          })
+          await this.getBasicData(table)
+          await this.updateWhereTagValueLabel(formData)
         }
+        this.setState({
+          ...formData
+        })
       }
     } catch (error) {
       console.log(error)
@@ -823,6 +870,7 @@ export class QueryEditor extends PureComponent<Props> {
           ]
         })
         .flat(Infinity) as MetricOpts
+
       const funcOpts = funcs.map((item: any) => {
         return {
           label: item.name,
@@ -852,20 +900,6 @@ export class QueryEditor extends PureComponent<Props> {
 
   getRemoveBtnDisabled(parent: BasicDataWithId[], current: BasicDataWithId, targetKey?: string) {
     return parent.length <= 1
-  }
-
-  showSideType(parent: BasicDataWithId[], current: BasicDataWithId, targetKey?: string) {
-    return (
-      targetKey === 'groupBy' &&
-      this.usingAccessRelationshipType &&
-      parent
-        .filter(parentItem => {
-          return parentItem.sideType === current.sideType
-        })
-        .findIndex(parentItem => {
-          return parentItem.uuid === current.uuid
-        }) === 0
-    )
   }
 
   onAlertRemove = () => {
@@ -1011,6 +1045,7 @@ export class QueryEditor extends PureComponent<Props> {
                             funcOpts={funcOpts}
                             subFuncOpts={subFuncOpts}
                             key={item.uuid}
+                            uuid={item.uuid}
                             removeBtnDisabled={this.getRemoveBtnDisabled(
                               this.state[conf.targetDataKey],
                               item,

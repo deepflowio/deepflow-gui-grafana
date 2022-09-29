@@ -9,7 +9,7 @@ import {
 } from '@grafana/data'
 import { MyQuery, MyDataSourceOptions } from './types'
 import { DATA_SOURCE_SETTINGS, QUERY_DATA_CACHE } from 'utils/cache'
-import { getBackendSrv } from '@grafana/runtime'
+import { BackendSrvRequest, getBackendSrv } from '@grafana/runtime'
 import parseQueryStr, { replaceInterval } from './utils/parseQueryStr'
 import * as querierJs from 'deepflow-sdk-js'
 import qs from 'qs'
@@ -56,17 +56,21 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     this.url = instanceSettings.url || ''
     const { token } = instanceSettings.jsonData
     // @ts-ignore
-    const test = (method, url, params, headers) => {
+    const test = (method: string, url, params, headers) => {
+      const data = _.omit(params, 'requestId')
+      const requestIdSetting = _.pick(params, 'requestId')
       const f = () => {
         const debugOnOff = getParamByName('debug') === 'true'
+        const fetchOption = {
+          method,
+          url: `${this.url}${token ? '/auth/api/querier' : '/noauth'}/v1/query/${debugOnOff ? '?debug=true' : ''}`,
+          data: qs.stringify(data),
+          headers,
+          responseType: 'text',
+          ...requestIdSetting
+        } as BackendSrvRequest
         return getBackendSrv()
-          .fetch({
-            method,
-            url: `${this.url}${token ? '/auth/api/querier' : '/noauth'}/v1/query/${debugOnOff ? '?debug=true' : ''}`,
-            data: qs.stringify(params),
-            headers,
-            responseType: 'text'
-          })
+          .fetch(fetchOption)
           .toPromise()
           .then((res: any) => {
             return JSON.parse(

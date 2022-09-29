@@ -57,6 +57,7 @@ type Props = {
   gotBasicData: boolean
   usingGroupBy: boolean
   templateVariableOpts: SelectOpts
+  uuid: string
 }
 
 const columnTypeOpts = [
@@ -80,8 +81,6 @@ const sortOpts: SelectOpts = [
   }
 ]
 
-const INPUT_TAG_VAL_TYPES = ['int', 'string', 'ip', 'mac']
-const SELECT_TAG_VAL_OPS = ['=', '!=', 'IN', 'NOT IN']
 export class QueryEditorFormRow extends PureComponent<Props> {
   constructor(props: any) {
     super(props)
@@ -416,10 +415,6 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                   parentProps={this.props}
                   currentTagType={this.currentTagType}
                   onChange={(ev: any) => this.onValueChange('asyncselect', ev)}
-                  isMulti={['IN', 'NOT IN', 'LIKE', 'NOT LIKE'].includes(basicData.op)}
-                  useInput={
-                    INPUT_TAG_VAL_TYPES.includes(this.currentTagType) || !SELECT_TAG_VAL_OPS.includes(basicData.op)
-                  }
                 ></TagValueSelector>
               ) : (
                 <Input

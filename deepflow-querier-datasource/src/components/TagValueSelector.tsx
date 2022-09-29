@@ -1,12 +1,14 @@
-import React, { useState } from 'react'
-
-import { Select, AsyncSelect, Input } from '@grafana/ui'
+import React, { useState, useMemo } from 'react'
+import { Select, Input, AsyncSelect } from '@grafana/ui'
 import { SelectOpts } from 'QueryEditor'
 import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
-import { getRealKey } from 'utils/tools'
+import { genGetTagValuesSql, getRealKey } from 'utils/tools'
+import { getTagMapCache } from 'utils/cache'
 
 const TAG_VAL_OPTS_LABEL_SHOW_VALUE = ['server_port']
+export const INPUT_TAG_VAL_TYPES = ['int', 'ip', 'mac']
+export const SELECT_TAG_VAL_OPS = ['=', '!=', 'IN', 'NOT IN']
 
 export const TagValueSelector = (props: {
   parentProps: {
@@ -15,14 +17,13 @@ export const TagValueSelector = (props: {
     basicData: any
     gotBasicData: boolean
     templateVariableOpts: SelectOpts
+    uuid: string
   }
   currentTagType: string
-  isMulti: boolean
-  useInput: boolean
   onChange: (ev: any) => void
 }) => {
-  const { db, from, basicData, gotBasicData, templateVariableOpts } = props.parentProps
-  const { useInput } = props
+  const { db, from, basicData, gotBasicData, templateVariableOpts, uuid } = props.parentProps
+  const { currentTagType } = props
   const boolOpts = [
     {
       label: '是',
@@ -34,24 +35,39 @@ export const TagValueSelector = (props: {
     }
   ]
 
-  const loadTagValOpts = async (val: string) => {
+  const useInput = useMemo(() => {
+    return INPUT_TAG_VAL_TYPES.includes(currentTagType) || !SELECT_TAG_VAL_OPS.includes(basicData.op)
+  }, [currentTagType, basicData.op])
+
+  const isMulti = useMemo(() => {
+    return ['IN', 'NOT IN', 'LIKE', 'NOT LIKE'].includes(basicData.op)
+  }, [basicData.op])
+
+  const loadTagValOpts = async (keyword: string) => {
     if (!db || !from || !basicData.key) {
       return []
     }
-    const options = {
-      search(item: any) {
-        const _val = val.toLocaleLowerCase()
-        const itemDisplayName = (item.display_name as string).toLocaleLowerCase()
-        const itemVal = `${item.value}`.toLocaleLowerCase()
-        const valMatch = TAG_VAL_OPTS_LABEL_SHOW_VALUE.includes(getRealKey(basicData)) ? itemVal.includes(_val) : false
-        return itemDisplayName.includes(_val) || valMatch
-      }
-    }
 
+    const tagMapItem = getTagMapCache(db, from, basicData.key)
     // @ts-ignore
-    const data = await querierJs.getTagValues(getRealKey(basicData), from, db, options)
+    const data = await querierJs.searchBySql(
+      genGetTagValuesSql({
+        tagName: tagMapItem.name,
+        tagType: tagMapItem.type,
+        from,
+        keyword
+      }),
+      db,
+      (d: any) => {
+        return {
+          ...d,
+          // add requestId to cancel request
+          requestId: uuid
+        }
+      }
+    )
 
-    const result = data.map((item: any) => {
+    const opts = data.map((item: any) => {
       return {
         label: TAG_VAL_OPTS_LABEL_SHOW_VALUE.includes(getRealKey(basicData))
           ? `${item.display_name}(${item.value})`
@@ -59,7 +75,9 @@ export const TagValueSelector = (props: {
         value: item.value
       }
     })
-    return result.concat(templateVariableOpts)
+    const result = templateVariableOpts.concat(opts)
+    // setTagValOptsCache(result)
+    return result
   }
 
   const [selectInputOpts, setSelectInputOpts] = useState(
@@ -83,6 +101,7 @@ export const TagValueSelector = (props: {
         : [])
     ].concat(templateVariableOpts)
   )
+
   return gotBasicData && props.currentTagType !== '' && typeof useInput === 'boolean' ? (
     props.currentTagType === 'bool' ? (
       <Select
@@ -104,13 +123,13 @@ export const TagValueSelector = (props: {
         onCreateOption={v => {
           const customValue = { value: v, label: v }
           setSelectInputOpts([...selectInputOpts, customValue])
-          if (props.isMulti) {
+          if (isMulti) {
             props.onChange([...basicData.val, customValue])
           } else {
             props.onChange(v)
           }
         }}
-        isMulti={props.isMulti}
+        isMulti={isMulti}
         width="auto"
       />
     ) : (
@@ -121,7 +140,7 @@ export const TagValueSelector = (props: {
         onChange={v => {
           props.onChange(v)
         }}
-        isMulti={props.isMulti}
+        isMulti={isMulti}
         width="auto"
       />
     )
