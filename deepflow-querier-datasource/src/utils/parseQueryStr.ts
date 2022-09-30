@@ -510,7 +510,7 @@ function queryTextFormat(queryData: any) {
   }
 }
 
-let parse = (str: string) => {
+const parse = (str: string) => {
   return queryTextFormat(str)
 }
 
