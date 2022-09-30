@@ -76,7 +76,6 @@ export const TagValueSelector = (props: {
       }
     })
     const result = templateVariableOpts.concat(opts)
-    // setTagValOptsCache(result)
     return result
   }
 
@@ -111,6 +110,11 @@ export const TagValueSelector = (props: {
           props.onChange(v)
         }}
         width="auto"
+        key={
+          (Array.isArray(basicData.val) && basicData.val.length) || (!Array.isArray(basicData.val) && basicData.val)
+            ? 'selectWithVal'
+            : 'selectWithoutVal'
+        }
       />
     ) : useInput ? (
       <Select
@@ -131,6 +135,11 @@ export const TagValueSelector = (props: {
         }}
         isMulti={isMulti}
         width="auto"
+        key={
+          (Array.isArray(basicData.val) && basicData.val.length) || (!Array.isArray(basicData.val) && basicData.val)
+            ? 'selectWithVal'
+            : 'selectWithoutVal'
+        }
       />
     ) : (
       <AsyncSelect
@@ -142,6 +151,11 @@ export const TagValueSelector = (props: {
         }}
         isMulti={isMulti}
         width="auto"
+        key={
+          (Array.isArray(basicData.val) && basicData.val.length) || (!Array.isArray(basicData.val) && basicData.val)
+            ? 'selectWithVal'
+            : 'selectWithoutVal'
+        }
       />
     )
   ) : (
