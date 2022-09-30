@@ -80,25 +80,27 @@ export const TagValueSelector = (props: {
   }
 
   const [selectInputOpts, setSelectInputOpts] = useState(
-    [
-      ...(Array.isArray(basicData.val)
-        ? basicData.val.map((e: string) => {
-            return typeof e === 'string'
-              ? {
-                  label: e,
-                  value: e
+    useInput
+      ? [
+          ...(Array.isArray(basicData.val)
+            ? basicData.val.map((e: string) => {
+                return typeof e === 'string'
+                  ? {
+                      label: e,
+                      value: e
+                    }
+                  : e
+              })
+            : basicData.val !== ''
+            ? [
+                {
+                  label: basicData.val,
+                  value: basicData.val
                 }
-              : e
-          })
-        : basicData.val !== ''
-        ? [
-            {
-              label: basicData.val,
-              value: basicData.val
-            }
-          ]
-        : [])
-    ].concat(templateVariableOpts)
+              ]
+            : [])
+        ].concat(templateVariableOpts)
+      : []
   )
 
   return gotBasicData && props.currentTagType !== '' && typeof useInput === 'boolean' ? (

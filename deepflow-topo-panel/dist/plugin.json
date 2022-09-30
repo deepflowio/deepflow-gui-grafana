@@ -1,15 +1,15 @@
 {
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
   "type": "panel",
-  "name": "DeepFlow AppTracing",
-  "id": "deepflow-apptracing-panel",
+  "name": "DeepFlow Topo",
+  "id": "deepflow-topo-panel",
   "info": {
     "description": "",
     "author": {
       "name": "yunshandev",
       "url": "https://yunshan.net"
     },
-    "keywords": ["DeepFlow Panel"],
+    "keywords": ["DeepFlow Topo Panel"],
     "logos": {
       "small": "img/logo.svg",
       "large": "img/logo.svg"

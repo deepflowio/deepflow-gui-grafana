@@ -22,7 +22,7 @@ import {
   getParamByName,
   numberToShort
 } from 'utils/tools'
-import { MAP_METRIC_TYPE_NUM, SELECT_GROUP_BY_DISABLE_TAGS, TAG_METRIC_TYPE_NUM } from 'consts'
+import { MAP_METRIC_TYPE_NUM, MAP_TAG_TYPE, SELECT_GROUP_BY_DISABLE_TAGS, TAG_METRIC_TYPE_NUM } from 'consts'
 
 function setTimeKey(
   queryData: any,
@@ -338,16 +338,20 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       if (Array.isArray(services) && services.length) {
         // @ts-ignore
         const { metrics, tags } = await querierJs.loadTableConfig('l7_flow_log', 'flow_log')
-        const JSON_TAGS = [
-          {
-            category: '原始Attribute',
-            groupName: 'attributes'
-          },
-          {
-            category: '标签',
-            groupName: 'labels'
-          }
-        ]
+        const JSON_TAGS: Array<{
+          category: string
+          groupName: string
+        }> = tags
+          .filter((e: any) => {
+            return e.type === MAP_TAG_TYPE
+          })
+          .map((e: any) => {
+            return {
+              category: e.category,
+              groupName: e.name
+            }
+          })
+
         const _tags = tags
           .map((item: any) => {
             const isJSONTag = JSON_TAGS.find(jsonTag => {
@@ -389,11 +393,20 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             ]
           })
           .flat(Infinity)
-        const mapTypeMetricNames = metrics
+        const JSON_METRICS: Array<{
+          category: string
+          groupName: string
+        }> = metrics
           .filter((e: any) => {
             return e.type === MAP_METRIC_TYPE_NUM
           })
-          .map((e: any) => e.name)
+          .map((e: any) => {
+            return {
+              category: e.category,
+              groupName: e.name
+            }
+          })
+
         const sqlData = {
           format: 'sql',
           db: 'flow_log',
@@ -404,12 +417,14 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             }),
             METRICS: metrics
               .filter((e: any) => {
-                const isItemInMapTypeMetric =
-                  e.name.includes('.') &&
-                  !!mapTypeMetricNames.find((name: string) => {
-                    return e.name.startsWith(name)
-                  })
-                return e.type !== TAG_METRIC_TYPE_NUM && !isItemInMapTypeMetric
+                const isJSONMetirc = JSON_METRICS.find(jsonTag => {
+                  return e.category === jsonTag.category
+                })
+                const isMainJSONMetric = JSON_METRICS.find(jsonTag => {
+                  return e.name === jsonTag.groupName
+                })
+                const isSubJSONMetric = isJSONMetirc && !isMainJSONMetric
+                return e.type !== TAG_METRIC_TYPE_NUM && !isSubJSONMetric
               })
               .map((e: any) => {
                 return e.name
