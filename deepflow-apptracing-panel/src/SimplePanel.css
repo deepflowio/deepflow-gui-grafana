@@ -59,8 +59,7 @@
 
 .flame-tables-wrap .service-table-wrap {
   width: 100%;
-  /* flex: 1; */
-  height: 28%;
+  height: calc(100% - 68% - 6px);
 }
 
 .flame-tables-wrap .view-title {
@@ -89,7 +88,7 @@
 .flame-tables-wrap .service-table,
 .flame-tables-wrap .detail-table {
   width: 100%;
-  flex: 1;
+  height: 100%;
   display: flex;
 }
 
@@ -110,7 +109,7 @@
 
 .table-wrap {
   width: 100%;
-  flex: 1;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -131,4 +130,3 @@
 .generic-font {
   font-family: Consolas,Monaco,Lucida Console,Liberation Mono,DejaVu Sans Mono,Bitstream Vera Sans Mono,Courier New, monospace;
 }
-

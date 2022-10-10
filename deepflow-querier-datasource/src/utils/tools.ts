@@ -65,6 +65,10 @@ const TAG_OPERATORS_MAP = {
 } as const
 
 export function formatTagOperators(operators: string[], item: any) {
+  const isEnumLikelyType = item.type.toLowerCase().includes('enum') && item.type.toLowerCase() !== 'bit_enum'
+  if (isEnumLikelyType) {
+    operators = [...new Set(['LIKE', 'NOT LIKE', ...operators])]
+  }
   let operatorOpts: any[] = []
   operators
     .filter(op => {
