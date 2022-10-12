@@ -59,7 +59,8 @@
 
 .flame-tables-wrap .service-table-wrap {
   width: 100%;
-  height: calc(100% - 68% - 6px);
+  height: 30%;
+  overflow: hidden;
 }
 
 .flame-tables-wrap .view-title {
@@ -102,8 +103,7 @@
 
 .flame-tables-wrap .detail-table-wrap {
   width: 100%;
-  height: 68%;
-  /* margin-top: 6px; */
+  height: calc(100% - 30% - 6px);
   display: flex;
 }
 
