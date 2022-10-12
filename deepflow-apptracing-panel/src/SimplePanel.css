@@ -59,7 +59,7 @@
 
 .flame-tables-wrap .service-table-wrap {
   width: 100%;
-  height: 30%;
+  flex: 1;
   overflow: hidden;
 }
 
@@ -89,7 +89,7 @@
 .flame-tables-wrap .service-table,
 .flame-tables-wrap .detail-table {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 23px);
   display: flex;
 }
 
@@ -98,18 +98,22 @@
   height: 100%;
   margin-left: 16px;
   display: flex;
-  jusituify-content: space-between;
+  justify-content: space-between;
+  overflow: hidden;
 }
 
 .flame-tables-wrap .detail-table-wrap {
   width: 100%;
-  height: calc(100% - 30% - 6px);
+  height: 68%;
+  box-sizing: border-box;
+  padding-top: 6px;
+  flex-basic: 68%;
   display: flex;
 }
 
 .table-wrap {
   width: 100%;
-  height: 100%;
+  flex: 1;
   overflow: hidden;
 }
 

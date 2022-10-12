@@ -355,6 +355,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
               <div className="view-title">Service List</div>
               <div className="service-table">
                 <DYTable
+                  key={detailTableData.columns?.length ? 'serviceTableWithData' : 'serviceTableWithoutData'}
                   className={'table-wrap'}
                   panelWidthHeight={panelWidthHeight}
                   columns={serviceTableData.columns}
@@ -373,6 +374,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
               <div className="view-title">Request Log</div>
               <div className="detail-table">
                 <DYTable
+                  key={detailTableData.columns?.length ? 'tableWithData' : 'tableWithoutData'}
                   className={'table-wrap'}
                   panelWidthHeight={panelWidthHeight}
                   columns={detailTableData.columns}
