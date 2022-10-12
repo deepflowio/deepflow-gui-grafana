@@ -297,9 +297,12 @@ export function genGetTagValuesSql(
       })
       .join(' OR ')
   } else {
-    const ONLY_USE_LIKE_TAG_TYPES = ['resource', 'int_enum']
+    const ONLY_USE_NAME_LIKE_TAG_TYPES = ['resource', 'int_enum', 'string_enum']
     const likeVal = (keyword as string).replace("'", "\\'") || '*'
-    cond = ['display_name', ...(ONLY_USE_LIKE_TAG_TYPES.includes(tagType as string) ? [] : ['value'])]
+    cond = [
+      'display_name',
+      ...(ONLY_USE_NAME_LIKE_TAG_TYPES.includes((tagType as string).toLocaleLowerCase()) ? [] : ['value'])
+    ]
       .map(e => {
         return `${e} LIKE '*${likeVal}*'`
       })
