@@ -6,7 +6,7 @@ import _ from 'lodash'
 import { SubFuncsEditor } from './SubFuncsEditor'
 import { BasicDataWithId, FormTypes, MAP_METRIC_TYPE_NUM } from 'consts'
 import { TagValueSelector } from './TagValueSelector'
-import { getRealKey } from 'utils/tools'
+import { getRealKey, isEnumLikelyTag } from 'utils/tools'
 
 export interface RowConfig {
   type: boolean
@@ -81,6 +81,13 @@ const sortOpts: SelectOpts = [
   }
 ]
 
+const enumLikelyTagFuncs = [
+  {
+    label: 'Enum',
+    value: 'Enum'
+  }
+] as FuncSelectOpts
+
 export class QueryEditorFormRow extends PureComponent<Props> {
   constructor(props: any) {
     super(props)
@@ -107,6 +114,13 @@ export class QueryEditorFormRow extends PureComponent<Props> {
   }
 
   get currentFuncOpts(): SelectOpts {
+    if (
+      isEnumLikelyTag({
+        type: this.currentTagType
+      })
+    ) {
+      return enumLikelyTagFuncs
+    }
     const { basicData, metricOpts, funcOpts } = this.props
     const metricType = metricOpts.find(item => {
       return item.value === getRealKey(basicData)
@@ -143,14 +157,27 @@ export class QueryEditorFormRow extends PureComponent<Props> {
 
   onColumnSelect = (val: any) => {
     const result = val ? val.value : ''
-    const { metricOpts, funcOpts, basicData } = this.props
-    const metricType = metricOpts.find(item => {
-      return item.value === result
-    })?.type as number
+    const { tagOpts, metricOpts, funcOpts, basicData } = this.props
 
-    const newFuncOpts = funcOpts.filter(item => {
-      return item.support_metric_types?.includes(metricType)
-    })
+    let newFuncOpts
+    if (basicData.type === 'tag') {
+      const tagType = tagOpts.find(item => {
+        return item.value === result
+      })?.type
+      newFuncOpts = isEnumLikelyTag({
+        type: tagType
+      })
+        ? enumLikelyTagFuncs
+        : []
+    } else {
+      const metricType = metricOpts.find(item => {
+        return item.value === result
+      })?.type as number
+      newFuncOpts = funcOpts.filter(item => {
+        return item.support_metric_types?.includes(metricType)
+      })
+    }
+
     const hasCurrentFunc =
       basicData?.cache?.func &&
       newFuncOpts.find(item => {
@@ -292,7 +319,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       } else {
         const current = _.pick(basicData, ['func', 'params', 'subFuncs'])
         if (rowType === 'select') {
-          if (!usingGroupBy) {
+          if (!usingGroupBy && basicData.type === 'metric') {
             const target = {
               func: '',
               params: [],
@@ -357,33 +384,22 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                 key={basicData.key ? 'keyWithVal' : 'keyWithoutVal'}
               />
             </div>
-            {config.func && basicData.type === 'metric' && !basicData.fromSelect ? (
-              usingGroupBy ? (
-                <div>
-                  <Select
-                    width="auto"
-                    options={this.currentFuncOpts}
-                    onChange={this.onFuncChange}
-                    placeholder="FUNC"
-                    value={basicData.func}
-                    isClearable={true}
-                    key={basicData.func ? 'funcWithVal' : 'funcWithoutVal'}
-                    disabled={!usingGroupBy}
-                  />
-                </div>
-              ) : (
-                <div>
-                  <Select
-                    width="auto"
-                    options={[]}
-                    onChange={() => {}}
-                    placeholder="FUNC"
-                    isClearable={true}
-                    key={'funcSelectDisabled'}
-                    disabled
-                  />
-                </div>
-              )
+            {config.func &&
+            !basicData.fromSelect &&
+            (basicData.type === 'metric' ||
+              isEnumLikelyTag({
+                type: this.currentTagType
+              })) ? (
+              <Select
+                width="auto"
+                options={this.currentFuncOpts}
+                onChange={this.onFuncChange}
+                placeholder="FUNC"
+                value={basicData.func}
+                isClearable={true}
+                key={basicData.func ? 'funcWithVal' : 'funcWithoutVal'}
+                disabled={!usingGroupBy && basicData.type === 'metric'}
+              />
             ) : null}
             {config.func && basicData.type === 'metric' && !basicData.fromSelect && Array.isArray(basicData.params)
               ? basicData.params.map((item: string, index: number) => {

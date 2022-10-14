@@ -64,8 +64,15 @@ const TAG_OPERATORS_MAP = {
   }
 } as const
 
+export function isEnumLikelyTag(item: any): boolean {
+  if (!item?.type) {
+    return false
+  }
+  return item.type.toLowerCase().includes('enum') && item.type.toLowerCase() !== 'bit_enum'
+}
+
 export function formatTagOperators(operators: string[], item: any) {
-  const isEnumLikelyType = item.type.toLowerCase().includes('enum') && item.type.toLowerCase() !== 'bit_enum'
+  const isEnumLikelyType = isEnumLikelyTag(item)
   if (isEnumLikelyType) {
     operators = [...new Set(['LIKE', 'NOT LIKE', ...operators])]
   }
