@@ -5,7 +5,7 @@ import _ from 'lodash'
 import { LabelItem } from 'QueryEditor'
 import { MyQuery } from 'types'
 import { getTagMapCache, QUERY_DATA_CACHE } from './cache'
-import { getRealKey } from './tools'
+import { getRealKey, isEnumLikelyTag } from './tools'
 
 // Secondary Operators and Concatenated Strings Map:
 // {
@@ -292,7 +292,7 @@ function whereFormat(data: any, variables: any[]) {
         }
       })
       const tagMapItem = getTagMapCache(db, from, result.key)
-      const isEnumTag = result.type === 'tag' && _.get(tagMapItem, 'type', '').toLocaleLowerCase().includes('enum')
+      const isEnumTag = result.type === 'tag' && isEnumLikelyTag(tagMapItem)
       return {
         isForbidden: false,
         ...(result.type === 'tag' || !result?.subFuncs?.length
