@@ -142,7 +142,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         response = querierJs.addResourceFieldsInData(response)
 
         const firstResponse = response[0] || []
-        const keys = Object.keys(firstResponse).filter((key: string) => !key.includes('_id'))
+        const keys = Object.keys(firstResponse)
         const tagKeys: string[] = []
         const timeKeys: string[] = []
         const metricKeys: string[] = []
@@ -223,10 +223,17 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         })
 
         const frameArray: any = []
-        _.forIn(dataAfterGroupBy, (item, groupByKey) => {
+        _.forIn(dataAfterGroupBy, (item) => {
           item = _.sortBy(item, [timeTypeKey])
           const aliasName = getMetricFieldNameByAlias(queryData.alias, _.get(item, [0], {}))
-          const keyPrefix = aliasName || groupByKey
+          const keyPrefix =
+            aliasName ||
+            tagKeys
+              .filter((key: string) => !key.includes('_id'))
+              .map((key: string) => {
+                return item[0][key]
+              })
+              .join('，')
 
           const frame = new MutableDataFrame({
             refId: target.refId,
