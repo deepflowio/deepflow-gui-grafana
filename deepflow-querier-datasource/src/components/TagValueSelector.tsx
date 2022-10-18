@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { Select, Input, AsyncSelect } from '@grafana/ui'
-import { SelectOpts } from 'QueryEditor'
+import { LabelItem, SelectOpts } from 'QueryEditor'
 import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
 import { genGetTagValuesSql } from 'utils/tools'
@@ -76,29 +76,31 @@ export const TagValueSelector = (props: {
     return result
   }
 
-  const [selectInputOpts, setSelectInputOpts] = useState(
-    useInput
-      ? [
-          ...(Array.isArray(basicData.val)
-            ? basicData.val.map((e: string) => {
-                return typeof e === 'string'
-                  ? {
-                      label: e,
-                      value: e
-                    }
-                  : e
-              })
-            : basicData.val !== ''
-            ? [
-                {
-                  label: basicData.val,
-                  value: basicData.val
-                }
-              ]
-            : [])
+  const [selectInputOpts, setSelectInputOpts] = useState<SelectOpts>([])
+
+  useEffect(() => {
+    if (useInput) {
+      setSelectInputOpts(
+        [
+          ...(Array.isArray(basicData.val) ? basicData.val : [basicData.val])
+            .filter((item: LabelItem | string) => {
+              if (typeof item === 'string') {
+                return item !== ''
+              }
+              return item.value !== '' && !item.isVariable
+            })
+            .map((e: string | LabelItem) => {
+              return typeof e === 'string'
+                ? {
+                    label: e,
+                    value: e
+                  }
+                : e
+            })
         ].concat(templateVariableOpts)
-      : []
-  )
+      )
+    }
+  }, [useInput, basicData.val, templateVariableOpts])
 
   return gotBasicData && props.currentTagType !== '' && typeof useInput === 'boolean' ? (
     props.currentTagType === 'bool' ? (
