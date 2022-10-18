@@ -25,6 +25,7 @@ import {
 } from 'consts'
 import { getTagMapCache } from 'utils/cache'
 import { INPUT_TAG_VAL_TYPES, SELECT_TAG_VAL_OPS } from 'components/TagValueSelector'
+import { TracingIdSelector } from 'components/TracingIdSelector'
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>
 
@@ -90,6 +91,7 @@ export class QueryEditor extends PureComponent<Props> {
     offset: string
     formatAs: 'timeSeries' | 'table' | ''
     alias: string
+    tracingId: LabelItem | null
     errorMsg: string
     showErrorAlert: boolean
     gotBasicData: boolean
@@ -145,11 +147,16 @@ export class QueryEditor extends PureComponent<Props> {
         {
           label: 'Distributed Tracing',
           value: 'appTracing'
+        },
+        {
+          label: 'Distributed Tracing Core',
+          value: 'appTracingCore'
         }
       ],
       appType: '',
       ...defaultFormDB,
       ...defaultFormData,
+      tracingId: null,
       errorMsg: '',
       showErrorAlert: false,
       gotBasicData: false,
@@ -397,7 +404,8 @@ export class QueryEditor extends PureComponent<Props> {
       ...Object.keys({
         ...defaultFormDB,
         ...defaultFormData
-      })
+      }),
+      'tracingId'
     ])
 
     try {
@@ -545,14 +553,18 @@ export class QueryEditor extends PureComponent<Props> {
     })
   }
 
-  onFieldChange = (field: string, val: LabelItem | boolean | string) => {
+  onFieldChange = (field: string, val: LabelItem | boolean | string, disableFormat?: boolean) => {
     let result
-    if (typeof val === 'string') {
-      result = val
-    } else if (typeof val === 'boolean') {
+    if (disableFormat) {
       result = val
     } else {
-      result = val ? val.value : ''
+      if (typeof val === 'string') {
+        result = val
+      } else if (typeof val === 'boolean') {
+        result = val
+      } else {
+        result = val ? val.value : ''
+      }
     }
     if (field === 'appType') {
       let newState = {
@@ -593,6 +605,17 @@ export class QueryEditor extends PureComponent<Props> {
               uuid: uuid()
             }
           ]
+        }
+        this.getBasicData(dbFrom)
+      }
+      if (result === 'appTracingCore') {
+        const dbFrom = {
+          db: 'flow_log',
+          from: 'l7_flow_log'
+        }
+        newState = {
+          ...newState,
+          ...dbFrom
         }
         this.getBasicData(dbFrom)
       }
@@ -949,198 +972,214 @@ export class QueryEditor extends PureComponent<Props> {
                 width="auto"
               />
             </InlineField>
-            <InlineField className="custom-label" label="DATABASE" labelWidth={10}>
-              <div className="row-start-center database-selectors">
-                <Select
-                  options={this.databaseOptsAfterFilter}
-                  value={this.state.db}
-                  onChange={(val: any) => this.onFieldChange('db', val)}
-                  placeholder="DATABASE"
-                  key={this.state.db ? 'dbWithVal' : 'dbWithoutVal'}
-                  width="auto"
-                  className="mr-4"
-                />
-                <Select
-                  options={this.tableOptsAfterFilter}
-                  value={this.state.from}
-                  onChange={(val: any) => {
-                    this.setSourcesChange(val)
-                    this.onFieldChange('from', val)
-                  }}
-                  placeholder="TABLE"
-                  key={this.state.from ? 'fromWithVal' : 'fromWithoutVal'}
-                  width="auto"
-                  className="mr-4"
-                />
-                {this.dataSourcesTypeOpts ? (
-                  <Select
-                    options={this.dataSourcesTypeOpts}
-                    value={this.state.sources}
-                    onChange={(val: any) => this.onFieldChange('sources', val)}
-                    placeholder="DATA_INTERVAL"
-                    key={this.state.sources ? 'sourceWithVal' : 'sourceWithoutVal'}
-                    width="auto"
-                  />
-                ) : null}
-              </div>
-            </InlineField>
-            {formConfig.map((conf: FormConfigItem, i: number) => {
-              return !(
-                (conf.targetDataKey === 'groupBy' && this.usingAppTraceType) ||
-                (conf.targetDataKey === 'orderBy' && this.usingAccessRelationshipType)
-              ) ? (
-                <>
-                  <InlineField className="custom-label" label={conf.label} labelWidth={conf.labelWidth} key={i}>
-                    <div className="w-100-percent">
-                      {this.state[conf.targetDataKey].map((item: BasicDataWithId, index: number) => {
-                        return (
-                          <QueryEditorFormRow
-                            templateVariableOpts={templateVariableOpts.filter(item => {
-                              return item.variableType !== 'interval' && item.variableType !== 'datasource'
-                            })}
-                            config={formItemConfigs[conf.targetDataKey]}
-                            basicData={item}
-                            gotBasicData={this.state.gotBasicData}
-                            db={this.state.db}
-                            from={this.state.from}
-                            usingGroupBy={this.usingGroupBy}
-                            tagOpts={
-                              conf.targetDataKey === 'select'
-                                ? this.selectTagOpts.filter(tag => {
-                                    return (
-                                      !tag.whereOnly &&
-                                      !SELECT_GROUP_BY_DISABLE_TAGS.find((val: string) => {
-                                        return (tag.value as string).includes(val)
+            {this.state.appType !== 'appTracingCore' ? (
+              <>
+                <InlineField className="custom-label" label="DATABASE" labelWidth={10}>
+                  <div className="row-start-center database-selectors">
+                    <Select
+                      options={this.databaseOptsAfterFilter}
+                      value={this.state.db}
+                      onChange={(val: any) => this.onFieldChange('db', val)}
+                      placeholder="DATABASE"
+                      key={this.state.db ? 'dbWithVal' : 'dbWithoutVal'}
+                      width="auto"
+                      className="mr-4"
+                    />
+                    <Select
+                      options={this.tableOptsAfterFilter}
+                      value={this.state.from}
+                      onChange={(val: any) => {
+                        this.setSourcesChange(val)
+                        this.onFieldChange('from', val)
+                      }}
+                      placeholder="TABLE"
+                      key={this.state.from ? 'fromWithVal' : 'fromWithoutVal'}
+                      width="auto"
+                      className="mr-4"
+                    />
+                    {this.dataSourcesTypeOpts ? (
+                      <Select
+                        options={this.dataSourcesTypeOpts}
+                        value={this.state.sources}
+                        onChange={(val: any) => this.onFieldChange('sources', val)}
+                        placeholder="DATA_INTERVAL"
+                        key={this.state.sources ? 'sourceWithVal' : 'sourceWithoutVal'}
+                        width="auto"
+                      />
+                    ) : null}
+                  </div>
+                </InlineField>
+                {formConfig.map((conf: FormConfigItem, i: number) => {
+                  return !(
+                    (conf.targetDataKey === 'groupBy' && this.usingAppTraceType) ||
+                    (conf.targetDataKey === 'orderBy' && this.usingAccessRelationshipType)
+                  ) ? (
+                    <>
+                      <InlineField className="custom-label" label={conf.label} labelWidth={conf.labelWidth} key={i}>
+                        <div className="w-100-percent">
+                          {this.state[conf.targetDataKey].map((item: BasicDataWithId, index: number) => {
+                            return (
+                              <QueryEditorFormRow
+                                templateVariableOpts={templateVariableOpts.filter(item => {
+                                  return item.variableType !== 'interval' && item.variableType !== 'datasource'
+                                })}
+                                config={formItemConfigs[conf.targetDataKey]}
+                                basicData={item}
+                                gotBasicData={this.state.gotBasicData}
+                                db={this.state.db}
+                                from={this.state.from}
+                                usingGroupBy={this.usingGroupBy}
+                                tagOpts={
+                                  conf.targetDataKey === 'select'
+                                    ? this.selectTagOpts.filter(tag => {
+                                        return (
+                                          !tag.whereOnly &&
+                                          !SELECT_GROUP_BY_DISABLE_TAGS.find((val: string) => {
+                                            return (tag.value as string).includes(val)
+                                          })
+                                        )
                                       })
-                                    )
-                                  })
-                                : conf.targetDataKey === 'groupBy'
-                                ? tagOpts
-                                    .filter(tag => {
-                                      return tag.type !== 'map' && !tag.whereOnly
-                                    })
-                                    .filter((tag: MetricOptsItem) => {
-                                      const extra = true
-                                      return (
-                                        !SELECT_GROUP_BY_DISABLE_TAGS.find((val: string) => {
-                                          return (tag.value as string).includes(val)
-                                        }) && extra
+                                    : conf.targetDataKey === 'groupBy'
+                                    ? tagOpts
+                                        .filter(tag => {
+                                          return tag.type !== 'map' && !tag.whereOnly
+                                        })
+                                        .filter((tag: MetricOptsItem) => {
+                                          const extra = true
+                                          return (
+                                            !SELECT_GROUP_BY_DISABLE_TAGS.find((val: string) => {
+                                              return (tag.value as string).includes(val)
+                                            }) && extra
+                                          )
+                                        })
+                                    : this.tagsFromSelect.concat(
+                                        tagOpts.filter(tag => {
+                                          return tag.type !== 'map'
+                                        })
                                       )
-                                    })
-                                : this.tagsFromSelect.concat(
-                                    tagOpts.filter(tag => {
-                                      return tag.type !== 'map'
-                                    })
+                                }
+                                metricOpts={
+                                  conf.targetDataKey === 'orderBy'
+                                    ? this.orderByMetricOpts
+                                    : conf.targetDataKey === 'having'
+                                    ? this.metricsFromSelect.concat(this.basciMetricOpts).filter(item => {
+                                        return item.type !== MAP_METRIC_TYPE_NUM
+                                      })
+                                    : this.basciMetricOpts
+                                }
+                                funcOpts={funcOpts}
+                                subFuncOpts={subFuncOpts}
+                                key={item.uuid}
+                                uuid={item.uuid}
+                                removeBtnDisabled={this.getRemoveBtnDisabled(
+                                  this.state[conf.targetDataKey],
+                                  item,
+                                  conf.targetDataKey
+                                )}
+                                rowType={conf.targetDataKey}
+                                typeSelectDisabled={conf.targetDataKey === 'select' && this.usingAccessRelationshipType}
+                                onRowValChange={(obj: any) =>
+                                  this.onRowValChange(
+                                    {
+                                      target: conf.targetDataKey,
+                                      index: index
+                                    },
+                                    obj
                                   )
-                            }
-                            metricOpts={
-                              conf.targetDataKey === 'orderBy'
-                                ? this.orderByMetricOpts
-                                : conf.targetDataKey === 'having'
-                                ? this.metricsFromSelect.concat(this.basciMetricOpts).filter(item => {
-                                    return item.type !== MAP_METRIC_TYPE_NUM
-                                  })
-                                : this.basciMetricOpts
-                            }
-                            funcOpts={funcOpts}
-                            subFuncOpts={subFuncOpts}
-                            key={item.uuid}
-                            uuid={item.uuid}
-                            removeBtnDisabled={this.getRemoveBtnDisabled(
-                              this.state[conf.targetDataKey],
-                              item,
-                              conf.targetDataKey
-                            )}
-                            rowType={conf.targetDataKey}
-                            typeSelectDisabled={conf.targetDataKey === 'select' && this.usingAccessRelationshipType}
-                            onRowValChange={(obj: any) =>
-                              this.onRowValChange(
-                                {
-                                  target: conf.targetDataKey,
-                                  index: index
-                                },
-                                obj
-                              )
-                            }
-                            onActiveBtnClick={(type: string) =>
-                              this.onActiveBtnClick(
-                                {
-                                  target: conf.targetDataKey,
-                                  index: index
-                                },
-                                type
-                              )
-                            }
-                          />
-                        )
-                      })}
+                                }
+                                onActiveBtnClick={(type: string) =>
+                                  this.onActiveBtnClick(
+                                    {
+                                      target: conf.targetDataKey,
+                                      index: index
+                                    },
+                                    type
+                                  )
+                                }
+                              />
+                            )
+                          })}
+                        </div>
+                      </InlineField>
+                      {conf.targetDataKey === 'groupBy' &&
+                      !this.usingAppTraceType &&
+                      !this.usingAccessRelationshipType ? (
+                        <InlineField className="custom-label" label="INTERVAL" labelWidth={10}>
+                          <div className="w-100-percent">
+                            <Select
+                              key={this.state.interval ? 'intervalWithVal' : 'intervalWithoutVal'}
+                              options={this.intervalOptsWithVariables}
+                              value={this.state.interval}
+                              onChange={(val: any) => this.onFieldChange('interval', val)}
+                              placeholder="TIME"
+                              isClearable={true}
+                              width="auto"
+                            />
+                          </div>
+                        </InlineField>
+                      ) : null}
+                    </>
+                  ) : null
+                })}
+                <div className="row-start-center">
+                  <InlineField className="custom-label" label="LIMIT" labelWidth={6}>
+                    <div className="w-100-percent">
+                      <Input
+                        value={this.state.limit}
+                        onChange={(ev: any) => this.onFieldChange('limit', ev.target)}
+                        placeholder="LIMIT"
+                        width={12}
+                      />
                     </div>
                   </InlineField>
-                  {conf.targetDataKey === 'groupBy' && !this.usingAppTraceType && !this.usingAccessRelationshipType ? (
-                    <InlineField className="custom-label" label="INTERVAL" labelWidth={10}>
-                      <div className="w-100-percent">
-                        <Select
-                          key={this.state.interval ? 'intervalWithVal' : 'intervalWithoutVal'}
-                          options={this.intervalOptsWithVariables}
-                          value={this.state.interval}
-                          onChange={(val: any) => this.onFieldChange('interval', val)}
-                          placeholder="TIME"
-                          isClearable={true}
-                          width="auto"
-                        />
-                      </div>
-                    </InlineField>
-                  ) : null}
-                </>
-              ) : null
-            })}
-            <div className="row-start-center">
-              <InlineField className="custom-label" label="LIMIT" labelWidth={6}>
-                <div className="w-100-percent">
-                  <Input
-                    value={this.state.limit}
-                    onChange={(ev: any) => this.onFieldChange('limit', ev.target)}
-                    placeholder="LIMIT"
-                    width={12}
-                  />
-                </div>
-              </InlineField>
-              <InlineField className="custom-label" label="OFFSET" labelWidth={8}>
-                <div className="w-100-percent">
-                  <Input
-                    value={this.state.offset}
-                    onChange={(ev: any) => this.onFieldChange('offset', ev.target)}
-                    placeholder="OFFSET"
-                    disabled={!this.state.limit}
-                    width={12}
-                  />
-                </div>
-              </InlineField>
-            </div>
-            {this.usingGroupBy && !this.usingAccessRelationshipType ? (
-              <div className="row-start-center">
-                <InlineField className="custom-label" label="FORMAT AS" labelWidth={11}>
-                  <Select
-                    options={formatAsOpts}
-                    value={this.state.formatAs}
-                    onChange={(val: any) => this.onFieldChange('formatAs', val)}
-                    placeholder="FORMAT_AS"
-                    key={this.state.formatAs ? 'formatAsWithVal' : 'formatAsWithoutVal'}
-                    width="auto"
-                  />
-                </InlineField>
-                {this.state.formatAs === 'timeSeries' ? (
-                  <InlineField className="custom-label" label="ALIAS" labelWidth={6}>
-                    <Input
-                      value={this.state.alias}
-                      onChange={(ev: any) => this.onFieldChange('alias', ev.target)}
-                      placeholder="${tag0} ${tag1}"
-                      width={60}
-                    />
+                  <InlineField className="custom-label" label="OFFSET" labelWidth={8}>
+                    <div className="w-100-percent">
+                      <Input
+                        value={this.state.offset}
+                        onChange={(ev: any) => this.onFieldChange('offset', ev.target)}
+                        placeholder="OFFSET"
+                        disabled={!this.state.limit}
+                        width={12}
+                      />
+                    </div>
                   </InlineField>
+                </div>
+                {this.usingGroupBy && !this.usingAccessRelationshipType ? (
+                  <div className="row-start-center">
+                    <InlineField className="custom-label" label="FORMAT AS" labelWidth={11}>
+                      <Select
+                        options={formatAsOpts}
+                        value={this.state.formatAs}
+                        onChange={(val: any) => this.onFieldChange('formatAs', val)}
+                        placeholder="FORMAT_AS"
+                        key={this.state.formatAs ? 'formatAsWithVal' : 'formatAsWithoutVal'}
+                        width="auto"
+                      />
+                    </InlineField>
+                    {this.state.formatAs === 'timeSeries' ? (
+                      <InlineField className="custom-label" label="ALIAS" labelWidth={6}>
+                        <Input
+                          value={this.state.alias}
+                          onChange={(ev: any) => this.onFieldChange('alias', ev.target)}
+                          placeholder="${tag0} ${tag1}"
+                          width={60}
+                        />
+                      </InlineField>
+                    ) : null}
+                  </div>
                 ) : null}
-              </div>
-            ) : null}
+              </>
+            ) : (
+              <InlineField className="custom-label" label="TRACING ID" labelWidth={12}>
+                <TracingIdSelector
+                  tracingId={this.state.tracingId}
+                  onChange={(v: LabelItem) => this.onFieldChange('tracingId', v, true)}
+                  templateVariableOpts={templateVariableOpts.filter(item => {
+                    return item.variableType !== 'interval' && item.variableType !== 'datasource'
+                  })}
+                />
+              </InlineField>
+            )}
           </>
         )}
       </Form>
