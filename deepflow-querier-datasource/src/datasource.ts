@@ -97,7 +97,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     QUERY_DATA_CACHE.time_start = from
     QUERY_DATA_CACHE.time_end = to
 
-    let data = await Promise.all(
+    const data = await Promise.all(
       options.targets.map(async target => {
         if (target.hide || !target.queryText) {
           return []
@@ -112,6 +112,31 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         await querierJs.loadOP()
         // @ts-ignore
         await querierJs.loadTableConfig(queryData.from, queryData.db)
+        if (queryData.appType === 'appTracingCore') {
+          const _id = queryData.tracingId.value
+          if (!_id) {
+            return []
+          }
+          const result: any = await this.getFlameData({
+            _id
+          })
+          if ('message' in result || 'statusText' in result) {
+            throw result
+          }
+          const frame = new MutableDataFrame({
+            refId: target.refId,
+            fields: [
+              ...Object.keys(result).map((key: string) => {
+                return {
+                  name: key,
+                  type: FieldType.other
+                }
+              })
+            ]
+          })
+          frame.add(result)
+          return [frame]
+        }
         const parsedQueryData = parseQueryStr(queryData)
         let querierJsResult
         try {
@@ -223,7 +248,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         })
 
         const frameArray: any = []
-        _.forIn(dataAfterGroupBy, (item) => {
+        _.forIn(dataAfterGroupBy, item => {
           item = _.sortBy(item, [timeTypeKey])
           const aliasName = getMetricFieldNameByAlias(queryData.alias, _.get(item, [0], {}))
           const keyPrefix =
