@@ -112,7 +112,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         await querierJs.loadOP()
         // @ts-ignore
         await querierJs.loadTableConfig(queryData.from, queryData.db)
-        if (queryData.appType === 'appTracingCore') {
+        if (queryData.appType === 'appTracingFlame') {
           const _id = queryData.tracingId.value
           if (!_id) {
             return []

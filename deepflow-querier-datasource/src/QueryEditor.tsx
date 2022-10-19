@@ -149,8 +149,8 @@ export class QueryEditor extends PureComponent<Props> {
           value: 'appTracing'
         },
         {
-          label: 'Distributed Tracing Core',
-          value: 'appTracingCore'
+          label: 'Distributed Tracing - Flame',
+          value: 'appTracingFlame'
         }
       ],
       appType: '',
@@ -608,7 +608,7 @@ export class QueryEditor extends PureComponent<Props> {
         }
         this.getBasicData(dbFrom)
       }
-      if (result === 'appTracingCore') {
+      if (result === 'appTracingFlame') {
         const dbFrom = {
           db: 'flow_log',
           from: 'l7_flow_log'
@@ -719,46 +719,50 @@ export class QueryEditor extends PureComponent<Props> {
   }
 
   updateWhereTagValueLabel = async (formData: any) => {
-    const { db, from, where } = formData
-    const tagValuesGroup: Record<any, any[]> = {}
-    where.forEach((item: BasicDataWithId) => {
-      const tagMapItem = getTagMapCache(db, from, item.key)
-      const tagName = tagMapItem.name
-      const tagType = _.get(tagMapItem, 'type')
-      if (!INPUT_TAG_VAL_TYPES.includes(tagType) && SELECT_TAG_VAL_OPS.includes(item.op)) {
-        if (!tagValuesGroup[tagName]) {
-          tagValuesGroup[tagName] = []
-        }
-        tagValuesGroup[tagName] = [...tagValuesGroup[tagName], ...(item.val as LabelItem[])]
-      }
-    })
-    const tagValuesGroupsKeys = Object.keys(tagValuesGroup)
-    for (let index = 0; index < tagValuesGroupsKeys.length; index++) {
-      const tagName = tagValuesGroupsKeys[index]
-      const tagValues = tagValuesGroup[tagName].filter(e => !e.isVariable)
-      // @ts-ignore
-      const data = await querierJs.searchBySql(
-        genGetTagValuesSql(
-          {
-            tagName,
-            from,
-            keyword: [...new Set(tagValues.map(e => e.value))]
-          },
-          true
-        ),
-        db,
-        (d: any) => {
-          return {
-            ...d,
-            // add requestId to cancel request
-            requestId: uuid
+    try {
+      const { db, from, where } = formData
+      const tagValuesGroup: Record<any, any[]> = {}
+      where.forEach((item: BasicDataWithId) => {
+        const tagMapItem = getTagMapCache(db, from, item.key)
+        const tagName = tagMapItem.name
+        const tagType = _.get(tagMapItem, 'type')
+        if (!INPUT_TAG_VAL_TYPES.includes(tagType) && SELECT_TAG_VAL_OPS.includes(item.op)) {
+          if (!tagValuesGroup[tagName]) {
+            tagValuesGroup[tagName] = []
           }
+          tagValuesGroup[tagName] = [...tagValuesGroup[tagName], ...(item.val as LabelItem[])]
         }
-      )
-      const tagValueMap = _.keyBy(data, 'value')
-      tagValues.forEach(e => {
-        e.label = _.get(tagValueMap, [e.value, 'display_name'], e.label)
       })
+      const tagValuesGroupsKeys = Object.keys(tagValuesGroup)
+      for (let index = 0; index < tagValuesGroupsKeys.length; index++) {
+        const tagName = tagValuesGroupsKeys[index]
+        const tagValues = tagValuesGroup[tagName].filter(e => !e.isVariable)
+        // @ts-ignore
+        const data = await querierJs.searchBySql(
+          genGetTagValuesSql(
+            {
+              tagName,
+              from,
+              keyword: [...new Set(tagValues.map(e => e.value))]
+            },
+            true
+          ),
+          db,
+          (d: any) => {
+            return {
+              ...d,
+              // add requestId to cancel request
+              requestId: uuid
+            }
+          }
+        )
+        const tagValueMap = _.keyBy(data, 'value')
+        tagValues.forEach(e => {
+          e.label = _.get(tagValueMap, [e.value, 'display_name'], e.label)
+        })
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
 
@@ -972,7 +976,7 @@ export class QueryEditor extends PureComponent<Props> {
                 width="auto"
               />
             </InlineField>
-            {this.state.appType !== 'appTracingCore' ? (
+            {this.state.appType !== 'appTracingFlame' ? (
               <>
                 <InlineField className="custom-label" label="DATABASE" labelWidth={10}>
                   <div className="row-start-center database-selectors">
@@ -1170,7 +1174,7 @@ export class QueryEditor extends PureComponent<Props> {
                 ) : null}
               </>
             ) : (
-              <InlineField className="custom-label" label="TRACING ID" labelWidth={12}>
+              <InlineField className="custom-label" label="_id" labelWidth={10}>
                 <TracingIdSelector
                   tracingId={this.state.tracingId}
                   onChange={(v: LabelItem) => this.onFieldChange('tracingId', v, true)}

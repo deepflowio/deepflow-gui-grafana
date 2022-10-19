@@ -304,11 +304,12 @@ export function genGetTagValuesSql(
       })
       .join(' OR ')
   } else {
+    // tag of map type children, can only search by value, but value is same as description
     const ONLY_USE_NAME_LIKE_TAG_TYPES = ['resource', 'int_enum', 'string_enum']
     const likeVal = (keyword as string).replace("'", "\\'") || '*'
     cond = [
-      'display_name',
-      ...(ONLY_USE_NAME_LIKE_TAG_TYPES.includes((tagType as string).toLocaleLowerCase()) ? [] : ['value'])
+      `Enum(${tagName})`,
+      ...(ONLY_USE_NAME_LIKE_TAG_TYPES.includes((tagType as string).toLocaleLowerCase()) ? [] : [tagName])
     ]
       .map(e => {
         return `${e} LIKE '*${likeVal}*'`
