@@ -115,7 +115,7 @@ jobs:
           context: .
           push: true
           file: Dockerfile
-          platforms: linux/amd64
+          platforms: linux/amd64,linux/arm64
           tags: |
             "ghcr.io/${{ github.repository_owner }}/deepflow-ce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}-${{ env.IMAGE_TAG }}"
             "ghcr.io/${{ github.repository_owner }}/deepflow-ce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}"
