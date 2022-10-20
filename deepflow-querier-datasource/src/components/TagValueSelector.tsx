@@ -48,30 +48,35 @@ export const TagValueSelector = (props: {
     }
 
     const tagMapItem = getTagMapCache(db, from, basicData.key)
-    // @ts-ignore
-    const data = await querierJs.searchBySql(
-      genGetTagValuesSql({
-        tagName: tagMapItem.name,
-        tagType: tagMapItem.type,
-        from,
-        keyword
-      }),
-      db,
-      (d: any) => {
-        return {
-          ...d,
-          // add requestId to cancel request
-          requestId: uuid
+    let opts = []
+    try {
+      // @ts-ignore
+      const data = await querierJs.searchBySql(
+        genGetTagValuesSql({
+          tagName: tagMapItem.name,
+          tagType: tagMapItem.type,
+          from,
+          keyword
+        }),
+        db,
+        (d: any) => {
+          return {
+            ...d,
+            // add requestId to cancel request
+            requestId: uuid
+          }
         }
-      }
-    )
+      )
 
-    const opts = data.map((item: any) => {
-      return {
-        label: item.display_name,
-        value: item.value
-      }
-    })
+      opts = data.map((item: any) => {
+        return {
+          label: item.display_name,
+          value: item.value
+        }
+      })
+    } catch (error) {
+      console.log(error)
+    }
     const result = templateVariableOpts.concat(opts)
     return result
   }
