@@ -1,17 +1,13 @@
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react'
-import { DataSourceInstanceSettings, Field, PanelProps, Vector } from '@grafana/data'
+import { DataFrame, PanelProps } from '@grafana/data'
 import { SimpleOptions } from 'types'
 import { DYTable } from 'components/DYTable'
-import { Button } from '@douyinfe/semi-ui'
-import { IconArrowLeft } from '@douyinfe/semi-icons'
-import { ColumnProps } from '@douyinfe/semi-ui/lib/es/table'
 import { Alert } from '@grafana/ui'
 import _ from 'lodash'
-import { getDataSourceSrv } from '@grafana/runtime'
 import { renderTimeBar, addSvg, fitSvgToContainer, TAP_SIDE_OPTIONS_MAP, miniMap } from 'deepflow-vis-js'
 import { FlameTooltip } from 'components/FlameTooltip'
 import { genServiceId, useDebounce } from 'utils/tools'
-import { calcTableCellWidth, getStringLen, formatDetailData, tarnsArrayToTableData } from 'utils/tables'
+import { formatDetailData, tarnsArrayToTableData } from 'utils/tables'
 
 import './SimplePanel.css'
 
@@ -43,6 +39,30 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       setErrMsg('')
     }
   }, [refIds])
+  const getDataByFieldName = (series: DataFrame[], fieldName: string) => {
+    let result
+    try {
+      result = series[0].fields
+        .find(e => {
+          return e.name === fieldName
+        })
+        ?.values.toArray()[0]
+    } catch (error) {
+      result = []
+    }
+    return result
+  }
+  useEffect(() => {
+    if (!series[0]) {
+      setFlameData([])
+      setServicesData([])
+      setDetailData([])
+      return
+    }
+    setFlameData(getDataByFieldName(series, 'tracing'))
+    setServicesData(getDataByFieldName(series, 'services'))
+    setDetailData(getDataByFieldName(series, 'detailList'))
+  }, [series])
   const [selectedServiceRowId, setSelectedServiceRowId] = useState('')
   const [flameContainer, setFlameContainer] = useState<any>(undefined)
   const [flameChart, setFlameChart] = useState<any>(undefined)
@@ -103,7 +123,6 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
   })
   const [hoveredBarData, setHoveredBarData] = useState<undefined | {}>(undefined)
   const [flameData, setFlameData] = useState<undefined | {}>(undefined)
-  const [tracingItemId, setTracingItemId] = useState('')
   useEffect(() => {
     if (!flameData || !flameContainer) {
       return
@@ -180,134 +199,15 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     }
   }, [flameData, flameContainer, randomClassName, debouncedWidth, debouncedHeight, setFlameDetailFilter, setMousePos])
 
-  const [startTableLoading, setStartTableLoading] = useState(false)
-  const onActive = useCallback(async (item: any) => {
-    setErrMsg('')
-    const deepFlowName = await getDataSourceSrv()
-      .getList()
-      .find((dataSource: DataSourceInstanceSettings) => {
-        return dataSource.type === 'deepflow-querier-datasource'
-      })?.name
-    const deepFlow = await getDataSourceSrv().get(deepFlowName)
-    if (!deepFlow) {
-      return
-    }
-    try {
-      setStartTableLoading(true)
-      const { _id } = item
-      setTracingItemId(_id)
-      // @ts-ignore
-      const result = await deepFlow.getFlameData({ _id })
-      const { services, tracing, detailList } = result
-      if (!result || !services?.length) {
-        setErrMsg(result?.data?.DESCRIPTION ? `[SERVER ERROR]:${result?.data?.DESCRIPTION}` : 'No Data')
-      } else {
-        setSelectedServiceRowId('')
-        setDetailFilteIds([])
-        setServiceData(services)
-        setDetailData(detailList)
-        setFlameData(tracing)
-        setViewIndex(1)
-      }
-    } catch (error: any) {
-      const msg = error ? `[SERVER ERROR]:${error?.data?.DESCRIPTION}` : ' Network Error'
-      setErrMsg(msg)
-    }
-    setStartTableLoading(false)
-  }, [])
-
-  const [targetIndex] = useState(0)
-  const startTableData = useMemo(() => {
-    setHoveredBarData(undefined)
-    const columnFixedRight = 'right' as const
-    const actionCloumn = {
-      title: 'action',
-      dataIndex: 'action',
-      align: 'center',
-      render: (text: string, record: any) => (
-        <Button
-          size="small"
-          theme="borderless"
-          onClick={async () => {
-            onActive(record)
-          }}
-          disabled={!record._id}
-        >
-          tracing
-        </Button>
-      ),
-      fixed: columnFixedRight,
-      width: 88
-    }
-    const target = series[targetIndex] ? series[targetIndex].fields : []
-
-    const dataSource: Array<
-      {
-        key: string
-      } & {
-        [P in string]: string
-      }
-    > = []
-    target.forEach((e: Field<any, Vector<any>>, i: number) => {
-      e.values.toArray().forEach((val, index) => {
-        if (!dataSource[index]) {
-          dataSource[index] = {
-            key: index + ''
-          }
-        }
-        dataSource[index][e.name] = typeof val?.toString === 'function' ? val.toString() : val
-      })
-    })
-
-    const columns: Array<
-      ColumnProps<{
-        key: string
-      }>
-    > = [
-      ...target.map((e: Field<any, Vector<any>>, i: number) => {
-        const textLens: number[] = [
-          e.name === null ? 0 : getStringLen(e.name),
-          ...dataSource.map(d => {
-            return d[e.name] === null ? 0 : getStringLen(d[e.name].toString())
-          })
-        ]
-        const maxLen = Math.max(...textLens)
-        return {
-          title: e.name,
-          dataIndex: e.name,
-          width: calcTableCellWidth(maxLen)
-        }
-      }),
-      actionCloumn
-    ]
-    return {
-      columns,
-      dataSource
-    }
-  }, [series, targetIndex, onActive])
-
-  useEffect(() => {
-    setStartTableLoading(false)
-    setHoveredBarData(undefined)
-    setViewIndex(0)
-  }, [startTableData])
-
-  const [viewIndex, setViewIndex] = useState(0)
-  const contentTranslateX = useMemo(() => {
-    return {
-      transform: `translateX(${viewIndex * -100}%)`
-    }
-  }, [viewIndex])
-
   const bodyClassName = document.body.className
   const isDark = useMemo(() => {
     return bodyClassName.includes('theme-dark')
   }, [bodyClassName])
 
-  const [serviceData, setServiceData] = useState([])
+  const [servicesData, setServicesData] = useState([])
   const serviceTableData = useMemo(() => {
-    return tarnsArrayToTableData(serviceData)
-  }, [serviceData])
+    return tarnsArrayToTableData(servicesData)
+  }, [servicesData])
 
   const [detailData, setDetailData] = useState([])
   const detailTableData = useMemo(() => {
@@ -335,19 +235,10 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
 
   return (
     <div ref={panelRef} className={`deepflow-panel ${isDark ? 'semi-always-dark' : 'semi-always-light'}`}>
-      <div className="content" style={contentTranslateX}>
-        <div className="table-and-select">
-          <DYTable
-            className={'table-wrap'}
-            panelWidthHeight={panelWidthHeight}
-            columns={startTableData.columns}
-            dataSource={startTableData.dataSource}
-            loading={startTableLoading}
-          />
-        </div>
+      <div className="content">
         <div className="flame-tables-wrap">
           <div className="flame-wrap">
-            <div className="view-title">Flame Graph {tracingItemId ? `( _id=${tracingItemId} )` : ''}</div>
+            <div className="view-title">Flame Graph</div>
             <div className={`flame ${randomClassName}`}></div>
           </div>
           <div className="tables-wrap">
@@ -385,17 +276,6 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
           </div>
         </div>
       </div>
-      <IconArrowLeft
-        className="goback-icon"
-        onClick={() => {
-          setTracingItemId('')
-          setViewIndex(viewIndex ? 0 : 1)
-        }}
-        style={{
-          display: viewIndex ? '' : 'none',
-          cursor: 'pointer'
-        }}
-      />
       <FlameTooltip barData={hoveredBarData} mousePos={mousePos}></FlameTooltip>
       {errMsg ? (
         <Alert
