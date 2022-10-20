@@ -16,7 +16,7 @@ import {
   miniMap
 } from 'deepflow-vis-js'
 import { TopoTooltip } from 'components/TopoTooltip'
-import { formatUsUnit, numberToShort, useDebounce } from 'utils/tools'
+import { formatUsUnit, genUniqueFieldByTag, numberToShort, useDebounce } from 'utils/tools'
 
 type NodeItem = {
   id: string
@@ -34,8 +34,6 @@ type LinkItem = {
 
 interface Props extends PanelProps<SimpleOptions> {}
 
-//  ip: 255, internet_ip: 0
-const IP_LIKELY_NODE_TYPE_TDS = [255, 0]
 const NO_GROUP_BY_TAGS = ['tap_side']
 
 let MINIMAP_CONATAINER_CACHE: undefined | HTMLElement = undefined
@@ -198,7 +196,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       const fullDataAfterGroupBy = _.groupBy(fullData, item => {
         return [...sourceSide, ...destinationSide, ..._commonTags]
           .map((key: string) => {
-            return item[key]
+            return genUniqueFieldByTag(key, item)
           })
           .join(',')
       })
@@ -218,25 +216,13 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         from:
           [...sourceSide, ..._commonTags]
             .map(key => {
-              if (key.includes('resource_gl')) {
-                const nodeTypeId = e[key.replace('_id', '_type')]
-                if (IP_LIKELY_NODE_TYPE_TDS.includes(nodeTypeId)) {
-                  return `${e['ip_0']},${e['subnet_id_0']}`
-                }
-              }
-              return `${e[key]}`
+              return genUniqueFieldByTag(key, e)
             })
             .join(',') + `-${e.client_node_type}`,
         to:
           [...destinationSide, ..._commonTags]
             .map(key => {
-              if (key.includes('resource_gl')) {
-                const nodeTypeId = e[key.replace('_id', '_type')]
-                if (IP_LIKELY_NODE_TYPE_TDS.includes(nodeTypeId)) {
-                  return `${e['ip_0']},${e['subnet_id_0']}`
-                }
-              }
-              return `${e[key]}`
+              return genUniqueFieldByTag(key, e)
             })
             .join(',') + `-${e.server_node_type}`
       }
