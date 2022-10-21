@@ -300,7 +300,7 @@ export function genGetTagValuesSql(
   if (useEqual) {
     cond = (keyword as Array<number | string>)
       .map(kw => {
-        return `value=${typeof kw === 'number' ? kw : `'${kw}'`}`
+        return `${tagName}=${typeof kw === 'number' ? kw : `'${kw}'`}`
       })
       .join(' OR ')
   } else {

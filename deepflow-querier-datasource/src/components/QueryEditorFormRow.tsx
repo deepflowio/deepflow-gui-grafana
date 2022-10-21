@@ -160,15 +160,15 @@ export class QueryEditorFormRow extends PureComponent<Props> {
     const { tagOpts, metricOpts, funcOpts, basicData } = this.props
 
     let newFuncOpts
-    if (basicData.type === 'tag') {
+    let _isEnumLikelyTag = false
+    if (this.props.rowType === 'select' && basicData.type === 'tag') {
       const tagType = tagOpts.find(item => {
         return item.value === result
       })?.type
-      newFuncOpts = isEnumLikelyTag({
+      _isEnumLikelyTag = isEnumLikelyTag({
         type: tagType
       })
-        ? enumLikelyTagFuncs
-        : []
+      newFuncOpts = _isEnumLikelyTag ? enumLikelyTagFuncs : []
     } else {
       const metricType = metricOpts.find(item => {
         return item.value === result
@@ -200,6 +200,11 @@ export class QueryEditorFormRow extends PureComponent<Props> {
             as: ''
           }
         : {}),
+      ...(_isEnumLikelyTag
+        ? {
+            func: newFuncOpts[0].value
+          }
+        : {}),
       whereOnly: !!val?.whereOnly,
       sideType: val?.sideType,
       isResourceType: val?.type === 'resource',
@@ -209,6 +214,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
   }
 
   onFuncChange = (val: any) => {
+    console.log('@val', val)
     const { funcOpts, basicData } = this.props
     const result = val ? val.value : ''
     const paramsLen =
