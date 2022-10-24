@@ -580,6 +580,67 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     }
   }
 
+  async getFlameRelatedData(_ids: string[]) {
+    try {
+      const TAGS = [
+        'type',
+        'l7_protocol',
+        'request_id',
+        'syscall_cap_seq_0',
+        'syscall_cap_seq_1',
+        'flow_id',
+        'vtap',
+        'tap_port_type',
+        'tap_port',
+        'start_time',
+        'end_time'
+      ]
+      // @ts-ignore
+      await querierJs.loadTableConfig('l7_flow_log', 'flow_log')
+
+      const sqlData = {
+        format: 'sql',
+        db: 'flow_log',
+        tableName: 'l7_flow_log',
+        selects: {
+          TAGS,
+          METRICS: []
+        },
+        conditions: {
+          RESOURCE_SETS: [
+            {
+              id: '0',
+              isForbidden: false,
+              condition: [
+                {
+                  type: 'tag',
+                  op: 'OR',
+                  val: _ids.map((e: any) => {
+                    return {
+                      key: '_id',
+                      op: '=',
+                      val: e
+                    }
+                  })
+                }
+              ]
+            }
+          ]
+        },
+        orderBy: ['start_time']
+      }
+      // @ts-ignore
+      const querierJsResult = querierJs.dfQuery(sqlData)
+      const { sql } = querierJsResult.resource[0]
+      // @ts-ignore
+      const response = await querierJs.searchBySql(sql, 'flow_log')
+      return response
+    } catch (error) {
+      console.log(error)
+      return error
+    }
+  }
+
   async metricFindQuery(query: MyVariableQuery, options?: any) {
     const { database, sql, useDisabled, useAny } = query
     if (!database || !sql) {
