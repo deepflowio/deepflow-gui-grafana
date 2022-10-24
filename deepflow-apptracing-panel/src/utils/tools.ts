@@ -147,3 +147,64 @@ export function dealPercentageValue(v: unknown) {
     return v.toFixed(2) + '%'
   }
 }
+
+const RELATED_TYPE_FIELDS_MAP = {
+  traceid: ['trace_id'],
+  xrequestid: ['x_request_id'],
+  app: ['span_id', 'parent_span_id'],
+  network: ['req_tcp_seq', 'resp_tcp_seq'],
+  syscall: ['syscall_trace_id_request', 'syscall_trace_id_response']
+} as const
+
+const RELATED_EQUAL_KEYS = Object.keys(RELATED_TYPE_FIELDS_MAP)
+  .map((e: string) => RELATED_TYPE_FIELDS_MAP[e as keyof typeof RELATED_TYPE_FIELDS_MAP])
+  .flat(Infinity) as string[]
+const RELATED_EQUAL_INVALID_VALUES = ['', 0, null, undefined]
+
+export function getRelatedData(item: any, fullData: any) {
+  const fullDataKeyById = _.keyBy(fullData, 'id')
+
+  const relateData: any = []
+  item.related_ids.forEach((related_id: string) => {
+    const [id, type, _id] = related_id.split('-')
+    if (type !== 'base') {
+      relateData.push({
+        id,
+        type,
+        _id
+      })
+    }
+  })
+  const result = [
+    ...relateData.map((e: any) => {
+      return {
+        ...fullDataKeyById[e.id],
+        __related: e
+      }
+    })
+  ]
+
+  item.__hightLights = {}
+  result.forEach(e => {
+    const relatedFields = RELATED_TYPE_FIELDS_MAP[e.__related.type as keyof typeof RELATED_TYPE_FIELDS_MAP]
+    e.__hightLights = {}
+    const _relatedFields = [...relatedFields].sort(() => -1)
+    relatedFields.forEach((k: string, i: number) => {
+      if (e[k] === item[k]) {
+        e.__hightLights[k] = true
+        item.__hightLights[k] = true
+      }
+      if (e[k] === item[_relatedFields[i]]) {
+        e.__hightLights[k] = true
+        item.__hightLights[_relatedFields[i]] = true
+      }
+    })
+    RELATED_EQUAL_KEYS.forEach(k => {
+      if (e[k] === item[k] && !RELATED_EQUAL_INVALID_VALUES.includes(e[k])) {
+        e.__hightLights[k] = true
+        item.__hightLights[k] = true
+      }
+    })
+  })
+  return [item, ...result]
+}

@@ -1,15 +1,25 @@
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react'
-import { DataFrame, PanelProps } from '@grafana/data'
+import { DataFrame, DataSourceInstanceSettings, PanelProps } from '@grafana/data'
 import { SimpleOptions } from 'types'
 import { DYTable } from 'components/DYTable'
 import { Alert } from '@grafana/ui'
 import _ from 'lodash'
 import { renderTimeBar, addSvg, fitSvgToContainer, TAP_SIDE_OPTIONS_MAP, miniMap } from 'deepflow-vis-js'
 import { FlameTooltip } from 'components/FlameTooltip'
-import { genServiceId, useDebounce } from 'utils/tools'
-import { formatDetailData, tarnsArrayToTableData } from 'utils/tables'
+import { genServiceId, getRelatedData, useDebounce } from 'utils/tools'
+import {
+  ACTICON_ROW_VAL,
+  formatDetailData,
+  formatRelatedExtralData,
+  formatRelatedlData,
+  tarnsArrayToTableData,
+  tarnsRelatedDataToTableData
+} from 'utils/tables'
+import { getDataSourceSrv } from '@grafana/runtime'
 
 import './SimplePanel.css'
+import { Button } from '@douyinfe/semi-ui'
+import { IconArrowLeft } from '@douyinfe/semi-icons'
 
 interface Props extends PanelProps<SimpleOptions> {}
 
@@ -67,6 +77,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
   const [flameContainer, setFlameContainer] = useState<any>(undefined)
   const [flameChart, setFlameChart] = useState<any>(undefined)
   const [detailFilteIds, setDetailFilteIds] = useState<string[]>([])
+  const [relatedResource, setRelatedResource] = useState<Record<any, any>>({})
 
   const setFlameDetailFilter = useCallback((serviceId: string, chart: any, selfAndParent?: any) => {
     setSelectedServiceRowId(serviceId)
@@ -148,6 +159,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
             self: bar,
             parent: bar.props.parent
           })
+          setRelatedResource(bar.data)
         })
         bar.container.on('mouseenter', (ev: any) => {
           setHoveredBarData({
@@ -171,6 +183,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       })
       flameContainer.on('click', () => {
         setFlameDetailFilter('', renderResult)
+        setRelatedResource({})
       })
       setFlameChart(renderResult)
 
@@ -209,8 +222,10 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     return tarnsArrayToTableData(servicesData)
   }, [servicesData])
 
+  const [relatedViewIndex, setRelatedViewIndex] = useState(0)
   const [detailData, setDetailData] = useState([])
   const detailTableData = useMemo(() => {
+    setRelatedViewIndex(0)
     if (!Object.keys(detailData)?.length || !detailFilteIds?.length) {
       return {
         columns: [],
@@ -225,13 +240,94 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       columns,
       dataSource
     }
-  }, [detailData, detailFilteIds])
+  }, [detailData, detailFilteIds, setRelatedViewIndex])
   const panelWidthHeight = useMemo(() => {
     return {
       width: debouncedWidth,
       height: debouncedHeight
     }
   }, [debouncedWidth, debouncedHeight])
+
+  const [relatedExtraData, setRelatedExtraData] = useState([])
+  const contentTranslateX = useMemo(() => {
+    return {
+      transform: `translateX(${relatedViewIndex * -100}%)`
+    }
+  }, [relatedViewIndex])
+  const [relatedTableLoading, setRelatedTableLoading] = useState(false)
+  const onDetailBtnClick = useCallback(async (_ids: string[]) => {
+    setErrMsg('')
+    const deepFlowName = await getDataSourceSrv()
+      .getList()
+      .find((dataSource: DataSourceInstanceSettings) => {
+        return dataSource.type === 'deepflow-querier-datasource'
+      })?.name
+    const deepFlow = await getDataSourceSrv().get(deepFlowName)
+    if (!deepFlow) {
+      return
+    }
+    try {
+      setRelatedTableLoading(true)
+      // @ts-ignore
+      const result = await deepFlow.getFlameRelatedData(_ids)
+      if (!result) {
+        setErrMsg(result?.data?.DESCRIPTION ? `[SERVER ERROR]:${result?.data?.DESCRIPTION}` : 'No Data')
+      } else {
+        setRelatedViewIndex(1)
+        setRelatedExtraData(result)
+      }
+    } catch (error: any) {
+      const msg = error ? `[SERVER ERROR]:${error?.data?.DESCRIPTION}` : ' Network Error'
+      setErrMsg(msg)
+    }
+    setRelatedTableLoading(false)
+  }, [])
+
+  const relatedTableData = useMemo(() => {
+    if (!flameData || !Object.keys(flameData)?.length || !Object.keys(relatedResource)?.length) {
+      return {
+        columns: [],
+        dataSource: []
+      }
+    }
+    const relatedData = getRelatedData(relatedResource, flameData)
+    const cellRender = (text: string) => {
+      let res: any = text
+      try {
+        res = JSON.parse(text)
+      } catch (error) {}
+      if (res?.highLight) {
+        return <span style={{ color: 'red' }}>{`${res.val}`}</span>
+      }
+      if (res?.val === ACTICON_ROW_VAL) {
+        return (
+          <Button
+            size="small"
+            theme="borderless"
+            onClick={async () => {
+              onDetailBtnClick(res._ids)
+            }}
+            style={{
+              margin: '0 auto'
+            }}
+            disabled={res._ids?.length <= 1}
+          >
+            detail
+          </Button>
+        )
+      }
+      return text
+    }
+    const { columns, dataSource } = tarnsRelatedDataToTableData(formatRelatedlData(relatedData), cellRender)
+    return {
+      columns,
+      dataSource
+    }
+  }, [flameData, relatedResource, onDetailBtnClick])
+
+  const relatedExtraTableData = useMemo(() => {
+    return tarnsArrayToTableData(formatRelatedExtralData(relatedExtraData))
+  }, [relatedExtraData])
 
   return (
     <div ref={panelRef} className={`deepflow-panel ${isDark ? 'semi-always-dark' : 'semi-always-light'}`}>
@@ -272,6 +368,40 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
                   dataSource={detailTableData.dataSource}
                 />
               </div>
+            </div>
+            <div className="related-table-wrap">
+              <div className="view-title">Related Data</div>
+              <div className="detail-extra-table" style={contentTranslateX}>
+                <div className="detail-table">
+                  <DYTable
+                    key={relatedTableData.columns?.length ? 'tableWithData' : 'tableWithoutData'}
+                    className={'table-wrap'}
+                    panelWidthHeight={panelWidthHeight}
+                    columns={relatedTableData.columns}
+                    dataSource={relatedTableData.dataSource}
+                    loading={relatedTableLoading}
+                  />
+                </div>
+                <div className="detail-table">
+                  <DYTable
+                    key={relatedExtraTableData.columns?.length ? 'tableWithData' : 'tableWithoutData'}
+                    className={'table-wrap'}
+                    panelWidthHeight={panelWidthHeight}
+                    columns={relatedExtraTableData.columns}
+                    dataSource={relatedExtraTableData.dataSource}
+                  />
+                </div>
+              </div>
+              <IconArrowLeft
+                className="goback-icon"
+                onClick={() => {
+                  setRelatedViewIndex(relatedViewIndex ? 0 : 1)
+                }}
+                style={{
+                  display: relatedViewIndex ? '' : 'none',
+                  cursor: 'pointer'
+                }}
+              />
             </div>
           </div>
         </div>
