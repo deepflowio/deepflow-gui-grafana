@@ -214,7 +214,6 @@ export class QueryEditorFormRow extends PureComponent<Props> {
   }
 
   onFuncChange = (val: any) => {
-    console.log('@val', val)
     const { funcOpts, basicData } = this.props
     const result = val ? val.value : ''
     const paramsLen =

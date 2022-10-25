@@ -181,7 +181,6 @@ export class QueryEditor extends PureComponent<Props> {
   }
 
   get grafanaTheme() {
-    console.log('@getTheme()', getTheme())
     return getTheme().name.toLocaleLowerCase()
   }
 
