@@ -43,3 +43,7 @@ export const getTagMapCache = (db: string, from: string, tag: string) => {
     _.get(SERVER_TAG_MAP_CACHE, [db, from, tag])
   )
 }
+
+export const SQL_CACHE = {
+  content: ''
+}
