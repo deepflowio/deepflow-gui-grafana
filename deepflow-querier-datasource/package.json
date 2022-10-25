@@ -17,8 +17,10 @@
     "node": ">=14"
   },
   "dependencies": {
+    "copy-to-clipboard": "^3.3.2",
     "deepflow-sdk-js": "^0.0.2",
-    "json-bigint-patch": "^0.0.8"
+    "json-bigint-patch": "^0.0.8",
+    "sql-formatter": "10.7.1"
   },
   "devDependencies": {
     "@types/json-bigint": "^1.0.1"

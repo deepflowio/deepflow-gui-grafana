@@ -1,3 +1,10 @@
+.querier-editor {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
 .w-100-percent {
   width: 100%;
 }
@@ -8,11 +15,14 @@
   position: sticky;
   top: 4px;
   z-index: 9;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: flex-start;
 }
 
 .save-btn {
-  margin-left: 100%;
-  transform: translateX(-100%);
+  margin-left: 4px;
 }
 
 .custom-label {
@@ -90,9 +100,9 @@
 }
 
 .sub-functions-wrap {
-  margin-left: 86.5px;
   border: 1px dashed #606266;
   padding: 6px;
+  max-width: 673px;
 }
 
 .sub-functions-editor {
@@ -178,4 +188,26 @@
 
 .mr-4 {
   margin-right: 4px;
+}
+
+/* sql highlight style */
+.sql-content {
+  min-width: 120px;
+  margin-left: 12px;
+  overflow: auto;
+  padding: 4px;
+  background: #00262f;
+  border-radius: 2px;
+  box-shadow: 0px 0px 1px 0 #938d8d;
+  white-space: pre-wrap;
+  user-select: all;
+}
+
+.sql-content p {
+  margin: 0;
+  font-size: 13px;
+}
+
+.sql-content p.highlight {
+  color: #e8095b;
 }

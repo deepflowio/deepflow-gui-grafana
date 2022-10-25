@@ -8,7 +8,7 @@ import {
   MutableDataFrame
 } from '@grafana/data'
 import { MyQuery, MyDataSourceOptions } from './types'
-import { DATA_SOURCE_SETTINGS, QUERY_DATA_CACHE } from 'utils/cache'
+import { DATA_SOURCE_SETTINGS, QUERY_DATA_CACHE, SQL_CACHE } from 'utils/cache'
 import { BackendSrvRequest, getBackendSrv } from '@grafana/runtime'
 import parseQueryStr, { replaceInterval } from './utils/parseQueryStr'
 import * as querierJs from 'deepflow-sdk-js'
@@ -151,6 +151,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         const returnMetricNames = returnMetrics.map((metric: any) => {
           return metric.name
         })
+        SQL_CACHE.content = sql
 
         // @ts-ignore
         let response = await querierJs.searchBySql(sql, queryData.db, params => {
