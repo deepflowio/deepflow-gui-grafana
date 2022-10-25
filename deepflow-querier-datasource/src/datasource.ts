@@ -9,7 +9,7 @@ import {
 } from '@grafana/data'
 import { MyQuery, MyDataSourceOptions } from './types'
 import { DATA_SOURCE_SETTINGS, QUERY_DATA_CACHE, SQL_CACHE } from 'utils/cache'
-import { BackendSrvRequest, getBackendSrv } from '@grafana/runtime'
+import { BackendSrvRequest, getBackendSrv, getTemplateSrv } from '@grafana/runtime'
 import parseQueryStr, { replaceInterval } from './utils/parseQueryStr'
 import * as querierJs from 'deepflow-sdk-js'
 import qs from 'qs'
@@ -647,8 +647,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     if (!database || !sql) {
       return []
     }
+    const _sql = getTemplateSrv().replace(sql)
     // @ts-ignore
-    const response = await querierJs.searchBySql(sql, database)
+    const response = await querierJs.searchBySql(_sql, database)
     const extra = []
     if (useDisabled) {
       extra.push({
