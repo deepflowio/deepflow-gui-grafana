@@ -195,7 +195,7 @@
   min-width: 120px;
   margin-left: 12px;
   overflow: auto;
-  padding: 4px;
+  padding: 0 4px;
   background: #00262f;
   border-radius: 2px;
   box-shadow: 0px 0px 1px 0 #938d8d;
@@ -206,6 +206,7 @@
 .sql-content p {
   margin: 0;
   font-size: 13px;
+  color: #fff;
 }
 
 .sql-content p.highlight {
