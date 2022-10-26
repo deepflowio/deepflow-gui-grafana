@@ -85,8 +85,18 @@
     },
     {
       "type": "dashboard",
+      "name": "DeepFlow Agent",
+      "path": "dashboards/DeepFlow-System/DeepFlow-Agent.json"
+    },
+    {
+      "type": "dashboard",
       "name": "DeepFlow Server - Ingester",
       "path": "dashboards/DeepFlow-System/DeepFlow-Server-Ingester.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "DeepFlow Server - Querier",
+      "path": "dashboards/DeepFlow-System/DeepFlow-Server-Querier.json"
     },
     {
       "type": "dashboard",
@@ -105,6 +115,11 @@
     },
     {
       "type": "dashboard",
+      "name": "Application - K8s Ingress",
+      "path": "dashboards/DeepFlow-Templates/Application-K8s-Ingress.json"
+    },
+    {
+      "type": "dashboard",
       "name": "Application - K8s Pod Map",
       "path": "dashboards/DeepFlow-Templates/Application-K8s-Pod-Map.json"
     },
@@ -117,6 +132,11 @@
       "type": "dashboard",
       "name": "Application - Request Log",
       "path": "dashboards/DeepFlow-Templates/Application-Request-Log.json"
+    },
+    {
+      "type": "dashboard",
+      "name": "Application - SQL Monitoring",
+      "path": "dashboards/DeepFlow-Templates/Application-SQL-Monitoring.json"
     },
     {
       "type": "dashboard",
