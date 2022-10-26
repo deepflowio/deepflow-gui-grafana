@@ -133,14 +133,15 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     y: 0
   })
   const [hoveredBarData, setHoveredBarData] = useState<undefined | {}>(undefined)
-  const [flameData, setFlameData] = useState<undefined | {}>(undefined)
+  const [flameData, setFlameData] = useState<undefined | []>(undefined)
   useEffect(() => {
-    if (!flameData || !flameContainer) {
+    if (flameContainer) {
+      flameContainer.selectAll('*').remove()
+    }
+    if (!flameData || !flameData?.length || !flameContainer) {
       return
     }
     try {
-      flameContainer.selectAll('*').remove()
-
       let handleZoomEvent: any
       const renderResult = renderTimeBar(flameData)(flameContainer, {
         formatBarName: (data: any, type: string) => {
@@ -226,7 +227,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
   const [detailData, setDetailData] = useState([])
   const detailTableData = useMemo(() => {
     setRelatedViewIndex(0)
-    if (!Object.keys(detailData)?.length || !detailFilteIds?.length) {
+    if ((detailData && !Object.keys(detailData)?.length) || !detailFilteIds?.length) {
       return {
         columns: [],
         dataSource: []
@@ -371,8 +372,8 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
             </div>
             <div className="related-table-wrap">
               <div className="view-title">Related Data</div>
-              <div className="detail-extra-table" style={contentTranslateX}>
-                <div className="detail-table">
+              <div className="related-extra-table" style={contentTranslateX}>
+                <div className="related-table">
                   <DYTable
                     key={relatedTableData.columns?.length ? 'tableWithData' : 'tableWithoutData'}
                     className={'table-wrap'}
@@ -382,7 +383,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
                     loading={relatedTableLoading}
                   />
                 </div>
-                <div className="detail-table">
+                <div className="extra-table">
                   <DYTable
                     key={relatedExtraTableData.columns?.length ? 'tableWithData' : 'tableWithoutData'}
                     className={'table-wrap'}
