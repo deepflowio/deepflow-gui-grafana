@@ -102,7 +102,7 @@ export function getMetricFieldNameByAlias(alias: string, mapObj: Record<any, any
   const result = alias.replace(/\$\{.*?\}/g, ($1: string) => {
     const keyMatchArr = $1.match(/\$\{(\S*)\}/)
     const key = Array.isArray(keyMatchArr) && keyMatchArr?.length >= 2 ? keyMatchArr[1] : $1
-    return mapObj[key] || key
+    return typeof mapObj[key] !== 'undefined' ? mapObj[key] : key
   })
   return result
 }
