@@ -577,7 +577,11 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       }
     } catch (error) {
       console.log(error)
-      return error
+      return {
+        services: [],
+        tracing: [],
+        detailList: []
+      }
     }
   }
 
