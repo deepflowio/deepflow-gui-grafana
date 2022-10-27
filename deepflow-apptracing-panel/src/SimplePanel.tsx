@@ -138,6 +138,10 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     if (flameContainer) {
       flameContainer.selectAll('*').remove()
     }
+
+    if (MINIMAP_CONATAINER_CACHE) {
+      MINIMAP_CONATAINER_CACHE.remove()
+    }
     if (!flameData || !flameData?.length || !flameContainer) {
       return
     }
@@ -187,10 +191,6 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
         setRelatedResource({})
       })
       setFlameChart(renderResult)
-
-      if (MINIMAP_CONATAINER_CACHE) {
-        MINIMAP_CONATAINER_CACHE.remove()
-      }
       const _miniMapContainer = addSvg('.' + randomClassName, false)
       _miniMapContainer
         .attr('width', debouncedWidth / 4)
