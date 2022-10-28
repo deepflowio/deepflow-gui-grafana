@@ -20,6 +20,7 @@ import {
   getAccessRelationshipeQueryConfig,
   getMetricFieldNameByAlias,
   getParamByName,
+  isEnumLikelyTag,
   numberToShort
 } from 'utils/tools'
 import { MAP_METRIC_TYPE_NUM, MAP_TAG_TYPE, SELECT_GROUP_BY_DISABLE_TAGS, TAG_METRIC_TYPE_NUM } from 'consts'
@@ -386,40 +387,44 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           })
 
         const _tags = tags
-          .map((item: any) => {
+          .map((e: any) => {
+            const isEnumLikely = isEnumLikelyTag(e)
             const isJSONTag = JSON_TAGS.find(jsonTag => {
-              return item.category === jsonTag.category
+              return e.category === jsonTag.category
             })
             const isMainJSONTag = JSON_TAGS.find(jsonTag => {
-              return item.name === jsonTag.groupName
+              return e.name === jsonTag.groupName
             })
-            if (SELECT_GROUP_BY_DISABLE_TAGS.includes(item.name) || (isJSONTag && !isMainJSONTag)) {
+            if (SELECT_GROUP_BY_DISABLE_TAGS.includes(e.name) || (isJSONTag && !isMainJSONTag)) {
               return []
             }
-            const { name, client_name, server_name, category } = item
+            const { name, client_name, server_name, category } = e
             if ((name === client_name && name === server_name) || (!client_name && !server_name)) {
               return {
                 category,
-                value: item.name,
-                isJSONTag
+                value: e.name,
+                isJSONTag,
+                isEnumLikely
               }
             }
             return [
-              ...(item.client_name
+              ...(e.client_name
                 ? [
                     {
                       category: isJSONTag ? `客户端${category}` : category,
-                      value: item.client_name,
-                      isJSONTag
+                      value: e.client_name,
+                      isJSONTag,
+                      isEnumLikely
                     }
                   ]
                 : []),
-              ...(item.server_name
+              ...(e.server_name
                 ? [
                     {
                       category: isJSONTag ? `服务端${category}` : category,
-                      value: item.server_name,
-                      isJSONTag
+                      value: e.server_name,
+                      isJSONTag,
+                      isEnumLikely
                     }
                   ]
                 : [])
@@ -446,6 +451,12 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           tableName: 'l7_flow_log',
           selects: {
             TAGS: _tags.map((e: any) => {
+              if (e.isEnumLikely) {
+                return {
+                  func: 'Enum',
+                  key: e.value
+                }
+              }
               return e.value
             }),
             METRICS: metrics
@@ -495,7 +506,15 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         // @ts-ignore
         const response = await querierJs.searchBySql(sql, 'flow_log')
 
-        const tagsGroupbyCategory = _.groupBy(_tags, 'category')
+        const tagsGroupbyCategory = _.groupBy(
+          _tags.map((e: any) => {
+            return {
+              ...e,
+              value: e.isEnumLikely ? `Enum(${e.value})` : e.value
+            }
+          }),
+          'category'
+        )
         const tagCategoryKeys = Object.keys(tagsGroupbyCategory)
         response.forEach((e: any) => {
           let JSONMetrics = {}
@@ -519,7 +538,6 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                 Object.fromEntries(
                   tags.map(tagObj => {
                     const tag = `${tagObj.value}`
-
                     return [tag, resData[tag]?.toString() ? resData[tag].toString() : resData[tag]]
                   })
                 )
@@ -549,7 +567,12 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                           return [key, formatUsUnit(val)]
                         }
                         const valAfterFormat = numberToShort(val)
-                        return [key, `${valAfterFormat}${valAfterFormat !== null && valAfterFormat !== '' ? unit : ''}`]
+                        return [
+                          key,
+                          valAfterFormat !== undefined && valAfterFormat !== null && valAfterFormat !== ''
+                            ? `${valAfterFormat}${unit}`
+                            : valAfterFormat
+                        ]
                       })
                       .filter((e: undefined | any[]) => !!e)
                   ),
