@@ -208,15 +208,21 @@ export function formatDetailData(data: any) {
     .flat(Infinity)
 
   cates.forEach((cate, i) => {
-    result.push({
-      category: cate,
-      keyName: keys[i],
-      ...Object.fromEntries(
-        data.map((col: any, index: number) => {
-          return [`column${index + 1}_value`, _.get(col, [cate, keys[i]])]
-        })
-      )
+    const hasValidVal = data.some((col: any) => {
+      const val = _.get(col, [cate, keys[i]])
+      return val !== undefined && val !== '' && val !== null
     })
+    if (hasValidVal) {
+      result.push({
+        category: cate,
+        keyName: keys[i],
+        ...Object.fromEntries(
+          data.map((col: any, index: number) => {
+            return [`column${index + 1}_value`, _.get(col, [cate, keys[i]])]
+          })
+        )
+      })
+    }
   })
   return result
 }
