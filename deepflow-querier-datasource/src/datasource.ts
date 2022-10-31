@@ -670,13 +670,22 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   }
 
   async metricFindQuery(query: MyVariableQuery, options?: any) {
-    const { database, sql, useDisabled, useAny } = query
+    const { database, sql, datasource, useDisabled, useAny } = query
     if (!database || !sql) {
       return []
     }
     const _sql = getTemplateSrv().replace(sql)
     // @ts-ignore
-    const response = await querierJs.searchBySql(_sql, database)
+    const response = await querierJs.searchBySql(_sql, database, params => {
+      return {
+        ...params,
+        ...(datasource
+          ? {
+              datasource
+            }
+          : undefined)
+      }
+    })
     const extra = []
     if (useDisabled) {
       extra.push({
