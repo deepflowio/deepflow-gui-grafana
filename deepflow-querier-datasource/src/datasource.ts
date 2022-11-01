@@ -674,7 +674,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     if (!database || !sql) {
       return []
     }
-    const _sql = getTemplateSrv().replace(sql)
+
+    const _sql = getTemplateSrv().replace(sql, {}, 'csv')
     // @ts-ignore
     const response = await querierJs.searchBySql(_sql, database, params => {
       return {
