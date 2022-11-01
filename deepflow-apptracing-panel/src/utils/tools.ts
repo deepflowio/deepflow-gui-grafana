@@ -159,9 +159,10 @@ const RELATED_TYPE_FIELDS_MAP = {
 const RELATED_EQUAL_KEYS = Object.keys(RELATED_TYPE_FIELDS_MAP)
   .map((e: string) => RELATED_TYPE_FIELDS_MAP[e as keyof typeof RELATED_TYPE_FIELDS_MAP])
   .flat(Infinity) as string[]
-const RELATED_EQUAL_INVALID_VALUES = ['', 0, null, undefined]
+const RELATED_EQUAL_INVALID_VALUES = ['', 0, '0', null, undefined]
 
 export function getRelatedData(item: any, fullData: any) {
+  console.log(fullData)
   const fullDataKeyById = _.keyBy(fullData, 'id')
 
   const relateData: any = []
@@ -190,6 +191,9 @@ export function getRelatedData(item: any, fullData: any) {
     e.__hightLights = {}
     const _relatedFields = [...relatedFields].sort(() => -1)
     relatedFields.forEach((k: string, i: number) => {
+      if (RELATED_EQUAL_INVALID_VALUES.includes(e[k])) {
+        return
+      }
       if (e[k] === item[k]) {
         e.__hightLights[k] = true
         item.__hightLights[k] = true
@@ -200,7 +204,10 @@ export function getRelatedData(item: any, fullData: any) {
       }
     })
     RELATED_EQUAL_KEYS.forEach(k => {
-      if (e[k] === item[k] && !RELATED_EQUAL_INVALID_VALUES.includes(e[k])) {
+      if (RELATED_EQUAL_INVALID_VALUES.includes(e[k])) {
+        return
+      }
+      if (e[k] === item[k]) {
         e.__hightLights[k] = true
         item.__hightLights[k] = true
       }
