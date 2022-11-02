@@ -162,7 +162,6 @@ const RELATED_EQUAL_KEYS = Object.keys(RELATED_TYPE_FIELDS_MAP)
 const RELATED_EQUAL_INVALID_VALUES = ['', 0, '0', null, undefined]
 
 export function getRelatedData(item: any, fullData: any) {
-  console.log(fullData)
   const fullDataKeyById = _.keyBy(fullData, 'id')
 
   const relateData: any = []

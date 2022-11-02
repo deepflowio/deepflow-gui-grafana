@@ -100,6 +100,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     const data = await Promise.all(
       options.targets.map(async target => {
+        SQL_CACHE.content = ''
         if (target.hide || !target.queryText) {
           return []
         }
@@ -662,7 +663,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       const { sql } = querierJsResult.resource[0]
       // @ts-ignore
       const response = await querierJs.searchBySql(sql, 'flow_log')
-      return response
+      return response.map((e: any) => _.pick(e, TAGS))
     } catch (error) {
       console.log(error)
       return error
