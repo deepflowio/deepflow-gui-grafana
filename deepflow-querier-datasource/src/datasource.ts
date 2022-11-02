@@ -369,6 +369,16 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       if (!services || !tracing) {
         throw new Error('No data')
       }
+
+      const translateTags = ['l7_protocol', 'response_status', 'tap_side']
+      const tagValMaps: Record<string, any> = {}
+      for (let i = 0; i < translateTags.length; i++) {
+        const tag = translateTags[i]
+        // @ts-ignore
+        const res = await querierJs.getTagValues(tag, 'l7_flow_log', 'flow_log')
+        tagValMaps[tag] = _.keyBy(res, 'value')
+      }
+
       const detailList: Record<any, any> = {}
       if (Array.isArray(services) && services.length) {
         // @ts-ignore
@@ -584,17 +594,19 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           detailList[e._id.toString()] = Object.fromEntries(item)
         })
       }
-      // @ts-ignore
-      const l7ProtocolValuesMap = await querierJs.getL7ProtocolValuesMap()
       return {
         services: services,
         tracing: tracing.map((e: any) => {
-          const _l7_protocol = [0, 1].includes(e.l7_protocol)
-            ? ''
-            : _.get(l7ProtocolValuesMap, [e.l7_protocol, 'display_name'], e.l7_protocol)
           return {
             ...e,
-            _l7_protocol
+            ...Object.fromEntries(
+              Object.keys(tagValMaps).map(tag => {
+                if (tag === 'l7_protocol' && [0, 1].includes(e[tag])) {
+                  return [`Enum(${tag})`, '']
+                }
+                return [`Enum(${tag})`, _.get(tagValMaps[tag], [e[tag], 'display_name'], e[tag])]
+              })
+            )
           }
         }),
         detailList

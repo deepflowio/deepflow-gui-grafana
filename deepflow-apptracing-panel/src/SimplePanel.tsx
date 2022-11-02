@@ -150,7 +150,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       const renderResult = renderTimeBar(flameData)(flameContainer, {
         formatBarName: (data: any, type: string) => {
           if (type === 'app' || type === 'process') {
-            return `${data._l7_protocol} ${data.request_type || ''} ${data.request_resource || ''}`
+            return `${data.l7_protocol} ${data.request_type || ''} ${data.request_resource || ''}`
           } else {
             return _.get(TAP_SIDE_OPTIONS_MAP, [data.tap_side, 'label'], data.tap_side)
           }

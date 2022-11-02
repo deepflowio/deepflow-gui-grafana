@@ -24,8 +24,8 @@ export function getStringLen(str: string) {
 }
 
 export const RELATED_DATA_DISPLAY_COLUMNS = [
-  'tap_side',
-  'l7_protocol',
+  'Enum(tap_side)',
+  'Enum(l7_protocol)',
   'request_type',
   'request_resource',
   'trace_id',
