@@ -12,10 +12,27 @@ interface Props {
   }
 }
 
+const getTooltipSpanName = (data: any) => {
+  if (data._barType === 'network') {
+    const result = [
+      data['Enum(l7_protocol)'] || data.l7_protocol_str,
+      data.request_type,
+      data.request_resource || data.endpoint
+    ]
+    return result.filter(e => !!e).join(' ')
+  } else {
+    const result = [
+      data['Enum(l7_protocol)'] || data.l7_protocol_str,
+      ...(data.request_resource ? [data.request_type, data.request_resource] : [data.endpoint])
+    ]
+    return result.filter(e => !!e).join(' ')
+  }
+}
+
 const getTooltipSpanContent = (data: any) => {
   if (data._barType === 'network') {
     const tapPortName = data.tap_port_name ? `(${data.tap_port_name})` : ''
-    return `${data.tap_port} ${tapPortName} ${data.resource_from_vtap}`
+    return `${data.tap_port} ${tapPortName} ${data.resource_gl0}`
   } else if (data._barType === 'process') {
     return `${data.process_kname} ${data.resource_gl0}`
   } else {
@@ -81,13 +98,9 @@ export const FlameTooltip: React.FC<Props> = ({ barData, mousePos }) => {
             ? ' ' + _.get(TOOLTIP_SPAN_TYPE_MAP, [content._barType])
             : ''}
         </span>
-        <span>{content.tap_side ? ' ' + content.tap_side : ''}</span>
+        <span>{content['Enum(tap_side)'] ? ' ' + content['Enum(tap_side)'] : ''}</span>
       </p>
-      <p>
-        {content._l7_protocol ? content._l7_protocol + ' ' : ''}
-        {content.request_type ? content.request_type + ' ' : ''}
-        {content.request_resource}
-      </p>
+      <p>{getTooltipSpanName(content)}</p>
       <p>{getTooltipSpanContent(content)}</p>
       <p>
         {formatUsUnit(content.duration)}
