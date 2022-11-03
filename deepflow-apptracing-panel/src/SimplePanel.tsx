@@ -337,6 +337,11 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     return tarnsArrayToTableData(formatRelatedExtralData(relatedExtraData))
   }, [relatedExtraData])
 
+  useEffect(() => {
+    setRelatedResource({})
+    setRelatedViewIndex(0)
+  }, [flameData])
+
   return (
     <div ref={panelRef} className={`deepflow-panel ${isDark ? 'semi-always-dark' : 'semi-always-light'}`}>
       <div className="content">
