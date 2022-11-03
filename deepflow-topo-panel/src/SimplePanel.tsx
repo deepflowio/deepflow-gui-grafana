@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React, { useState, useRef, useMemo, useEffect } from 'react'
 import { PanelProps } from '@grafana/data'
 import { SimpleOptions } from 'types'
@@ -166,6 +167,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     if (!selectedData?.fields?.length || !sourceSide.length || !destinationSide.length || !queryConfig?.returnMetrics) {
       return []
     }
+    window.useTimeLogs && console.time('[Time Log][Topo: Comput links]')
     const filedNames = selectedData.fields.map(field => field.name)
     const dataIsMatched = [
       ...sourceSide,
@@ -291,6 +293,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
             })
       }
     })
+    window.useTimeLogs && console.timeEnd('[Time Log][Topo: Comput links]')
     return result
   }, [selectedData, sourceSide, destinationSide, queryConfig])
 
@@ -298,6 +301,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     if (!links?.length || !queryConfig?.from?.length || !queryConfig?.to?.length) {
       return []
     }
+    window.useTimeLogs && console.time('[Time Log][Topo: Comput nodes]')
     const _commonTags = Array.isArray(queryConfig.common)
       ? queryConfig.common.filter((key: string) => {
           return !NO_GROUP_BY_TAGS.includes(key)
@@ -367,6 +371,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         ]
       })
       .flat(Infinity)
+    window.useTimeLogs && console.timeEnd('[Time Log][Topo: Comput nodes]')
     return _.uniqBy(result, 'id')
   }, [links, queryConfig, nodeDisplayTags])
 
@@ -396,6 +401,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     if (!chartContainer || !nodes.length || !links.length) {
       return
     }
+    window.useTimeLogs && console.time('[Time Log][Topo: Render]')
     try {
       const titleColor = isDark ? '#bbb' : '#333'
       const nodeAndLinkColor = isDark ? '#206FD6' : '#B6BFD1'
@@ -554,6 +560,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       console.log(error)
       setErrMsg(error.toString() || 'draw topo failed')
     }
+    window.useTimeLogs && console.timeEnd('[Time Log][Topo: Render]')
   }, [nodes, links, chartContainer, randomClassName, debouncedWidth, debouncedHeight, isDark, topoType])
 
   useEffect(() => {
