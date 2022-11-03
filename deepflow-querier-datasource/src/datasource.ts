@@ -634,8 +634,14 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   async getFlameRelatedData(_ids: string[]) {
     try {
       const TAGS = [
-        'type',
-        'l7_protocol',
+        {
+          func: 'Enum',
+          key: 'type'
+        },
+        {
+          func: 'Enum',
+          key: 'l7_protocol'
+        },
         'request_id',
         'syscall_cap_seq_0',
         'syscall_cap_seq_1',
@@ -685,7 +691,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       const { sql } = querierJsResult.resource[0]
       // @ts-ignore
       const response = await querierJs.searchBySql(sql, 'flow_log')
-      return response.map((e: any) => _.pick(e, TAGS))
+      return response.map((e: any) => _.omit(e, 'vtap_id'))
     } catch (error) {
       console.log(error)
       return error
