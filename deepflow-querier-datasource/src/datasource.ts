@@ -422,7 +422,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
               ...(e.client_name
                 ? [
                     {
-                      category: isJSONTag ? `客户端${category}` : category,
+                      category: isJSONTag ? `客户端 - ${category}` : category,
                       value: e.client_name,
                       isJSONTag,
                       isEnumLikely
@@ -432,7 +432,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
               ...(e.server_name
                 ? [
                     {
-                      category: isJSONTag ? `服务端${category}` : category,
+                      category: isJSONTag ? `服务端 - ${category}` : category,
                       value: e.server_name,
                       isJSONTag,
                       isEnumLikely

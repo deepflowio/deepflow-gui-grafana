@@ -894,7 +894,7 @@ export class QueryEditor extends PureComponent<Props> {
             ...(item.client_name
               ? [
                   {
-                    label: `${item.client_name} (${item.display_name}-客户端)`,
+                    label: `${item.client_name} (${item.display_name} - 客户端)`,
                     value: item.client_name,
                     type: item.type,
                     sideType: 'from',
@@ -905,7 +905,7 @@ export class QueryEditor extends PureComponent<Props> {
             ...(item.server_name
               ? [
                   {
-                    label: `${item.server_name} (${item.display_name}-服务端)`,
+                    label: `${item.server_name} (${item.display_name} - 服务端)`,
                     value: item.server_name,
                     type: item.type,
                     sideType: 'to',
