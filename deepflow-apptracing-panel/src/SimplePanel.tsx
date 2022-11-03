@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react'
 import { DataFrame, DataSourceInstanceSettings, PanelProps } from '@grafana/data'
 import { SimpleOptions } from 'types'
@@ -145,6 +146,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     if (!flameData || !flameData?.length || !flameContainer) {
       return
     }
+    window.useTimeLogs && console.time('[Time Log][Apptracing: Render]')
     try {
       let handleZoomEvent: any
       const renderResult = renderTimeBar(flameData)(flameContainer, {
@@ -215,6 +217,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
     } catch (error) {
       console.log(error)
     }
+    window.useTimeLogs && console.timeEnd('[Time Log][Apptracing: Render]')
   }, [flameData, flameContainer, randomClassName, debouncedWidth, debouncedHeight, setFlameDetailFilter, setMousePos])
 
   const bodyClassName = document.body.className

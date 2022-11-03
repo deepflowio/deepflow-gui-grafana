@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import _ from 'lodash'
 import {
   DataQueryRequest,
@@ -119,12 +120,15 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           if (!_id) {
             return []
           }
+          window.useTimeLogs && console.time('[Time Log][Querier: Get flame data]')
           const result: any = await this.getFlameData({
             _id
           })
+          window.useTimeLogs && console.timeEnd('[Time Log][Querier: Get flame data]')
           if ('message' in result || 'statusText' in result) {
             throw result
           }
+          window.useTimeLogs && console.time('[Time Log][Querier: Format flame data]')
           const frame = new MutableDataFrame({
             refId: target.refId,
             fields: [
@@ -137,6 +141,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             ]
           })
           frame.add(result)
+          window.useTimeLogs && console.timeEnd('[Time Log][Querier: Format flame data]')
           return [frame]
         }
         const parsedQueryData = parseQueryStr(queryData)
@@ -155,6 +160,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         })
         SQL_CACHE.content = sql
 
+        window.useTimeLogs && console.time(`[Time Log][Querier: Get data] ${options.requestId}`)
         // @ts-ignore
         let response = await querierJs.searchBySql(sql, queryData.db, params => {
           return {
@@ -166,6 +172,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
               : {})
           }
         })
+        window.useTimeLogs && console.timeEnd(`[Time Log][Querier: Get data] ${options.requestId}`)
+        window.useTimeLogs && console.time('[Time Log][Querier: Format data]')
         // @ts-ignore
         response = querierJs.addResourceFieldsInData(response)
 
@@ -240,6 +248,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           response.forEach((e: any) => {
             a.add(e)
           })
+          window.useTimeLogs && console.timeEnd('[Time Log][Querier: Format data]')
           return a
         }
         let dataAfterGroupBy = _.groupBy(response, item => {
@@ -300,6 +309,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           frameArray.push(frame)
         })
 
+        window.useTimeLogs && console.timeEnd('[Time Log][Querier: Format data]')
         return frameArray
       })
     )
