@@ -1,10 +1,6 @@
-const getCommonWebpackConfig  = (config, options) => {
+const getCommonWebpackConfig = (config, options) => {
   return {
-    ...(!options.preserveConsole
-      ? {
-          devtool: 'none'
-        }
-      : {})
+    devtool: 'none'
   }
 }
 
