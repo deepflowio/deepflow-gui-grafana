@@ -11,7 +11,12 @@ export const SERVICE_MAP_SUPPORT_TABLE = ['l4_flow_log', 'l7_flow_log', 'vtap_fl
 export const TAG_METRIC_TYPE_NUM = 6
 export const MAP_METRIC_TYPE_NUM = 7
 
+export const TIME_TAG_TYPE = 'time'
+export const TAG_TAG_TYPE = 'tag'
 export const MAP_TAG_TYPE = 'map'
+export const IP_ARRAY_TAG_TYPE = 'ip_array'
+export const RESOURCE_ARRAY_TAG_TYPE = 'resource_array'
+export const GROUP_BY_DISABLE_TAG_TYPES = [MAP_TAG_TYPE, IP_ARRAY_TAG_TYPE, RESOURCE_ARRAY_TAG_TYPE]
 
 export const formatAsOpts: SelectOpts = [
   {

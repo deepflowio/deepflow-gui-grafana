@@ -15,12 +15,16 @@ import {
   formatAsOpts,
   formItemConfigs,
   FormTypes,
+  GROUP_BY_DISABLE_TAG_TYPES,
   intervalOpts,
   MAP_METRIC_TYPE_NUM,
+  MAP_TAG_TYPE,
   SELECT_GROUP_BY_DISABLE_TAGS,
   SERVICE_MAP_SUPPORT_DB,
   SERVICE_MAP_SUPPORT_TABLE,
-  TAG_METRIC_TYPE_NUM
+  TAG_METRIC_TYPE_NUM,
+  TAG_TAG_TYPE,
+  TIME_TAG_TYPE
 } from 'consts'
 import { getTagMapCache, SQL_CACHE } from 'utils/cache'
 import { INPUT_TAG_VAL_TYPES, SELECT_TAG_VAL_OPS } from 'components/TagValueSelector'
@@ -193,12 +197,21 @@ export class QueryEditor extends PureComponent<Props> {
       .map((item: any) => {
         return item.key
       })
+    let result
     if (groupByKeys.length > 0 || interval) {
-      return tagOpts.filter((item: any) => {
+      result = tagOpts.filter((item: any) => {
         return groupByKeys.includes(item.value)
       })
     }
-    return tagOpts
+    result = tagOpts
+    return result.filter(tag => {
+      return (
+        !tag.whereOnly &&
+        !SELECT_GROUP_BY_DISABLE_TAGS.find((val: string) => {
+          return (tag.value as string).includes(val)
+        })
+      )
+    })
   }
 
   get tagsFromSelect(): MetricOpts {
@@ -208,7 +221,7 @@ export class QueryEditor extends PureComponent<Props> {
     }
     const result = select
       .filter(e => {
-        return e.type === 'tag' && !!e.key && e.as !== ''
+        return ![TAG_TAG_TYPE, TIME_TAG_TYPE].includes(e.type) && !!e.key && e.as !== ''
       })
       .map((e, i) => {
         const orgOpt = tagOpts.find(opt => {
@@ -742,6 +755,9 @@ export class QueryEditor extends PureComponent<Props> {
       const { db, from, where } = formData
       const tagValuesGroup: Record<any, any[]> = {}
       where.forEach((item: BasicDataWithId) => {
+        if (!item.key) {
+          return
+        }
         const tagMapItem = getTagMapCache(db, from, item.key)
         const tagName = tagMapItem.name
         const tagType = _.get(tagMapItem, 'type')
@@ -1056,30 +1072,27 @@ export class QueryEditor extends PureComponent<Props> {
                                   usingGroupBy={this.usingGroupBy}
                                   tagOpts={
                                     conf.targetDataKey === 'select'
-                                      ? this.selectTagOpts.filter(tag => {
-                                          return (
-                                            !tag.whereOnly &&
-                                            !SELECT_GROUP_BY_DISABLE_TAGS.find((val: string) => {
-                                              return (tag.value as string).includes(val)
-                                            })
-                                          )
-                                        })
+                                      ? this.selectTagOpts
                                       : conf.targetDataKey === 'groupBy'
                                       ? tagOpts
                                           .filter(tag => {
-                                            return tag.type !== 'map' && !tag.whereOnly
+                                            return (
+                                              !GROUP_BY_DISABLE_TAG_TYPES.includes(tag.type as string) && !tag.whereOnly
+                                            )
                                           })
                                           .filter((tag: MetricOptsItem) => {
                                             const extra = true
                                             return (
-                                              !SELECT_GROUP_BY_DISABLE_TAGS.find((val: string) => {
-                                                return (tag.value as string).includes(val)
-                                              }) && extra
+                                              !SELECT_GROUP_BY_DISABLE_TAGS.concat([TIME_TAG_TYPE]).find(
+                                                (val: string) => {
+                                                  return (tag.value as string).includes(val)
+                                                }
+                                              ) && extra
                                             )
                                           })
                                       : this.tagsFromSelect.concat(
                                           tagOpts.filter(tag => {
-                                            return tag.type !== 'map'
+                                            return ![MAP_TAG_TYPE, TIME_TAG_TYPE].includes(tag.type as string)
                                           })
                                         )
                                   }
