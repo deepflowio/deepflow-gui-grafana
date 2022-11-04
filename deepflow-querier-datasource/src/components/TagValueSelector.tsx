@@ -6,7 +6,7 @@ import * as querierJs from 'deepflow-sdk-js'
 import { genGetTagValuesSql } from 'utils/tools'
 import { getTagMapCache } from 'utils/cache'
 
-export const INPUT_TAG_VAL_TYPES = ['int', 'ip', 'mac']
+export const INPUT_TAG_VAL_TYPES = ['int', 'ip', 'mac', 'ip_array']
 export const SELECT_TAG_VAL_OPS = ['=', '!=', 'IN', 'NOT IN']
 
 export const TagValueSelector = (props: {
