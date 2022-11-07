@@ -213,7 +213,10 @@ function selectFormat(data: any): {
     })
 
   if (appType === 'appTracing') {
-    TAGS.push('_id')
+    TAGS.push({
+      key: '_id',
+      func: 'TO_STRING'
+    })
   }
   return {
     TAGS,

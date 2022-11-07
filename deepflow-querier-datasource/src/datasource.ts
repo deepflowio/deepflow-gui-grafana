@@ -202,6 +202,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
               item[key] = item[key] * 1000
             }
           })
+          if ('toString(_id)' in item) {
+            item['_id'] = item['toString(_id)']
+            delete item['toString(_id)']
+          }
         })
         const usingGroupBy = sql.includes('group by') && queryData.formatAs === 'timeSeries'
         const meta = {
