@@ -101,7 +101,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
 
     const data = await Promise.all(
       options.targets.map(async target => {
-        SQL_CACHE.content = ''
+        _.set(SQL_CACHE, options.requestId, '')
         if (target.hide || !target.queryText) {
           return []
         }
@@ -158,7 +158,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         const returnMetricNames = returnMetrics.map((metric: any) => {
           return metric.name
         })
-        SQL_CACHE.content = sql
+        _.set(SQL_CACHE, options.requestId, sql)
 
         window.useTimeLogs && console.time(`[Time Log][Querier: Get data] ${options.requestId}`)
         // @ts-ignore

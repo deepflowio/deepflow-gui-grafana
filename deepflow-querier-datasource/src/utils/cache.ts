@@ -44,6 +44,4 @@ export const getTagMapCache = (db: string, from: string, tag: string) => {
   )
 }
 
-export const SQL_CACHE = {
-  content: ''
-}
+export const SQL_CACHE: Record<string, string> = {}

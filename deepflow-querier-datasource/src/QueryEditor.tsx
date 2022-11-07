@@ -170,7 +170,8 @@ export class QueryEditor extends PureComponent<Props> {
   }
 
   get sqlContent() {
-    let sqlString = sqlFormatter(SQL_CACHE.content, {
+    const content = this.props.data?.request?.requestId ? _.get(SQL_CACHE, this.props.data?.request?.requestId) : ''
+    const sqlString = sqlFormatter(content, {
       tabWidth: 2,
       keywordCase: 'upper',
       linesBetweenQueries: 2
