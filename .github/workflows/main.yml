@@ -152,14 +152,14 @@ jobs:
         run: |
           cd release
           tar -zcvf deepflow-gui-grafana.tar.gz *
-          ossutil cp -rf deepflow-gui-grafana.tar.gz  oss://deepflow-ce/bin/agent/latest/linux/amd64/deepflow-gui-grafana.tar.gz
+          ossutil cp -rf deepflow-gui-grafana.tar.gz  oss://deepflow-ce/pkg/grafana-plugin/latest/linux/amd64/deepflow-gui-grafana.tar.gz
       - name: upload main artifacts
         if: startsWith(github.ref, 'refs/heads/main')
         run: |
           cd release
-          ossutil cp -rf deepflow-gui-grafana.tar.gz  oss://deepflow-ce/bin/agent/main/linux/amd64/deepflow-gui-grafana.tar.gz
+          ossutil cp -rf deepflow-gui-grafana.tar.gz  oss://deepflow-ce/pkg/grafana-plugin/main/linux/amd64/deepflow-gui-grafana.tar.gz
       - name: upload stable artifacts
         if: "startsWith(github.ref, 'refs/tags/')"
         run: |
           cd release
-          ossutil cp -rf deepflow-gui-grafana.tar.gz  oss://deepflow-ce/bin/agent/stable/linux/amd64/deepflow-gui-grafana.tar.gz
+          ossutil cp -rf deepflow-gui-grafana.tar.gz  oss://deepflow-ce/pkg/grafana-plugin/stable/linux/amd64/deepflow-gui-grafana.tar.gz
