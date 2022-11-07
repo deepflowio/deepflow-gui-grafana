@@ -304,8 +304,8 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       try {
         res = JSON.parse(text)
       } catch (error) {}
-      if (res?.highLight) {
-        return <span style={{ color: 'red' }}>{`${res.val}`}</span>
+      if (typeof res === 'string') {
+        return text
       }
       if (res?.val === ACTICON_ROW_VAL) {
         return (
@@ -324,14 +324,36 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
           </Button>
         )
       }
-      return text
+
+      return (
+        <p
+          style={{
+            color: res?.highLight ? 'red' : '',
+            width: '100%',
+            height: '100%',
+            lineHeight: '17px',
+            cursor: 'pointer',
+            boxSizing: 'content-box',
+            padding: '6px 6px 4px',
+            margin: '-6px 0 0 -6px'
+          }}
+          onClick={() => {
+            const twinkleBar = flameChart.bars.find((bar: any) => {
+              return bar.data.id === res.id
+            })
+            if (twinkleBar) {
+              flameChart.twinkle(twinkleBar)
+            }
+          }}
+        >{`${res.val}`}</p>
+      )
     }
     const { columns, dataSource } = tarnsRelatedDataToTableData(formatRelatedlData(relatedData), cellRender)
     return {
       columns,
       dataSource
     }
-  }, [flameData, relatedResource, onDetailBtnClick])
+  }, [flameData, relatedResource, onDetailBtnClick, flameChart])
 
   const relatedExtraTableData = useMemo(() => {
     return tarnsArrayToTableData(formatRelatedExtralData(relatedExtraData))

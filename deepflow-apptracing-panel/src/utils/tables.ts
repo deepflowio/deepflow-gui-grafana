@@ -10,11 +10,8 @@ export function getStringLen(str: string) {
   let _str = str
   try {
     const res = JSON.parse(str)
-    if (res?.highLight) {
-      _str = `${res.val}`
-    }
-    if (res?.val === ACTICON_ROW_VAL) {
-      _str = ACTICON_ROW_VAL
+    if (typeof res !== 'string') {
+      _str = res?.val === ACTICON_ROW_VAL ? ACTICON_ROW_VAL : `${res.val}`
     }
   } catch (error) {}
   return _str.split('').reduce((prev: number, current: string) => {
@@ -114,16 +111,16 @@ export function formatRelatedlData(data: any) {
               })
             ]
           }
+          const id = _.get(col, 'id')
           const highLight = _.get(col, [HIGH_LIGHTS_KEY, k])
           const val = _.get(col, [k])
           return [
             `column${index + 1}_value`,
-            highLight
-              ? JSON.stringify({
-                  highLight,
-                  val
-                })
-              : val
+            JSON.stringify({
+              highLight,
+              val,
+              id
+            })
           ]
         })
       )
