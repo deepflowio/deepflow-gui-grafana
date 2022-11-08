@@ -196,3 +196,5 @@ export const defaultFormData: Omit<QueryDataType, 'appType' | 'db' | 'sources'> 
   formatAs: 'timeSeries',
   alias: ''
 }
+
+export const ID_PREFIX = 'id-'
