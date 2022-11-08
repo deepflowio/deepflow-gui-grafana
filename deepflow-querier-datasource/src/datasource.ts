@@ -24,7 +24,7 @@ import {
   isEnumLikelyTag,
   numberToShort
 } from 'utils/tools'
-import { MAP_METRIC_TYPE_NUM, MAP_TAG_TYPE, SELECT_GROUP_BY_DISABLE_TAGS, TAG_METRIC_TYPE_NUM } from 'consts'
+import { ID_PREFIX, MAP_METRIC_TYPE_NUM, MAP_TAG_TYPE, SELECT_GROUP_BY_DISABLE_TAGS, TAG_METRIC_TYPE_NUM } from 'consts'
 
 function setTimeKey(
   queryData: any,
@@ -122,7 +122,9 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           }
           window.useTimeLogs && console.time('[Time Log][Querier: Get flame data]')
           const result: any = await this.getFlameData({
-            _id
+            _id,
+            time_start: from,
+            time_end: to
           })
           window.useTimeLogs && console.timeEnd('[Time Log][Querier: Get flame data]')
           if ('message' in result || 'statusText' in result) {
@@ -203,7 +205,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             }
           })
           if ('toString(_id)' in item) {
-            item['_id'] = item['toString(_id)']
+            item['_id'] = `${ID_PREFIX}${item['toString(_id)']}`
             delete item['toString(_id)']
           }
         })
@@ -350,11 +352,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
     }
   }
 
-  async getFlameData({ _id }: { _id: string }) {
+  async getFlameData({ _id, time_start, time_end }: { _id: string; time_start: number; time_end: number }) {
     try {
-      const { time_start, time_end } = QUERY_DATA_CACHE
       const data = {
-        _id: _id.replace('#', ''),
+        _id: _id.replace(ID_PREFIX, ''),
         DATABASE: 'flow_log',
         TABLE: 'l7_flow_log',
         MAX_ITERATION: 30,
