@@ -27,11 +27,12 @@ import {
   TAG_TAG_TYPE,
   TIME_TAG_TYPE
 } from 'consts'
-import { getTagMapCache, SQL_CACHE } from 'utils/cache'
+import { DATA_SOURCE_SETTINGS, getTagMapCache, SQL_CACHE } from 'utils/cache'
 import { INPUT_TAG_VAL_TYPES, SELECT_TAG_VAL_OPS } from 'components/TagValueSelector'
 import { TracingIdSelector } from 'components/TracingIdSelector'
 import { format as sqlFormatter } from 'sql-formatter'
 import './QueryEditor.css'
+import { getI18NLabelByName } from 'utils/i18n'
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>
 
@@ -848,6 +849,11 @@ export class QueryEditor extends PureComponent<Props> {
       subFuncOpts: []
     })
     try {
+      if (DATA_SOURCE_SETTINGS.language === '') {
+        // @ts-ignore
+        const langConfig = await querierJs.searchBySql('show language')
+        DATA_SOURCE_SETTINGS.language = _.get(langConfig, [0, 'language']).includes('ch') ? 'zh-cn' : 'en-us'
+      }
       // @ts-ignore
       await querierJs.loadOP()
 
@@ -915,7 +921,7 @@ export class QueryEditor extends PureComponent<Props> {
             ...(item.client_name
               ? [
                   {
-                    label: `${item.client_name} (${item.display_name} - 客户端)`,
+                    label: `${item.client_name} (${item.display_name} - ${getI18NLabelByName('client')})`,
                     value: item.client_name,
                     type: item.type,
                     sideType: 'from',
@@ -926,7 +932,7 @@ export class QueryEditor extends PureComponent<Props> {
             ...(item.server_name
               ? [
                   {
-                    label: `${item.server_name} (${item.display_name} - 服务端)`,
+                    label: `${item.server_name} (${item.display_name} - ${getI18NLabelByName('server')})`,
                     value: item.server_name,
                     type: item.type,
                     sideType: 'to',

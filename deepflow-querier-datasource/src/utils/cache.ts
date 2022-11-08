@@ -1,5 +1,6 @@
 import * as querierJs from 'deepflow-sdk-js'
 import _ from 'lodash'
+import { I18N_RESOURCE } from './i18n'
 
 export const QUERY_DATA_CACHE: {
   time_start: number | undefined
@@ -20,8 +21,10 @@ export const QUERY_DATA_CACHE: {
 
 export const DATA_SOURCE_SETTINGS: {
   basicUrl: string
+  language: keyof typeof I18N_RESOURCE | ''
 } = {
-  basicUrl: ''
+  basicUrl: '',
+  language: ''
 }
 
 export const TAG_CACHE = _.get(querierJs, 'TagCache', {})
