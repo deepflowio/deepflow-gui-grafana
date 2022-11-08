@@ -12,6 +12,7 @@ import {
   BasicDataWithId,
   defaultFormData,
   defaultFormDB,
+  DISABLE_TAGS,
   formatAsOpts,
   formItemConfigs,
   FormTypes,
@@ -885,6 +886,9 @@ export class QueryEditor extends PureComponent<Props> {
         }) as MetricOpts
 
       const tagOpts = tags
+        .filter((item: any) => {
+          return !DISABLE_TAGS.includes(item.name)
+        })
         .map((item: any) => {
           const { name, client_name, server_name } = item
           const operatorOpts = formatTagOperators(item.operators, item)
