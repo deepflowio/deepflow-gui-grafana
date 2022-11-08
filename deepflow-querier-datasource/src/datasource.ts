@@ -25,6 +25,7 @@ import {
   numberToShort
 } from 'utils/tools'
 import { ID_PREFIX, MAP_METRIC_TYPE_NUM, MAP_TAG_TYPE, SELECT_GROUP_BY_DISABLE_TAGS, TAG_METRIC_TYPE_NUM } from 'consts'
+import { getI18NLabelByName } from 'utils/i18n'
 
 function setTimeKey(
   queryData: any,
@@ -111,6 +112,11 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           from,
           to
         })
+        if (DATA_SOURCE_SETTINGS.language === '') {
+          // @ts-ignore
+          const langConfig = await querierJs.searchBySql('show language')
+          DATA_SOURCE_SETTINGS.language = _.get(langConfig, [0, 'language']).includes('ch') ? 'zh-cn' : 'en-us'
+        }
         // @ts-ignore
         await querierJs.loadOP()
         // @ts-ignore
@@ -437,7 +443,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
               ...(e.client_name
                 ? [
                     {
-                      category: isJSONTag ? `客户端 - ${category}` : category,
+                      category: isJSONTag ? `${category} - ${getI18NLabelByName('client')}` : category,
                       value: e.client_name,
                       isJSONTag,
                       isEnumLikely
@@ -447,7 +453,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
               ...(e.server_name
                 ? [
                     {
-                      category: isJSONTag ? `服务端 - ${category}` : category,
+                      category: isJSONTag ? `${category} - ${getI18NLabelByName('server')}` : category,
                       value: e.server_name,
                       isJSONTag,
                       isEnumLikely
