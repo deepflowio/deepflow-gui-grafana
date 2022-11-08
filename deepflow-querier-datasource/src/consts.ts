@@ -5,6 +5,8 @@ import { uuid } from 'utils/tools'
 // 不支持做分组的 tag: 负载均衡监听器, ingress
 export const SELECT_GROUP_BY_DISABLE_TAGS = ['lb_listener', 'pod_ingress']
 
+export const DISABLE_TAGS = ['_id', 'time']
+
 export const SERVICE_MAP_SUPPORT_DB = ['flow_log', 'flow_metrics']
 export const SERVICE_MAP_SUPPORT_TABLE = ['l4_flow_log', 'l7_flow_log', 'vtap_flow_edge_port', 'vtap_app_edge_port']
 
