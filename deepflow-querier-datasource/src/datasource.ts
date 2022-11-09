@@ -233,7 +233,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           }
         }
         if (!usingGroupBy) {
-          const a = new MutableDataFrame({
+          const frame = new MutableDataFrame({
             refId: target.refId,
             fields: [
               ...Object.keys(firstResponse).map((key: string) => {
@@ -258,10 +258,10 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             meta
           })
           response.forEach((e: any) => {
-            a.add(e)
+            frame.add(e)
           })
           window.useTimeLogs && console.timeEnd('[Time Log][Querier: Format data]')
-          return a
+          return frame
         }
         let dataAfterGroupBy = _.groupBy(response, item => {
           return tagKeys

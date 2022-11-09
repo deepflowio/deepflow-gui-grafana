@@ -1014,7 +1014,16 @@ export class QueryEditor extends PureComponent<Props> {
                   Run Query
                 </Button>
               </div>
-              {showErrorAlert ? <Alert title={errorMsg} severity="error" onRemove={this.onAlertRemove} /> : null}
+              {showErrorAlert ? (
+                <Alert
+                  style={{
+                    width: '80%'
+                  }}
+                  title={errorMsg}
+                  severity="error"
+                  onRemove={this.onAlertRemove}
+                />
+              ) : null}
               <InlineField className="custom-label" label="APP" labelWidth={10}>
                 <Select
                   options={appTypeOpts}
