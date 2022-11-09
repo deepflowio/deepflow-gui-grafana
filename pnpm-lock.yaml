@@ -10,7 +10,7 @@ importers:
       '@grafana/ui': ^9.1.5
       '@types/lodash': ^4.14.182
       '@types/react-dom': ^18.0.6
-      deepflow-vis-js: ^0.0.12
+      deepflow-vis-js: ^0.0.13
       lodash: ^4.17.21
       prettier: ^2.7.1
       qs: ^6.11.0
@@ -21,7 +21,7 @@ importers:
       '@grafana/runtime': 8.5.9_jmhwmz2p2disoleonrzrygc5tu
       '@grafana/toolkit': 8.5.9_slate-react@0.22.10
       '@grafana/ui': 9.1.5_@babel+core@7.18.10
-      deepflow-vis-js: 0.0.12
+      deepflow-vis-js: 0.0.13
       lodash: 4.17.21
       qs: 6.11.0
     devDependencies:
@@ -46,12 +46,12 @@ importers:
     specifiers:
       '@types/json-bigint': ^1.0.1
       copy-to-clipboard: ^3.3.2
-      deepflow-sdk-js: ^0.0.3
+      deepflow-sdk-js: ^0.0.4
       json-bigint-patch: ^0.0.8
       sql-formatter: 10.7.1
     dependencies:
       copy-to-clipboard: 3.3.2
-      deepflow-sdk-js: 0.0.3
+      deepflow-sdk-js: 0.0.4
       json-bigint-patch: 0.0.8
       sql-formatter: 10.7.1
     devDependencies:
@@ -6086,15 +6086,15 @@ packages:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
     dev: false
 
-  /deepflow-sdk-js/0.0.3:
-    resolution: {integrity: sha512-BieRs8e30f36SEQ5fwW8EKOA1xLSYXyadbYwI/Zr5pihkfd4wz0se1WYyhA9mxp3MRye16HqQihI4utZd9HLdQ==}
+  /deepflow-sdk-js/0.0.4:
+    resolution: {integrity: sha512-jgirYMi8Tbe2cvRvPr+uWV7JF/8jOlqg96K+Q2jyhTsyAHSK6g3Fr8APpgrTNDBoN4Lk+kKQCZhzu1ig9rZK7w==}
     dependencies:
       process: 0.11.10
       qs: 6.11.0
     dev: false
 
-  /deepflow-vis-js/0.0.12:
-    resolution: {integrity: sha512-0zTAb9zGQd9ydLbQxafDDj3Rr3AxBpZobNu6TJWPDGbnrNadMhWLPiiIarzAD0MeFsExxi/ipagdkGVhqvBovg==}
+  /deepflow-vis-js/0.0.13:
+    resolution: {integrity: sha512-FL/ysNmc+jJJfoY6WZnu0P0nkWFERqu8tPmERA387ttLFewH7JAaEUUEwWEiLl5psY9VYLa/DaHGR/G0rDzQMg==}
     dependencies:
       d3: 7.6.1
       lodash: 4.17.21
