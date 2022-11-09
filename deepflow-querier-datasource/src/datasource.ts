@@ -577,7 +577,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             })
             .concat([
               [
-                'metrics',
+                'Metrics',
                 {
                   ...Object.fromEntries(
                     returnMetrics
