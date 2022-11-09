@@ -21,7 +21,7 @@
     "@grafana/runtime": "^8.5.6",
     "@grafana/toolkit": "^8.5.6",
     "@grafana/ui": "^9.1.5",
-    "deepflow-vis-js": "^0.0.12",
+    "deepflow-vis-js": "^0.0.13",
     "lodash": "^4.17.21",
     "qs": "^6.11.0"
   },
