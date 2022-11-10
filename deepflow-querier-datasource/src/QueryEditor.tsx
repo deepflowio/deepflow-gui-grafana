@@ -24,7 +24,6 @@ import {
   SERVICE_MAP_SUPPORT_DB,
   SERVICE_MAP_SUPPORT_TABLE,
   TAG_METRIC_TYPE_NUM,
-  TAG_TAG_TYPE,
   TIME_TAG_TYPE
 } from 'consts'
 import { DATA_SOURCE_SETTINGS, getTagMapCache, SQL_CACHE } from 'utils/cache'
@@ -224,7 +223,7 @@ export class QueryEditor extends PureComponent<Props> {
     }
     const result = select
       .filter(e => {
-        return ![TAG_TAG_TYPE, TIME_TAG_TYPE].includes(e.type) && !!e.key && e.as !== ''
+        return e.type === 'tag' && !!e.key && e.as !== ''
       })
       .map((e, i) => {
         const orgOpt = tagOpts.find(opt => {
@@ -240,6 +239,7 @@ export class QueryEditor extends PureComponent<Props> {
           fromSelect: e
         }
       })
+      .filter(e => !!e)
     return result
   }
 
@@ -1110,11 +1110,9 @@ export class QueryEditor extends PureComponent<Props> {
                                               ) && extra
                                             )
                                           })
-                                      : this.tagsFromSelect.concat(
-                                          tagOpts.filter(tag => {
-                                            return ![MAP_TAG_TYPE, TIME_TAG_TYPE].includes(tag.type as string)
-                                          })
-                                        )
+                                      : this.tagsFromSelect.concat(tagOpts).filter(tag => {
+                                          return ![MAP_TAG_TYPE, TIME_TAG_TYPE].includes(tag.type as string)
+                                        })
                                   }
                                   metricOpts={
                                     conf.targetDataKey === 'orderBy'
