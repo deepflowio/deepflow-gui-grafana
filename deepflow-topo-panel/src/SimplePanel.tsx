@@ -415,12 +415,10 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       const renderOptions: Record<any, any> = {
         getNodeV: (node: Node<NodeItem>) => 0,
         getNodeColor: (node: Node<NodeItem>) => nodeAndLinkColor,
-        getNodeIcon: (node: Node<NodeItem>) => node.data.node_type,
         getNodeTitle: (node: Node<NodeItem>) => node.data.displayName,
         getLinkV: (link: Link<LinkItem>) => link.data.metricValue,
         getLinkColor: (link: Link<LinkItem>) => nodeAndLinkColor,
         titleColor: titleColor,
-        nodeSize: [40, 40],
         watchZoomEvent: (event: any) => handleZoomEvent(event),
         ...(topoType !== 'simpleTopo'
           ? {
@@ -450,7 +448,19 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
               },
               getGroupNameColor: () => nodeAndLinkColor
             }
-          : {})
+          : {
+              getNodeIcon: (node: Node<NodeItem>) => node.data.node_type,
+              setNodeStyle: (node: Node<NodeItem>) => {
+                try {
+                  node.refs.textEle.attr('stroke-width', '')
+                  node.refs.textEle.attr('stroke', '')
+                  node.refs.textEle.attr('paint-order', '')
+                } catch (error) {
+                  console.log(error)
+                }
+              },
+              nodeSize: [40, 40]
+            })
       }
       const handler = renderFunction(
         chartContainer,
