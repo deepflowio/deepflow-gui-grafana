@@ -137,9 +137,8 @@ const IP_LIKELY_NODE_TYPE_IDS = [255, 0]
 export function genUniqueFieldByTag(tagName: string, item: any): string {
   if (tagName.includes('resource_gl')) {
     const nodeTypeId = item[tagName.replace('_id', '_type')]
-    const sideType = tagName.substring(tagName.length - 1)
     if (IP_LIKELY_NODE_TYPE_IDS.includes(nodeTypeId)) {
-      return `${item[`ip_${sideType}`]},${item[`subnet_id_${sideType}`]}`
+      return `${item[tagName.replace('_id', '')]},${item[tagName]}`
     }
   }
   return item[tagName]
