@@ -127,13 +127,12 @@ jobs:
 
       - name: Build tar.gz
         run: |
-          tar -zcvf deepflow-apptracing-panel.tar.gz deepflow-apptracing-panel/dist/*
-          tar -zcvf deepflow-querier-datasource.tar.gz deepflow-querier-datasource/dist/*
-          tar -zcvf deepflow-topo-panel.tar.gz deepflow-topo-panel/dist/*
           mkdir release
-          mv deepflow-apptracing-panel.tar.gz ./release/
-          mv deepflow-querier-datasource.tar.gz ./release/
-          mv deepflow-topo-panel.tar.gz ./release/
+          mv deepflow-apptracing-panel/dist release/deepflow-apptracing-panel
+          mv deepflow-querier-datasource/dist release/deepflow-querier-datasource
+          mv deepflow-topo-panel/dist release/deepflow-topo-panel
+          cd release
+          tar -zcvf deepflow-gui-grafana.tar.gz *
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/')
@@ -151,7 +150,6 @@ jobs:
       - name: upload latest artifacts
         run: |
           cd release
-          tar -zcvf deepflow-gui-grafana.tar.gz *
           ossutil cp -rf deepflow-gui-grafana.tar.gz  oss://deepflow-ce/pkg/grafana-plugin/latest/linux/amd64/deepflow-gui-grafana.tar.gz
       - name: upload main artifacts
         if: startsWith(github.ref, 'refs/heads/main')
