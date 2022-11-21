@@ -302,7 +302,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                   }
                 }
                 return {
-                  name: `${keyPrefix}${keyPrefix ? '-' : ''}${key}`,
+                  name: [keyPrefix, ...(queryData.showMetrics ? [key] : [])].join('-'),
                   type: type
                 }
               })
@@ -312,7 +312,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           item.forEach((e, i) => {
             _.forIn(e, (val, key) => {
               if (returnMetricNames.includes(key)) {
-                const keyName = `${keyPrefix}${keyPrefix ? '-' : ''}${key}`
+                const keyName = [keyPrefix, ...(queryData.showMetrics ? [key] : [])].join('-')
                 e[keyName] = val
               }
             })
