@@ -202,13 +202,12 @@ export class QueryEditor extends PureComponent<Props> {
       .map((item: any) => {
         return item.key
       })
-    let result
+    let result = tagOpts
     if (groupByKeys.length > 0 || interval) {
       result = tagOpts.filter((item: any) => {
         return groupByKeys.includes(item.value)
       })
     }
-    result = tagOpts
     return result.filter(tag => {
       return (
         !tag.whereOnly &&
