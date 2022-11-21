@@ -23,6 +23,8 @@ import {
   SELECT_GROUP_BY_DISABLE_TAGS,
   SERVICE_MAP_SUPPORT_DB,
   SERVICE_MAP_SUPPORT_TABLE,
+  showMetricsOpts,
+  ShowMetricsVal,
   TAG_METRIC_TYPE_NUM,
   TIME_TAG_TYPE
 } from 'consts'
@@ -97,6 +99,7 @@ export class QueryEditor extends PureComponent<Props> {
     offset: string
     formatAs: 'timeSeries' | 'table' | ''
     alias: string
+    showMetrics: ShowMetricsVal
     tracingId: LabelItem | null
     errorMsg: string
     showErrorAlert: boolean
@@ -1215,14 +1218,26 @@ export class QueryEditor extends PureComponent<Props> {
                         />
                       </InlineField>
                       {this.state.formatAs === 'timeSeries' ? (
-                        <InlineField className="custom-label" label="ALIAS" labelWidth={6}>
-                          <Input
-                            value={this.state.alias}
-                            onChange={(ev: any) => this.onFieldChange('alias', ev.target)}
-                            placeholder="${tag0} ${tag1}"
-                            width={60}
-                          />
-                        </InlineField>
+                        <>
+                          <InlineField className="custom-label" label="ALIAS" labelWidth={6}>
+                            <Input
+                              value={this.state.alias}
+                              onChange={(ev: any) => this.onFieldChange('alias', ev.target)}
+                              placeholder="${tag0} ${tag1}"
+                              width={28}
+                            />
+                          </InlineField>
+                          <InlineField className="custom-label" label="SHOW METRICS" labelWidth={13.5}>
+                            <Select
+                              options={showMetricsOpts}
+                              value={this.state.showMetrics}
+                              onChange={(val: any) => this.onFieldChange('showMetrics', val)}
+                              placeholder="SHOW METRICS"
+                              key={this.state.showMetrics ? 'showMetricsWithVal' : 'showMetricsWithoutVal'}
+                              width="auto"
+                            />
+                          </InlineField>
+                        </>
                       ) : null}
                     </div>
                   ) : null}
