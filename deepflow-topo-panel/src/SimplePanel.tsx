@@ -83,7 +83,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
     if (series[targetIndex]?.fields === undefined || !series[targetIndex]?.fields?.length) {
       setNoData(true)
       if (chartContainer) {
-        chartContainer.selectAll('*').remove()
+        chartContainer.select('g').remove()
       }
       return {
         fields: []
