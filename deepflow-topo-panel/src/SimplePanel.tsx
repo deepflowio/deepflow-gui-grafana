@@ -243,7 +243,8 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
                   return {
                     ...Object.fromEntries(
                       NO_GROUP_BY_TAGS.map(k => {
-                        return [k, g[k]]
+                        const eunmKey = `Enum(${k})`
+                        return eunmKey in g ? [eunmKey, g[eunmKey]] : [k, g[k]]
                       })
                     ),
                     ...Object.fromEntries(
