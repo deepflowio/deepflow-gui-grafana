@@ -299,7 +299,10 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       }
     }
     const relatedData = getRelatedData(relatedResource, flameData)
-    const cellRender = (text: string) => {
+    const cellRender = (text: string | undefined) => {
+      if (text === undefined) {
+        return null
+      }
       let res: any = text
       try {
         res = JSON.parse(text)
