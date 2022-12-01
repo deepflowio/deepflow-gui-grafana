@@ -175,7 +175,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             ...params,
             ...(queryData.sources
               ? {
-                  datasource: queryData.sources
+                  data_precision: queryData.sources
                 }
               : {})
           }
