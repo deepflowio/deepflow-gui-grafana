@@ -15,9 +15,10 @@ export const MAP_METRIC_TYPE_NUM = 7
 
 export const TIME_TAG_TYPE = 'time'
 export const MAP_TAG_TYPE = 'map'
+export const PCAP_TAG_TYPE = 'pcap'
 export const IP_ARRAY_TAG_TYPE = 'ip_array'
 export const RESOURCE_ARRAY_TAG_TYPE = 'resource_array'
-export const GROUP_BY_DISABLE_TAG_TYPES = [MAP_TAG_TYPE, IP_ARRAY_TAG_TYPE, RESOURCE_ARRAY_TAG_TYPE]
+export const GROUP_BY_DISABLE_TAG_TYPES = [MAP_TAG_TYPE, PCAP_TAG_TYPE, IP_ARRAY_TAG_TYPE, RESOURCE_ARRAY_TAG_TYPE]
 
 export const formatAsOpts: SelectOpts = [
   {
