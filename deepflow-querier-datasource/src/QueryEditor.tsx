@@ -20,6 +20,7 @@ import {
   intervalOpts,
   MAP_METRIC_TYPE_NUM,
   MAP_TAG_TYPE,
+  PCAP_TAG_TYPE,
   SELECT_GROUP_BY_DISABLE_TAGS,
   SERVICE_MAP_SUPPORT_DB,
   SERVICE_MAP_SUPPORT_TABLE,
@@ -1113,7 +1114,9 @@ export class QueryEditor extends PureComponent<Props> {
                                             )
                                           })
                                       : this.tagsFromSelect.concat(tagOpts).filter(tag => {
-                                          return ![MAP_TAG_TYPE, TIME_TAG_TYPE].includes(tag.type as string)
+                                          return ![MAP_TAG_TYPE, PCAP_TAG_TYPE, TIME_TAG_TYPE].includes(
+                                            tag.type as string
+                                          )
                                         })
                                   }
                                   metricOpts={
