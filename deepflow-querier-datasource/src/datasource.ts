@@ -309,7 +309,8 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             ],
             meta
           })
-          item.forEach((e, i) => {
+          item.forEach((_e, i) => {
+            const e = _.cloneDeep(_e)
             _.forIn(e, (val, key) => {
               if (returnMetricNames.includes(key)) {
                 const keyName = [keyPrefix || '*', ...(queryData.showMetrics ? [key] : [])].join('-')
