@@ -401,7 +401,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
       }
 
       const detailList: Record<any, any> = {}
-      if (Array.isArray(services) && services.length) {
+      if (Array.isArray(tracing) && tracing.length) {
         // @ts-ignore
         const { metrics, tags } = await querierJs.loadTableConfig('l7_flow_log', 'flow_log')
         const JSON_TAGS: Array<{
