@@ -71,11 +71,19 @@ jobs:
       - uses: robinraju/release-downloader@v1.4
         with:
           repository: "grafana/clickhouse-datasource"
-          tag: "v1.1.2"
-          fileName: "grafana-clickhouse-datasource-1.1.2.zip"
+          tag: "v2.0.5"
+          fileName: "grafana-clickhouse-datasource-2.0.5.linux_arm64.zip"
+
+      - uses: robinraju/release-downloader@v1.4
+        with:
+          repository: "grafana/clickhouse-datasource"
+          tag: "v2.0.5"
+          fileName: "grafana-clickhouse-datasource-2.0.5.linux_amd64.zip"
 
       - name: Unzip grafana clickhouse datasource
-        run: unzip grafana-clickhouse-datasource-1.1.2.zip
+        run: |
+          unzip -d plugin-amd64 grafana-clickhouse-datasource-2.0.5.linux_amd64.zip
+          unzip -d plugin-arm64 grafana-clickhouse-datasource-2.0.5.linux_arm64.zip
 
       - name: Log in to GitHub Docker Registry
         uses: docker/login-action@v2
@@ -97,13 +105,6 @@ jobs:
           username: "${{ secrets.REGISTRY_ALIYUN_USER }}"
           password: "${{ secrets.REGISTRY_PASS }}"
 
-      - name: Log in to ALIYUN Docker Registry
-        uses: docker/login-action@v2
-        with:
-          registry: "${{ secrets.REGISTRY_ALIYUN_ADDR }}"
-          username: "${{ secrets.REGISTRY_ALIYUN_USER }}"
-          password: "${{ secrets.REGISTRY_PASS }}"
-
       - name: set env
         run: |
           echo "IMAGE_TAG_PREFIX=${{ github.ref_name }}"|sed 's|main|latest|' >> $GITHUB_ENV
@@ -119,11 +120,43 @@ jobs:
           tags: |
             "ghcr.io/${{ github.repository_owner }}/deepflow-ce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}-${{ env.IMAGE_TAG }}"
             "ghcr.io/${{ github.repository_owner }}/deepflow-ce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}"
+            "deepflowce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}"
+
+      - name: Log in to ALIYUN HongKong Docker Registry
+        uses: docker/login-action@v2
+        with:
+          registry: "registry.cn-hongkong.aliyuncs.com"
+          username: "${{ secrets.REGISTRY_ALIYUN_USER }}"
+          password: "${{ secrets.REGISTRY_PASS }}"
+
+      - name: Build and push deepflow-init-grafana images to aliyun hongkong
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          file: Dockerfile
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            "registry.cn-hongkong.aliyuncs.com/deepflow-ce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}-${{ env.IMAGE_TAG }}"
+            "registry.cn-hongkong.aliyuncs.com/deepflow-ce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}"
+
+      - name: Log in to ALIYUN Docker Registry
+        uses: docker/login-action@v2
+        with:
+          registry: "registry.cn-beijing.aliyuncs.com"
+          username: "${{ secrets.REGISTRY_ALIYUN_USER }}"
+          password: "${{ secrets.REGISTRY_PASS }}"
+
+      - name: Build and push deepflow-init-grafana images to aliyun beijing
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: true
+          file: Dockerfile
+          platforms: linux/amd64,linux/arm64
+          tags: |
             "registry.cn-beijing.aliyuncs.com/deepflow-ce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}-${{ env.IMAGE_TAG }}"
             "registry.cn-beijing.aliyuncs.com/deepflow-ce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}"
-            "deepflowce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}"
-            "${{ secrets.REGISTRY_ALIYUN_ADDR }}/dev/${{ env.IMAGE }}-ce:${{ env.IMAGE_TAG_PREFIX }}-${{ env.IMAGE_TAG }}"
-            "${{ secrets.REGISTRY_ALIYUN_ADDR }}/dev/${{ env.IMAGE }}-ce:${{ env.IMAGE_TAG_PREFIX }}"
 
       - name: Build tar.gz
         run: |
