@@ -1,4 +1,4 @@
-import { DataQueryRequest } from '@grafana/data'
+import { DataQueryRequest, ScopedVars } from '@grafana/data'
 import { getTemplateSrv } from '@grafana/runtime'
 import { BasicData } from 'components/QueryEditorFormRow'
 import _ from 'lodash'
@@ -224,49 +224,56 @@ function selectFormat(data: any): {
   }
 }
 
-function getValueByVariablesName(val: LabelItem, variables: any[], op: string) {
+function getValueByVariablesName(val: LabelItem, variables: any[], op: string, scopedVars: ScopedVars) {
   const isLikeOp = op.toUpperCase().includes('LIKE')
   const specVariables = ['__disabled', '__any']
   const isVariable = val?.isVariable
-  if (isVariable) {
-    const currentVariable = variables.find((variable: any) => {
-      return variable.name === val?.value
-    })
-    const currentValue = _.get(currentVariable, ['current', 'value'], '')
-    if (currentVariable?.type === undefined) {
-      return val.value
-    }
-    if (['textbox', 'constant'].includes(currentVariable.type)) {
-      return currentValue
-    }
-    const targetField = isLikeOp ? 'text' : 'value'
-    if (currentValue.includes('$__all')) {
-      return currentVariable.options
-        .filter((e: any) => e.value !== '$__all' && !specVariables.includes(e.value))
-        .map((e: any) => _.get(e, [targetField]))
-    }
-    if (currentValue.includes('__disabled')) {
-      return '__disabled'
-    }
+  try {
+    if (isVariable) {
+      const currentVariable = variables.find((variable: any) => {
+        return variable.name === val?.value
+      })
+      if (currentVariable && scopedVars[val?.value]) {
+        currentVariable.current = scopedVars[val?.value]
+      }
+      const currentValue = _.get(currentVariable, ['current', 'value'], '')
+      if (currentVariable?.type === undefined) {
+        return val.value
+      }
+      if (['textbox', 'constant'].includes(currentVariable.type)) {
+        return currentValue
+      }
+      const targetField = isLikeOp ? 'text' : 'value'
+      if (currentValue.includes('$__all')) {
+        return currentVariable.options
+          .filter((e: any) => e.value !== '$__all' && !specVariables.includes(e.value))
+          .map((e: any) => _.get(e, [targetField]))
+      }
+      if (currentValue.includes('__disabled')) {
+        return '__disabled'
+      }
 
-    if (
-      currentValue === '__any' ||
-      (Array.isArray(currentValue) && currentValue.filter((e: string) => e !== '__any').length <= 0)
-    ) {
-      return '__any'
-    } else {
-      const result = _.get(currentVariable, ['current', targetField])
-      return typeof result === 'string'
-        ? result
-        : result.filter((e: string) => {
-            return e !== '__any' && e !== 'Any'
-          })
+      if (
+        currentValue === '__any' ||
+        (Array.isArray(currentValue) && currentValue.filter((e: string) => e !== '__any').length <= 0)
+      ) {
+        return '__any'
+      } else {
+        const result = _.get(currentVariable, ['current', targetField])
+        return typeof result === 'string'
+          ? result
+          : result.filter((e: string) => {
+              return e !== '__any' && e !== 'Any'
+            })
+      }
     }
+  } catch (error) {
+    console.log(error)
   }
   return val.value
 }
 
-function whereFormat(data: any, variables: any[]) {
+function whereFormat(data: any, variables: any[], scopedVars: ScopedVars) {
   const { db, from, where, having } = data
   const fullData = where.concat(having)
   const validKeys = ['type', 'key', 'func', 'op', 'val', 'params', 'subFuncs', 'whereOnly'] as const
@@ -283,12 +290,12 @@ function whereFormat(data: any, variables: any[]) {
         }
         if (key === 'val') {
           if (item[key] instanceof Object) {
-            result[key] = getValueByVariablesName(item[key] as LabelItem, variables, item.op)
+            result[key] = getValueByVariablesName(item[key] as LabelItem, variables, item.op, scopedVars)
           }
           if (Array.isArray(item[key])) {
             result[key] = (item[key] as LabelItem[])
               .map((e: LabelItem) => {
-                return getValueByVariablesName(e, variables, item.op)
+                return getValueByVariablesName(e, variables, item.op, scopedVars)
               })
               .flat(Infinity)
           }
@@ -471,7 +478,7 @@ function orderByFormat(orderBy: BasicData[]) {
     })
 }
 
-function queryTextFormat(queryData: any) {
+function queryTextFormat(queryData: any, scopedVars: ScopedVars) {
   const keys = [
     'db',
     'from',
@@ -491,7 +498,7 @@ function queryTextFormat(queryData: any) {
   }
   const data = queryData as Data
   const templateSrv = getTemplateSrv()
-  const variables = templateSrv.getVariables() as any[]
+  const variables = _.cloneDeep(templateSrv.getVariables() as any[])
   return {
     format: 'sql',
     db: data.db,
@@ -502,7 +509,7 @@ function queryTextFormat(queryData: any) {
         {
           id: '0',
           isForbidden: false,
-          condition: whereFormat(data, variables)
+          condition: whereFormat(data, variables, scopedVars)
         }
       ]
     },
@@ -513,8 +520,8 @@ function queryTextFormat(queryData: any) {
   }
 }
 
-const parse = (str: string) => {
-  return queryTextFormat(str)
+const parse = (str: string, scopedVars: ScopedVars) => {
+  return queryTextFormat(str, scopedVars)
 }
 
 export default parse
