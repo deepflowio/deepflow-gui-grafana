@@ -152,7 +152,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           window.useTimeLogs && console.timeEnd('[Time Log][Querier: Format flame data]')
           return [frame]
         }
-        const parsedQueryData = parseQueryStr(queryData)
+        const parsedQueryData = parseQueryStr(queryData, options.scopedVars)
         let querierJsResult
         try {
           // @ts-ignore
