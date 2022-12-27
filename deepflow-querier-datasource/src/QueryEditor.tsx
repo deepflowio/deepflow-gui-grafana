@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react'
 import { QueryEditorProps, VariableModel } from '@grafana/data'
 import { DataSource } from './datasource'
 import { MyDataSourceOptions, MyQuery } from './types'
-import { Button, Form, InlineField, Select, Input, Alert, getTheme } from '@grafana/ui'
+import { Button, Form, InlineField, Select, Input, Alert, getTheme, Icon, Tooltip } from '@grafana/ui'
 import { QueryEditorFormRow } from './components/QueryEditorFormRow'
 import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
@@ -1230,14 +1230,34 @@ export class QueryEditor extends PureComponent<Props> {
                             />
                           </InlineField>
                           <InlineField className="custom-label" label="SHOW METRICS" labelWidth={14}>
-                            <Select
-                              options={showMetricsOpts}
-                              value={this.state.showMetrics}
-                              onChange={(val: any) => this.onFieldChange('showMetrics', val)}
-                              placeholder="SHOW METRICS"
-                              key={this.state.showMetrics ? 'showMetricsWithVal' : 'showMetricsWithoutVal'}
-                              width="auto"
-                            />
+                            <div>
+                              <Select
+                                options={showMetricsOpts}
+                                value={this.state.showMetrics}
+                                onChange={(val: any) => this.onFieldChange('showMetrics', val)}
+                                placeholder="SHOW METRICS"
+                                key={this.state.showMetrics ? 'showMetricsWithVal' : 'showMetricsWithoutVal'}
+                                width="auto"
+                              />
+                              <Tooltip
+                                placement="top"
+                                content={
+                                  <div>
+                                    <span>whether to display metrics&apos;s names in legends.</span>
+                                    <br />
+                                    <span>auto: when select multiple metrics to display; otherwise do not show.</span>
+                                  </div>
+                                }
+                              >
+                                <Icon
+                                  style={{
+                                    cursor: 'pointer',
+                                    marginLeft: '4px'
+                                  }}
+                                  name="question-circle"
+                                />
+                              </Tooltip>
+                            </div>
                           </InlineField>
                         </>
                       ) : null}
