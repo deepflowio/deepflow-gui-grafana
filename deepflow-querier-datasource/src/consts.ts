@@ -125,7 +125,7 @@ export type FormTypes = keyof typeof formItemConfigs
 
 export type BasicDataWithId = BasicData & { uuid: string }
 
-export type ShowMetricsVal = 1 | 0
+export type ShowMetricsVal = -1 | 1 | 0
 export type QueryDataType = {
   appType: string
   db: string
@@ -199,12 +199,16 @@ export const defaultFormData: Omit<QueryDataType, 'appType' | 'db' | 'sources'> 
   offset: '',
   formatAs: 'timeSeries',
   alias: '',
-  showMetrics: 0
+  showMetrics: -1
 }
 
 export const ID_PREFIX = 'id-'
 
 export const showMetricsOpts: SelectOpts = [
+  {
+    label: 'auto',
+    value: -1
+  },
   {
     label: 'true',
     value: 1
