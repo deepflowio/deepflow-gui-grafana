@@ -284,6 +284,19 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
               })
               .join('，')
 
+          let _showMetrics: boolean
+          switch (queryData.showMetrics) {
+            case 0:
+              _showMetrics = false
+              break
+            case 1:
+              _showMetrics = true
+              break
+            case -1:
+            default:
+              _showMetrics = returnMetrics.length > 1
+              break
+          }
           const frame = new MutableDataFrame({
             refId: target.refId,
             fields: [
@@ -302,7 +315,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
                   }
                 }
                 return {
-                  name: [keyPrefix || '*', ...(queryData.showMetrics ? [key] : [])].join('-'),
+                  name: [keyPrefix || '*', ...(_showMetrics ? [key] : [])].join('-'),
                   type: type
                 }
               })
@@ -313,7 +326,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             const e = _.cloneDeep(_e)
             _.forIn(e, (val, key) => {
               if (returnMetricNames.includes(key)) {
-                const keyName = [keyPrefix || '*', ...(queryData.showMetrics ? [key] : [])].join('-')
+                const keyName = [keyPrefix || '*', ...(_showMetrics ? [key] : [])].join('-')
                 e[keyName] = val
               }
             })
