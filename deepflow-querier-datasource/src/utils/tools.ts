@@ -1,6 +1,17 @@
 import { BasicData } from 'components/QueryEditorFormRow'
-import { BasicDataWithId } from 'consts'
+import {
+  BasicDataWithId,
+  ID_PREFIX,
+  MAP_METRIC_TYPE_NUM,
+  MAP_TAG_TYPE,
+  SELECT_GROUP_BY_DISABLE_TAGS,
+  TAG_METRIC_TYPE_NUM
+} from 'consts'
 import _ from 'lodash'
+import { getI18NLabelByName } from './i18n'
+import * as querierJs from 'deepflow-sdk-js'
+import { getTemplateSrv } from '@grafana/runtime'
+import { LabelItem } from 'QueryEditor'
 
 export function uuid() {
   function s4() {
@@ -322,4 +333,172 @@ export function genGetTagValuesSql(
       .join(' OR ')
   }
   return `show tag ${tagName} values FROM ${from} WHERE ${cond}${!useEqual ? ' LIMIT 0,100' : ''}`
+}
+
+export function addTimeToWhere(queryData: any) {
+  const result = _.cloneDeep(queryData)
+  const key = 'time'
+  result.where.push({
+    type: 'tag',
+    key,
+    op: '>=',
+    val: '${__from:date:seconds}'
+  })
+  result.where.push({
+    type: 'tag',
+    key,
+    op: '<=',
+    val: '${__to:date:seconds}'
+  })
+  return result
+}
+
+export function getTracingQuery({ metrics, tags }: any) {
+  const result: {
+    sql: string
+    returnTags: Array<Record<any, any>>
+    returnMetrics: Array<Record<any, any>>
+  } = {
+    sql: '',
+    returnTags: [],
+    returnMetrics: []
+  }
+  try {
+    const JSON_TAGS: Array<{
+      category: string
+      groupName: string
+    }> = tags
+      .filter((e: any) => {
+        return e.type === MAP_TAG_TYPE
+      })
+      .map((e: any) => {
+        return {
+          category: e.category,
+          groupName: e.name
+        }
+      })
+
+    const _tags = tags
+      .map((e: any) => {
+        const isEnumLikely = isEnumLikelyTag(e)
+        const isJSONTag = JSON_TAGS.find(jsonTag => {
+          return e.category === jsonTag.category
+        })
+        const isMainJSONTag = JSON_TAGS.find(jsonTag => {
+          return e.name === jsonTag.groupName
+        })
+        if (SELECT_GROUP_BY_DISABLE_TAGS.includes(e.name) || (isJSONTag && !isMainJSONTag)) {
+          return []
+        }
+        const { name, client_name, server_name, category } = e
+        if ((name === client_name && name === server_name) || (!client_name && !server_name)) {
+          return {
+            category,
+            value: e.name,
+            isJSONTag,
+            isEnumLikely
+          }
+        }
+        return [
+          ...(e.client_name
+            ? [
+                {
+                  category: isJSONTag ? `${category} - ${getI18NLabelByName('client')}` : category,
+                  value: e.client_name,
+                  isJSONTag,
+                  isEnumLikely
+                }
+              ]
+            : []),
+          ...(e.server_name
+            ? [
+                {
+                  category: isJSONTag ? `${category} - ${getI18NLabelByName('server')}` : category,
+                  value: e.server_name,
+                  isJSONTag,
+                  isEnumLikely
+                }
+              ]
+            : [])
+        ]
+      })
+      .flat(Infinity)
+    const JSON_METRICS: Array<{
+      category: string
+      groupName: string
+    }> = metrics
+      .filter((e: any) => {
+        return e.type === MAP_METRIC_TYPE_NUM
+      })
+      .map((e: any) => {
+        return {
+          category: e.category,
+          groupName: e.name
+        }
+      })
+
+    const sqlData = {
+      format: 'sql',
+      db: 'flow_log',
+      tableName: 'l7_flow_log',
+      selects: {
+        TAGS: _tags.map((e: any) => {
+          if (e.isEnumLikely) {
+            return {
+              func: 'Enum',
+              key: e.value
+            }
+          }
+          return e.value
+        }),
+        METRICS: metrics
+          .filter((e: any) => {
+            const isJSONMetirc = JSON_METRICS.find(jsonTag => {
+              return e.category === jsonTag.category
+            })
+            const isMainJSONMetric = JSON_METRICS.find(jsonTag => {
+              return e.name === jsonTag.groupName
+            })
+            const isSubJSONMetric = isJSONMetirc && !isMainJSONMetric
+            return e.type !== TAG_METRIC_TYPE_NUM && !isSubJSONMetric
+          })
+          .map((e: any) => {
+            return e.name
+          })
+      },
+      conditions: {
+        RESOURCE_SETS: [
+          {
+            id: '0',
+            isForbidden: false,
+            condition: []
+          }
+        ]
+      }
+    }
+    // @ts-ignore
+    const querierJsResult = querierJs.dfQuery(sqlData)
+    const { returnMetrics, sql } = querierJsResult.resource[0]
+    result.sql = sql.replace('_id', 'toString(_id)')
+    result.returnTags = _tags
+    result.returnMetrics = returnMetrics
+  } catch (error) {
+    console.log(error)
+  }
+  return result
+}
+
+export function getTracingId(tracingId: LabelItem | null | undefined): string {
+  let _id: string
+  if (tracingId?.isVariable) {
+    const templateSrv = getTemplateSrv()
+    const variables = templateSrv.getVariables() as any[]
+    const currentVariable = variables.find(e => {
+      return e.name === (tracingId.value as string).substring(1)
+    })
+    _id = _.get(currentVariable, ['current', 'value'], '')
+  } else {
+    _id = tracingId?.value ? (tracingId!.value as string) : ''
+  }
+  return typeof _id === 'string' ? _id.replace(ID_PREFIX, '') : ''
 }

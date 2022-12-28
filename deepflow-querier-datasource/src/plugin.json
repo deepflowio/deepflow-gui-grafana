@@ -4,6 +4,9 @@
   "name": "DeepFlow Querier",
   "id": "deepflow-querier-datasource",
   "metrics": true,
+  "backend": true,
+  "alerting": true,
+  "executable": "gpx_deepflow-grafana-backend-plugin",
   "info": {
     "description": "Grafana datasource plugin for DeepFlow",
     "author": {

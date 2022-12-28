@@ -2,13 +2,23 @@ import React, { PureComponent } from 'react'
 import { QueryEditorProps, VariableModel } from '@grafana/data'
 import { DataSource } from './datasource'
 import { MyDataSourceOptions, MyQuery } from './types'
-import { Button, Form, InlineField, Select, Input, Alert, getTheme, Icon, Tooltip } from '@grafana/ui'
+import { Button, InlineField, Select, Input, Alert, getTheme, Icon, Tooltip } from '@grafana/ui'
 import { QueryEditorFormRow } from './components/QueryEditorFormRow'
 import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
-import { formatTagOperators, genGetTagValuesSql, getRealKey, uuid } from 'utils/tools'
+import {
+  formatTagOperators,
+  genGetTagValuesSql,
+  getRealKey,
+  getAccessRelationshipeQueryConfig,
+  getParamByName,
+  addTimeToWhere,
+  uuid
+} from 'utils/tools'
 import { getTemplateSrv } from '@grafana/runtime'
 import {
+  appTypeOpts,
+  APPTYPE_APP_TRACING_FLAME,
   BasicDataWithId,
   defaultFormData,
   defaultFormDB,
@@ -27,7 +37,9 @@ import {
   showMetricsOpts,
   ShowMetricsVal,
   TAG_METRIC_TYPE_NUM,
-  TIME_TAG_TYPE
+  TIME_TAG_TYPE,
+  VAR_INTERVAL,
+  VAR_INTERVAL_QUOTATION
 } from 'consts'
 import { DATA_SOURCE_SETTINGS, getTagMapCache, SQL_CACHE } from 'utils/cache'
 import { INPUT_TAG_VAL_TYPES, SELECT_TAG_VAL_OPS } from 'components/TagValueSelector'
@@ -35,6 +47,7 @@ import { TracingIdSelector } from 'components/TracingIdSelector'
 import { format as sqlFormatter } from 'sql-formatter'
 import './QueryEditor.css'
 import { getI18NLabelByName } from 'utils/i18n'
+import { genQueryParams } from 'utils/genQueryParams'
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>
 
@@ -75,7 +88,6 @@ interface FormConfigItem {
   labelWidth: number
   targetDataKey: FormTypes
 }
-
 export class QueryEditor extends PureComponent<Props> {
   state: {
     formConfig: FormConfigItem[]
@@ -144,24 +156,7 @@ export class QueryEditor extends PureComponent<Props> {
       metricOpts: [],
       funcOpts: [],
       subFuncOpts: [],
-      appTypeOpts: [
-        {
-          label: 'General Metrics',
-          value: 'trafficQuery'
-        },
-        {
-          label: 'Service Map',
-          value: 'accessRelationship'
-        },
-        {
-          label: 'Distributed Tracing',
-          value: 'appTracing'
-        },
-        {
-          label: 'Distributed Tracing - Flame',
-          value: 'appTracingFlame'
-        }
-      ],
+      appTypeOpts: appTypeOpts,
       appType: '',
       ...defaultFormDB,
       ...defaultFormData,
@@ -175,17 +170,22 @@ export class QueryEditor extends PureComponent<Props> {
   }
 
   get sqlContent() {
-    const content = this.props.data?.request?.requestId ? _.get(SQL_CACHE, this.props.data?.request?.requestId, '') : ''
-    const sqlString = sqlFormatter(content, {
-      tabWidth: 2,
-      linesBetweenQueries: 2
-    })
-    const res = sqlString
-      .split('\n')
-      .map(d => {
-        return d.startsWith('\t') || d.startsWith(' ') ? `<p>${d}</p>` : `<p class='highlight'>${d}</p>`
+    const content = _.get(SQL_CACHE, this.props.query.refId, '')
+    let res = ''
+    try {
+      const sqlString = sqlFormatter(content, {
+        tabWidth: 2,
+        linesBetweenQueries: 2
       })
-      .join('')
+      res = sqlString
+        .split('\n')
+        .map(d => {
+          return d.startsWith('\t') || d.startsWith(' ') ? `<p>${d}</p>` : `<p class='highlight'>${d}</p>`
+        })
+        .join('')
+    } catch (error) {
+      console.log(error)
+    }
     return res
   }
 
@@ -419,6 +419,16 @@ export class QueryEditor extends PureComponent<Props> {
       .filter(item => {
         return item.variableType === 'interval'
       })
+      .concat(
+        !this.props.app?.includes('alerting')
+          ? [
+              {
+                label: '$__interval',
+                value: VAR_INTERVAL_QUOTATION
+              }
+            ]
+          : []
+      )
       .concat(intervalOpts)
   }
 
@@ -435,7 +445,7 @@ export class QueryEditor extends PureComponent<Props> {
     }
   }
 
-  onSubmit = () => {
+  onSubmit = async () => {
     const dataObj = _.pick(this.state, [
       'appType',
       ...Object.keys({
@@ -484,8 +494,7 @@ export class QueryEditor extends PureComponent<Props> {
           .concat(having as BasicDataWithId[])
           .concat(orderBy as BasicDataWithId[])
         const funcCheck = funcMetrics.find((item: BasicDataWithId) => {
-          const isTime = item.key && (item.key === "'time_$__interval_ms'" || item.key.startsWith('interval_'))
-          return item.type === 'metric' && item.key !== '' && !isTime && item.func === ''
+          return item.type === 'metric' && item.key !== '' && item.func === ''
         })
         if (funcCheck) {
           throw new Error("When using group by or interval, metric's func is required")
@@ -498,9 +507,28 @@ export class QueryEditor extends PureComponent<Props> {
       if (valCheck) {
         throw new Error('When using where or having, op and val is required')
       }
+      let newQuery
+      if (appType !== APPTYPE_APP_TRACING_FLAME) {
+        const parsedQueryData = genQueryParams(addTimeToWhere(dataObj), {})
+        // @ts-ignore
+        const querierJsResult = querierJs.dfQuery(_.cloneDeep(parsedQueryData))
+        const { returnTags, returnMetrics, sql } = querierJsResult.resource[0]
+        _.set(SQL_CACHE, this.props.query.refId, sql)
+        const metaExtra =
+          dataObj.appType === 'accessRelationship' ? getAccessRelationshipeQueryConfig(dataObj.groupBy, returnTags) : {}
+
+        newQuery = {
+          returnTags,
+          returnMetrics,
+          sql,
+          metaExtra
+        }
+      }
       this.props.onChange({
         ...this.props.query,
-        queryText: JSON.stringify(dataObj)
+        queryText: JSON.stringify(dataObj),
+        debug: getParamByName('debug') === 'true',
+        ...newQuery
       })
       this.setState({
         runQueryWarning: false
@@ -645,7 +673,7 @@ export class QueryEditor extends PureComponent<Props> {
         }
         this.getBasicData(dbFrom)
       }
-      if (result === 'appTracingFlame') {
+      if (result === APPTYPE_APP_TRACING_FLAME) {
         const dbFrom = {
           db: 'flow_log',
           from: 'l7_flow_log'
@@ -814,6 +842,11 @@ export class QueryEditor extends PureComponent<Props> {
       databaseOpts: []
     })
     try {
+      if (DATA_SOURCE_SETTINGS.language === '') {
+        // @ts-ignore
+        const langConfig = await querierJs.searchBySql('show language')
+        DATA_SOURCE_SETTINGS.language = _.get(langConfig, [0, 'language']).includes('ch') ? 'zh-cn' : 'en-us'
+      }
       // @ts-ignore
       const dataBases = await querierJs.getDatabases()
       this.setState({
@@ -827,7 +860,11 @@ export class QueryEditor extends PureComponent<Props> {
       const { queryText } = this.props.query
       if (queryText) {
         const formData = JSON.parse(queryText)
-        const { db, from } = formData
+        const { db, from, interval } = formData
+        // history data hanlder
+        if (interval === VAR_INTERVAL) {
+          formData.interval = VAR_INTERVAL_QUOTATION
+        }
         if (db) {
           this.getTableOpts(db)
         }
@@ -854,11 +891,6 @@ export class QueryEditor extends PureComponent<Props> {
       subFuncOpts: []
     })
     try {
-      if (DATA_SOURCE_SETTINGS.language === '') {
-        // @ts-ignore
-        const langConfig = await querierJs.searchBySql('show language')
-        DATA_SOURCE_SETTINGS.language = _.get(langConfig, [0, 'language']).includes('ch') ? 'zh-cn' : 'en-us'
-      }
       // @ts-ignore
       await querierJs.loadOP()
 
@@ -993,10 +1025,7 @@ export class QueryEditor extends PureComponent<Props> {
 
     return (
       <div className={`${this.grafanaTheme} querier-editor`}>
-        <Form
-          onSubmit={() => {
-            this.onSubmit()
-          }}
+        <div
           style={{
             width: '800px',
             maxWidth: '800px',
@@ -1005,7 +1034,7 @@ export class QueryEditor extends PureComponent<Props> {
             flexShrink: 0
           }}
         >
-          {() => (
+          {
             <>
               <div className="save-btn-wrap">
                 <Button
@@ -1015,6 +1044,7 @@ export class QueryEditor extends PureComponent<Props> {
                     background: this.state.runQueryWarning ? '#F5B73D' : '',
                     border: this.state.runQueryWarning ? '1px solid #F5B73D' : ''
                   }}
+                  onClick={this.onSubmit}
                 >
                   Run Query
                 </Button>
@@ -1038,7 +1068,7 @@ export class QueryEditor extends PureComponent<Props> {
                   width="auto"
                 />
               </InlineField>
-              {this.state.appType !== 'appTracingFlame' ? (
+              {this.state.appType !== APPTYPE_APP_TRACING_FLAME ? (
                 <>
                   <InlineField className="custom-label" label="DATABASE" labelWidth={10}>
                     <div className="row-start-center database-selectors">
@@ -1283,8 +1313,8 @@ export class QueryEditor extends PureComponent<Props> {
                 </InlineField>
               )}
             </>
-          )}
-        </Form>
+          }
+        </div>
         <div className="sql-content" dangerouslySetInnerHTML={{ __html: this.sqlContent }}></div>
       </div>
     )

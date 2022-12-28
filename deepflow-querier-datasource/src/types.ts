@@ -1,16 +1,19 @@
 import { DataQuery, DataSourceJsonData } from '@grafana/data'
 
 export interface MyQuery extends DataQuery {
-  queryText?: string
-  constant: number
-  val?: string
-}
-
-export interface DfQuery {
-  headers?: Record<string, any>
-  method: string
-  url: string
-  params: object
+  queryText: string
+  debug: boolean
+  returnTags: any[]
+  returnMetrics: any[]
+  sql: string
+  metaExtra?:
+    | {
+        from: string[]
+        to: string[]
+        common: string[]
+      }
+    | {}
+  _id?: string
 }
 
 /**

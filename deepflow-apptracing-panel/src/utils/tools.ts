@@ -214,3 +214,90 @@ export function getRelatedData(item: any, fullData: any) {
   })
   return [item, ...result]
 }
+
+export function formatDetailList(detailList: any[], metaCustom: any) {
+  const MAP_METRIC_TYPE_NUM = 7
+  const tagsGroupbyCategory = _.groupBy(
+    metaCustom.tags.map((e: any) => {
+      return {
+        ...e,
+        value: e.isEnumLikely ? `Enum(${e.value})` : e.value
+      }
+    }),
+    'category'
+  )
+  const tagCategoryKeys = Object.keys(tagsGroupbyCategory)
+
+  const result: any = {}
+  const SPEC_TAG_MAP = {
+    _id: 'toString(_id)'
+  }
+  detailList.forEach(e => {
+    let JSONMetrics = {}
+    const item = tagCategoryKeys
+      .map(tagCate => {
+        const isJSONTag = tagsGroupbyCategory[tagCate][0].isJSONTag
+        let tags = []
+        let resData: any
+        if (isJSONTag) {
+          const tagValue = tagsGroupbyCategory[tagCate][0]['value']
+          resData = JSON.parse(e[tagValue] === '' ? '{}' : e[tagValue])
+          tags = Object.keys(resData).map(attr => {
+            return { category: tagCate, value: attr }
+          })
+        } else {
+          tags = tagsGroupbyCategory[tagCate]
+          resData = e
+        }
+        return [
+          tagCate || 'N/A',
+          Object.fromEntries(
+            tags.map(tagObj => {
+              const tag = `${tagObj.value}`
+              const val = resData[_.get(SPEC_TAG_MAP, tag, tag)]
+              return [tag, val?.toString() ? val.toString() : val]
+            })
+          )
+        ]
+      })
+      .concat([
+        [
+          'Metrics',
+          {
+            ...Object.fromEntries(
+              metaCustom.metrics
+                .map((metric: any) => {
+                  const key = metric.name
+                  const type = metric.type
+                  const unit = metric.unit
+                  const val = e[key]
+
+                  if (type === MAP_METRIC_TYPE_NUM) {
+                    const _vals = JSON.parse(val || {})
+                    JSONMetrics = {
+                      ...JSONMetrics,
+                      ..._vals
+                    }
+                    return []
+                  }
+                  if (type === 3) {
+                    return [key, formatUsUnit(val)]
+                  }
+                  const valAfterFormat = numberToShort(val)
+                  return [
+                    key,
+                    valAfterFormat !== undefined && valAfterFormat !== null && valAfterFormat !== ''
+                      ? `${valAfterFormat}${unit}`
+                      : valAfterFormat
+                  ]
+                })
+                .filter((e: any) => !!e)
+            ),
+            ...JSONMetrics
+          }
+        ]
+      ])
+    result[e['toString(_id)']] = Object.fromEntries(item)
+  })
+  return result
+}

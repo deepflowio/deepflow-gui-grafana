@@ -7,7 +7,7 @@ import { Alert } from '@grafana/ui'
 import _ from 'lodash'
 import { renderTimeBar, addSvg, fitSvgToContainer, TAP_SIDE_OPTIONS_MAP, miniMap } from 'deepflow-vis-js'
 import { FlameTooltip } from 'components/FlameTooltip'
-import { genServiceId, getRelatedData, useDebounce } from 'utils/tools'
+import { formatDetailList, genServiceId, getRelatedData, useDebounce } from 'utils/tools'
 import {
   ACTICON_ROW_VAL,
   formatDetailData,
@@ -72,7 +72,7 @@ export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
     }
     setFlameData(getDataByFieldName(series, 'tracing'))
     setServicesData(getDataByFieldName(series, 'services'))
-    setDetailData(getDataByFieldName(series, 'detailList'))
+    setDetailData(formatDetailList(getDataByFieldName(series, 'detailList'), series[0]?.meta?.custom))
   }, [series])
   const [selectedServiceRowId, setSelectedServiceRowId] = useState('')
   const [flameContainer, setFlameContainer] = useState<any>(undefined)
