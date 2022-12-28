@@ -20,6 +20,26 @@ export const IP_ARRAY_TAG_TYPE = 'ip_array'
 export const RESOURCE_ARRAY_TAG_TYPE = 'resource_array'
 export const GROUP_BY_DISABLE_TAG_TYPES = [MAP_TAG_TYPE, PCAP_TAG_TYPE, IP_ARRAY_TAG_TYPE, RESOURCE_ARRAY_TAG_TYPE]
 
+export const APPTYPE_APP_TRACING_FLAME = 'appTracingFlame'
+export const appTypeOpts = [
+  {
+    label: 'General Metrics',
+    value: 'trafficQuery'
+  },
+  {
+    label: 'Service Map',
+    value: 'accessRelationship'
+  },
+  {
+    label: 'Distributed Tracing',
+    value: 'appTracing'
+  },
+  {
+    label: 'Distributed Tracing - Flame',
+    value: APPTYPE_APP_TRACING_FLAME
+  }
+]
+
 export const formatAsOpts: SelectOpts = [
   {
     label: 'Time series',
@@ -31,10 +51,6 @@ export const formatAsOpts: SelectOpts = [
   }
 ]
 export const intervalOpts: SelectOpts = [
-  {
-    label: '$__interval',
-    value: '$__interval_ms'
-  },
   {
     label: '1s',
     value: '1'
@@ -80,6 +96,9 @@ export const intervalOpts: SelectOpts = [
     value: '604800'
   }
 ]
+
+export const VAR_INTERVAL = '$__interval_ms'
+export const VAR_INTERVAL_QUOTATION = "'$__interval_ms'"
 
 export const formItemConfigs = {
   groupBy: {

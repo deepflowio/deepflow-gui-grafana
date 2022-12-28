@@ -1,9 +1,10 @@
-import { DataQueryRequest, ScopedVars } from '@grafana/data'
+import { ScopedVars } from '@grafana/data'
 import { getTemplateSrv } from '@grafana/runtime'
 import { BasicData } from 'components/QueryEditorFormRow'
+import { VAR_INTERVAL, VAR_INTERVAL_QUOTATION } from 'consts'
 import _ from 'lodash'
 import { LabelItem } from 'QueryEditor'
-import { MyQuery } from 'types'
+// import { MyQuery } from 'types'
 import { getTagMapCache, QUERY_DATA_CACHE } from './cache'
 import { getRealKey, isEnumLikelyTag } from './tools'
 
@@ -224,48 +225,48 @@ function selectFormat(data: any): {
   }
 }
 
-function getValueByVariablesName(val: LabelItem, variables: any[], op: string, scopedVars: ScopedVars) {
+export function getValueByVariablesName(val: LabelItem, variables: any[], op: string, scopedVars: ScopedVars) {
   const isLikeOp = op.toUpperCase().includes('LIKE')
   const specVariables = ['__disabled', '__any']
-  const isVariable = val?.isVariable
   try {
-    if (isVariable) {
-      const currentVariable = variables.find((variable: any) => {
-        return variable.name === val?.value
-      })
-      if (currentVariable && scopedVars[val?.value]) {
-        currentVariable.current = scopedVars[val?.value]
-      }
-      const currentValue = _.get(currentVariable, ['current', 'value'], '')
-      if (currentVariable?.type === undefined) {
-        return val.value
-      }
-      if (['textbox', 'constant'].includes(currentVariable.type)) {
-        return currentValue
-      }
-      const targetField = isLikeOp ? 'text' : 'value'
-      if (currentValue.includes('$__all')) {
-        return currentVariable.options
-          .filter((e: any) => e.value !== '$__all' && !specVariables.includes(e.value))
-          .map((e: any) => _.get(e, [targetField]))
-      }
-      if (currentValue.includes('__disabled')) {
-        return '__disabled'
-      }
+    const currentVariable = variables.find((variable: any) => {
+      return variable.name === `${val?.value}`.replace('$', '')
+    })
+    if (!currentVariable) {
+      return val.value
+    }
+    if (scopedVars[val?.value]) {
+      currentVariable.current = scopedVars[val?.value]
+    }
+    const currentValue = _.get(currentVariable, ['current', 'value'], '')
+    if (currentVariable?.type === undefined) {
+      return val.value
+    }
+    if (['textbox', 'constant'].includes(currentVariable.type)) {
+      return currentValue
+    }
+    const targetField = isLikeOp ? 'text' : 'value'
+    if (currentValue.includes('$__all')) {
+      return currentVariable.options
+        .filter((e: any) => e.value !== '$__all' && !specVariables.includes(e.value))
+        .map((e: any) => _.get(e, [targetField]))
+    }
+    if (currentValue.includes('__disabled')) {
+      return '__disabled'
+    }
 
-      if (
-        currentValue === '__any' ||
-        (Array.isArray(currentValue) && currentValue.filter((e: string) => e !== '__any').length <= 0)
-      ) {
-        return '__any'
-      } else {
-        const result = _.get(currentVariable, ['current', targetField])
-        return typeof result === 'string'
-          ? result
-          : result.filter((e: string) => {
-              return e !== '__any' && e !== 'Any'
-            })
-      }
+    if (
+      currentValue === '__any' ||
+      (Array.isArray(currentValue) && currentValue.filter((e: string) => e !== '__any').length <= 0)
+    ) {
+      return '__any'
+    } else {
+      const result = _.get(currentVariable, ['current', targetField])
+      return typeof result === 'string'
+        ? result
+        : result.filter((e: string) => {
+            return e !== '__any' && e !== 'Any'
+          })
     }
   } catch (error) {
     console.log(error)
@@ -291,11 +292,13 @@ function whereFormat(data: any, variables: any[], scopedVars: ScopedVars) {
         if (key === 'val') {
           if (item[key] instanceof Object) {
             result[key] = getValueByVariablesName(item[key] as LabelItem, variables, item.op, scopedVars)
+            // result[key] = (item[key] as LabelItem).value
           }
           if (Array.isArray(item[key])) {
             result[key] = (item[key] as LabelItem[])
               .map((e: LabelItem) => {
                 return getValueByVariablesName(e, variables, item.op, scopedVars)
+                // return e.value
               })
               .flat(Infinity)
           }
@@ -478,7 +481,7 @@ function orderByFormat(orderBy: BasicData[]) {
     })
 }
 
-function queryTextFormat(queryData: any, scopedVars: ScopedVars) {
+export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVars) {
   const keys = [
     'db',
     'from',
@@ -520,20 +523,16 @@ function queryTextFormat(queryData: any, scopedVars: ScopedVars) {
   }
 }
 
-const parse = (str: string, scopedVars: ScopedVars) => {
-  return queryTextFormat(str, scopedVars)
+export const replaceInterval = (queryText: string, scopedVars: ScopedVars) => {
+  if (typeof scopedVars?.__interval_ms?.value === 'number') {
+    return (
+      queryText
+        .replace(VAR_INTERVAL_QUOTATION, `${scopedVars.__interval_ms.value / 1000}`)
+        // history data hanlder
+        .replace(VAR_INTERVAL, `${scopedVars.__interval_ms.value / 1000}`)
+    )
+  }
+  return queryText
 }
 
-export default parse
-
-export const replaceInterval = (queryText: string, options: DataQueryRequest<MyQuery>) => {
-  return typeof options?.scopedVars?.__interval_ms?.value === 'number'
-    ? getTemplateSrv().replace(queryText, {
-        ...options.scopedVars,
-        __interval_ms: {
-          ...options.scopedVars.__interval_ms,
-          value: options.scopedVars.__interval_ms.value / 1000
-        }
-      })
-    : queryText
-}
+export default genQueryParams
