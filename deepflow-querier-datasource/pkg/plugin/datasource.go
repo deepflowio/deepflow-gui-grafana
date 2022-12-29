@@ -689,7 +689,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		}
 
 		// 别名替换
-		aliasName := formattools.GetMetricFieldNameByAlias(alias, firstResponse)
+		aliasName := formattools.GetMetricFieldNameByAlias(alias, sortItem[0])
 
 		//key拼接
 		keyPrefix := "*"
