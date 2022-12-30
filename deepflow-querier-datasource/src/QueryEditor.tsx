@@ -6,7 +6,7 @@ import { Button, Form, InlineField, Select, Input, Alert, getTheme, Icon, Toolti
 import { QueryEditorFormRow } from './components/QueryEditorFormRow'
 import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
-import { formatTagOperators, genGetTagValuesSql, uuid } from 'utils/tools'
+import { formatTagOperators, genGetTagValuesSql, getRealKey, uuid } from 'utils/tools'
 import { getTemplateSrv } from '@grafana/runtime'
 import {
   BasicDataWithId,
@@ -764,7 +764,7 @@ export class QueryEditor extends PureComponent<Props> {
         if (!item.key) {
           return
         }
-        const tagMapItem = getTagMapCache(db, from, item.key)
+        const tagMapItem = getTagMapCache(db, from, getRealKey(item))
         const tagName = tagMapItem.name
         const tagType = _.get(tagMapItem, 'type')
         if (!INPUT_TAG_VAL_TYPES.includes(tagType) && SELECT_TAG_VAL_OPS.includes(item.op)) {
