@@ -3,7 +3,7 @@ import { Select, Input, AsyncSelect } from '@grafana/ui'
 import { LabelItem, SelectOpts } from 'QueryEditor'
 import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
-import { genGetTagValuesSql } from 'utils/tools'
+import { genGetTagValuesSql, getRealKey } from 'utils/tools'
 import { getTagMapCache } from 'utils/cache'
 
 export const INPUT_TAG_VAL_TYPES = ['int', 'ip', 'mac', 'ip_array']
@@ -47,7 +47,8 @@ export const TagValueSelector = (props: {
       return []
     }
 
-    const tagMapItem = getTagMapCache(db, from, basicData.key)
+    const tagMapItem = getTagMapCache(db, from, getRealKey(basicData))
+
     let opts = []
     try {
       // @ts-ignore
