@@ -70,9 +70,11 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       // @ts-ignore
       querierJs.loadOP()
     ]
+    let languageConfigIndex = -1
     if (DATA_SOURCE_SETTINGS.language === '') {
       // @ts-ignore
       promisesList.push(querierJs.searchBySql('show language'))
+      languageConfigIndex = promisesList.length
     }
     const basicPromisesLen = promisesList.length
     const { intervalMs, maxDataPoints, targets, range, requestId } = request
@@ -95,7 +97,11 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
 
     return zip(promisesList).pipe(
       switchMap(res => {
-        DATA_SOURCE_SETTINGS.language = _.get(res, [1, 0, 'language'], '').includes('ch') ? 'zh-cn' : 'en-us'
+        if (languageConfigIndex !== -1) {
+          // @ts-ignore
+          DATA_SOURCE_SETTINGS.language = _.get(res, [1, 0, 'language'], '').includes('ch') ? 'zh-cn' : 'en-us'
+        }
+
         const queries = _targets
           .map((q, i) => {
             let datasource = this.getRef()
