@@ -104,6 +104,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
 
         const queries = _targets
           .map((q, i) => {
+            q.isQuery = true
             let datasource = this.getRef()
             let datasourceId = this.id
             if (tracingQueryIndex !== -1 && i === tracingQueryIndex - basicPromisesLen) {

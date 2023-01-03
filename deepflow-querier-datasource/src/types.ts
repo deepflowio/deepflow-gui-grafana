@@ -1,6 +1,7 @@
 import { DataQuery, DataSourceJsonData } from '@grafana/data'
 
 export interface MyQuery extends DataQuery {
+  isQuery?: boolean
   queryText: string
   debug: boolean
   returnTags: any[]
