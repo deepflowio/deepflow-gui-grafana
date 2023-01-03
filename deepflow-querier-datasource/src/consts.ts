@@ -40,6 +40,8 @@ export const appTypeOpts = [
   }
 ]
 
+export const ALERTING_ALLOW_APP_TYPE = ['trafficQuery']
+
 export const formatAsOpts: SelectOpts = [
   {
     label: 'Time series',

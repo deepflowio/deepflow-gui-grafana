@@ -17,6 +17,7 @@ import {
 } from 'utils/tools'
 import { getTemplateSrv } from '@grafana/runtime'
 import {
+  ALERTING_ALLOW_APP_TYPE,
   appTypeOpts,
   APPTYPE_APP_TRACING_FLAME,
   BasicDataWithId,
@@ -97,7 +98,6 @@ export class QueryEditor extends PureComponent<Props> {
     metricOpts: MetricOpts
     funcOpts: FuncSelectOpts
     subFuncOpts: SelectOptsWithStringValue
-    appTypeOpts: SelectOpts
     appType: string
     db: string
     sources: string
@@ -156,7 +156,6 @@ export class QueryEditor extends PureComponent<Props> {
       metricOpts: [],
       funcOpts: [],
       subFuncOpts: [],
-      appTypeOpts: appTypeOpts,
       appType: '',
       ...defaultFormDB,
       ...defaultFormData,
@@ -167,6 +166,16 @@ export class QueryEditor extends PureComponent<Props> {
       templateVariableOpts: [],
       runQueryWarning: false
     }
+  }
+
+  get isUsingAlerting() {
+    return this.props.app?.includes('alerting')
+  }
+
+  get appTypeOptsComputed() {
+    return appTypeOpts.filter(e => {
+      return !this.isUsingAlerting || ALERTING_ALLOW_APP_TYPE.includes(e.value)
+    })
   }
 
   get sqlContent() {
@@ -420,7 +429,7 @@ export class QueryEditor extends PureComponent<Props> {
         return item.variableType === 'interval'
       })
       .concat(
-        !this.props.app?.includes('alerting')
+        !this.isUsingAlerting
           ? [
               {
                 label: '$__interval',
@@ -842,9 +851,11 @@ export class QueryEditor extends PureComponent<Props> {
       databaseOpts: []
     })
     try {
+      console.log('@abc', DATA_SOURCE_SETTINGS.language)
       if (DATA_SOURCE_SETTINGS.language === '') {
         // @ts-ignore
         const langConfig = await querierJs.searchBySql('show language')
+        console.log('@result', langConfig[0].language)
         DATA_SOURCE_SETTINGS.language = _.get(langConfig, [0, 'language']).includes('ch') ? 'zh-cn' : 'en-us'
       }
       // @ts-ignore
@@ -1020,8 +1031,7 @@ export class QueryEditor extends PureComponent<Props> {
   }
 
   render() {
-    const { formConfig, tagOpts, funcOpts, subFuncOpts, appTypeOpts, errorMsg, showErrorAlert, templateVariableOpts } =
-      this.state
+    const { formConfig, tagOpts, funcOpts, subFuncOpts, errorMsg, showErrorAlert, templateVariableOpts } = this.state
 
     return (
       <div className={`${this.grafanaTheme} querier-editor`}>
@@ -1061,7 +1071,7 @@ export class QueryEditor extends PureComponent<Props> {
               ) : null}
               <InlineField className="custom-label" label="APP" labelWidth={10}>
                 <Select
-                  options={appTypeOpts}
+                  options={this.appTypeOptsComputed}
                   value={this.state.appType}
                   onChange={(val: any) => this.onFieldChange('appType', val)}
                   placeholder="APP TYPE"
