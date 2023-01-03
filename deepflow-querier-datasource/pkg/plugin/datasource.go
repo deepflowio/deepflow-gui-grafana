@@ -178,6 +178,14 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	}
 
 	// 从qj获取
+	// 是否 panel 发起
+	var isQuery bool
+	if _, ok := qj["isQuery"]; ok {
+		isQuery = true
+	} else {
+		isQuery = false
+	}
+
 	// 获取sql
 	sql := qj["sql"].(string)
 	// 获取returnMetrics
@@ -619,7 +627,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 
 		// 按照排序后添加字段
 		for _, columnsSort := range firstResponseSort {
-			columnsType, _ := formatParams("field", timeKeys, returnMetrics, true, returnMetricNames, columnsSort, nil)
+			columnsType, _ := formatParams(isQuery, "field", timeKeys, returnMetrics, true, returnMetricNames, columnsSort, nil)
 
 			frame.Fields = append(frame.Fields,
 				data.NewField(columnsSort, nil, columnsType),
@@ -632,7 +640,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 			for i, columnsSort := range firstResponseSort {
 				//转换类型后的value
 
-				columnsValue, err := formatParams("value", timeKeys, returnMetrics, true, returnMetricNames, columnsSort, subValueBycolumns[columnsSort])
+				columnsValue, err := formatParams(isQuery, "value", timeKeys, returnMetrics, true, returnMetricNames, columnsSort, subValueBycolumns[columnsSort])
 
 				// log.DefaultLogger.Info(fmt.Sprintf("------%v,%v,%v,%v,%T-------", k, i, columnsSort, columnsValue, columnsValue))
 
@@ -718,7 +726,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 
 		// 按照排序后添加字段
 		for _, columnsSort := range firstResponseSort {
-			columnsType, _ := formatParams("field", timeKeys, returnMetrics, false, returnMetricNames, columnsSort, nil)
+			columnsType, _ := formatParams(isQuery, "field", timeKeys, returnMetrics, false, returnMetricNames, columnsSort, nil)
 			//
 			NewFieldName := columnsSort
 			//
@@ -753,7 +761,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 			vals := make([]interface{}, len(firstResponseSort))
 			for i, columnsSort := range firstResponseSort {
 				//转换类型后的value
-				columnsValue, err := formatParams("value", timeKeys, returnMetrics, false, returnMetricNames, columnsSort, subValueBycolumns[columnsSort])
+				columnsValue, err := formatParams(isQuery, "value", timeKeys, returnMetrics, false, returnMetricNames, columnsSort, subValueBycolumns[columnsSort])
 				//value 类型错误
 				if err != nil {
 					return response, fmt.Errorf(err.Error())
@@ -842,7 +850,7 @@ func (d *Datasource) trace(ctx context.Context, tracedeug bool, traceUrl, tracin
 }
 
 // 返回格式处理，columns&value字段类型
-func formatParams(formatType string, timeKeys []string, returnMetrics []interface{}, verifyMetricsType bool, returnMetricNames []string, columnsSort string, value interface{}) (res interface{}, err error) {
+func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetrics []interface{}, verifyMetricsType bool, returnMetricNames []string, columnsSort string, value interface{}) (res interface{}, err error) {
 
 	var res_kind_string bool
 
@@ -911,22 +919,38 @@ func formatParams(formatType string, timeKeys []string, returnMetrics []interfac
 
 			if isNumber2 {
 				if formatType == "field" {
-					// return []float64{}, nil
-					return []json.RawMessage{}, nil
+					if isQuery {
+						return []json.RawMessage{}, nil
+					} else {
+						return []float64{}, nil
+					}
+
 				} else {
-					var mvJson json.RawMessage
+
 					if res_kind_string {
 						mv, err := value.(json.Number).Float64()
 						if err != nil {
 							return nil, fmt.Errorf(fmt.Sprintf("columns: %v, value: %v 转float64失败,类型%T", columnsSort, value, value))
 						}
-						//float64
-						// return mv, nil
-						mvJson, _ = json.Marshal(mv)
-						return mvJson, nil
+						if isQuery {
+							var mvJson json.RawMessage
+							mvJson, _ = json.Marshal(mv)
+							return mvJson, nil
+						} else {
+							return mv, nil
+						}
+
 					} else {
-						mvJson, _ = json.Marshal(value)
-						return mvJson, nil
+						if isQuery {
+							var mvJson json.RawMessage
+							mvJson, _ = json.Marshal(value)
+							return mvJson, nil
+						} else {
+							var mvNumber float64
+							mvNumber = 0
+							return mvNumber, nil
+						}
+
 						// return value, nil
 						// return nil, fmt.Errorf(fmt.Sprintf("columns: %v, value: %v 断言失败,类型%T", columnsSort, value, value))
 					}
