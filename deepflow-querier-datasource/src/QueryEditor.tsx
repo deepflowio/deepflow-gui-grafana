@@ -851,11 +851,9 @@ export class QueryEditor extends PureComponent<Props> {
       databaseOpts: []
     })
     try {
-      console.log('@abc', DATA_SOURCE_SETTINGS.language)
       if (DATA_SOURCE_SETTINGS.language === '') {
         // @ts-ignore
         const langConfig = await querierJs.searchBySql('show language')
-        console.log('@result', langConfig[0].language)
         DATA_SOURCE_SETTINGS.language = _.get(langConfig, [0, 'language']).includes('ch') ? 'zh-cn' : 'en-us'
       }
       // @ts-ignore
