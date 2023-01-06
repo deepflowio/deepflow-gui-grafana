@@ -1,13 +1,13 @@
 /* eslint-disable no-console */
 import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react'
-import { DataFrame, DataSourceInstanceSettings, PanelProps } from '@grafana/data'
+import { DataSourceInstanceSettings, PanelProps } from '@grafana/data'
 import { SimpleOptions } from 'types'
 import { DYTable } from 'components/DYTable'
 import { Alert } from '@grafana/ui'
 import _ from 'lodash'
 import { renderTimeBar, addSvg, fitSvgToContainer, TAP_SIDE_OPTIONS_MAP, miniMap } from 'deepflow-vis-js'
 import { FlameTooltip } from 'components/FlameTooltip'
-import { formatDetailList, genServiceId, getRelatedData, useDebounce } from 'utils/tools'
+import { formatDetailList, genServiceId, getDataByFieldName, getRelatedData, useDebounce } from 'utils/tools'
 import {
   ACTICON_ROW_VAL,
   formatDetailData,
@@ -50,19 +50,6 @@ export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
       setErrMsg('')
     }
   }, [refIds])
-  const getDataByFieldName = (series: DataFrame[], fieldName: string) => {
-    let result
-    try {
-      result = series[0].fields
-        .find(e => {
-          return e.name === fieldName
-        })
-        ?.values.toArray()[0]
-    } catch (error) {
-      result = []
-    }
-    return result
-  }
   useEffect(() => {
     if (!series[0]) {
       setFlameData([])
