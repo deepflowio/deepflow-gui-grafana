@@ -122,7 +122,13 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
               }
             }
             return {
-              ...this.applyTemplateVariables(q, request.scopedVars),
+              ...this.applyTemplateVariables(
+                {
+                  ...q,
+                  requestId
+                },
+                request.scopedVars
+              ),
               datasource,
               datasourceId,
               intervalMs,
@@ -131,7 +137,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
           })
           .filter(q => {
             // not appTrcaingFlame type or has no _id value
-            return q._id === undefined || q._id !== ''
+            return q._id === undefined || !['', '*'].includes(q._id)
           })
 
         // no queries exist
@@ -169,7 +175,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     )
   }
 
-  applyTemplateVariables(query: MyQuery, scopedVars: ScopedVars): any {
+  applyTemplateVariables(query: MyQuery & { requestId: string }, scopedVars: ScopedVars): any {
     const _queryText = replaceInterval(query.queryText, scopedVars)
     const queryData = JSON.parse(_queryText)
     const result = {} as MyQuery
@@ -179,7 +185,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       // @ts-ignore
       const querierJsResult = querierJs.dfQuery(_.cloneDeep(parsedQueryData))
       const { returnTags, returnMetrics, sql } = querierJsResult.resource[0]
-      _.set(SQL_CACHE, query.refId, sql)
+      _.set(SQL_CACHE, `${query.requestId}_${query.refId}`, sql)
       const metaExtra =
         queryData.appType === 'accessRelationship'
           ? getAccessRelationshipeQueryConfig(queryData.groupBy, returnTags)
