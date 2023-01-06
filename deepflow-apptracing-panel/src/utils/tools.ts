@@ -1,8 +1,24 @@
+import { DataFrame } from '@grafana/data'
 import _ from 'lodash'
 import { useState, useEffect, useRef } from 'react'
 
 export function genServiceId(item: { service_uid: string }) {
   return item.service_uid
+}
+
+export function getDataByFieldName(series: DataFrame[], fieldName: string) {
+  let result
+  try {
+    result = series[0].fields
+      .find(e => {
+        return e.name === fieldName
+      })
+      ?.values.toArray()[0]
+    result = JSON.parse(result)
+  } catch (error) {
+    result = []
+  }
+  return result
 }
 
 export function useDebounce(value: any, delay: any) {
