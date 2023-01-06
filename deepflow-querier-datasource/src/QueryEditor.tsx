@@ -1233,7 +1233,12 @@ export class QueryEditor extends PureComponent<Props> {
                             />
                           </InlineField>
                           <InlineField className="custom-label" label="SHOW METRICS" labelWidth={14}>
-                            <div>
+                            <div
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center'
+                              }}
+                            >
                               <Select
                                 options={showMetricsOpts}
                                 value={this.state.showMetrics}
