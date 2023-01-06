@@ -377,32 +377,41 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		frame := data.NewFrame("response")
 
 		frame.Fields = append(frame.Fields,
-			data.NewField("services", nil, []json.RawMessage{}),
+			// data.NewField("services", nil, []json.RawMessage{}),
+			data.NewField("services", nil, []string{}),
 		)
 		frame.Fields = append(frame.Fields,
-			data.NewField("tracing", nil, []json.RawMessage{}),
+			// data.NewField("tracing", nil, []json.RawMessage{}),
+			data.NewField("tracing", nil, []string{}),
 		)
 		frame.Fields = append(frame.Fields,
-			data.NewField("detailList", nil, []json.RawMessage{}),
+			// data.NewField("detailList", nil, []json.RawMessage{}),
+			data.NewField("detailList", nil, []string{}),
 		)
 
 		//返回数据
 		vals := make([]interface{}, 3)
 
 		//格式化返回
-		var serviceJson json.RawMessage
-		serviceJson, _ = json.Marshal(services)
-		vals[0] = serviceJson
+		// var serviceJson json.RawMessage
+		// serviceJson, _ = json.Marshal(services)
+		// vals[0] = serviceJson
+		serviceJson, _ := json.Marshal(services)
+		vals[0] = string(serviceJson)
 
 		//格式化返回
-		var tracingJson json.RawMessage
-		tracingJson, _ = json.Marshal(tracings)
-		vals[1] = tracingJson
+		// var tracingJson json.RawMessage
+		// tracingJson, _ = json.Marshal(tracings)
+		// vals[1] = tracingJson
+		tracingJson, _ := json.Marshal(tracings)
+		vals[1] = string(tracingJson)
 
 		//格式化返回
-		var dataListJson json.RawMessage
-		dataListJson, _ = json.Marshal(dataListsAll)
-		vals[2] = dataListJson
+		// var dataListJson json.RawMessage
+		// dataListJson, _ = json.Marshal(dataListsAll)
+		// vals[2] = dataListJson
+		dataListJson, _ := json.Marshal(dataListsAll)
+		vals[2] = string(dataListJson)
 
 		frame.AppendRow(vals...)
 
@@ -613,7 +622,6 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	}
 
 	log.DefaultLogger.Info("排序后返回值第一值", firstResponseSort)
-	// log.DefaultLogger.Info("返回值第一值", firstResponse)
 
 	//无需分组，直接一个frame返回
 	if !usingGroupBy {
@@ -629,10 +637,12 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		for _, columnsSort := range firstResponseSort {
 			columnsType, _ := formatParams(isQuery, "field", timeKeys, returnMetrics, true, returnMetricNames, columnsSort, nil)
 
+			// log.DefaultLogger.Info(fmt.Sprintf("%v,%v,%T", columnsSort, columnsType, columnsType))
+
 			frame.Fields = append(frame.Fields,
 				data.NewField(columnsSort, nil, columnsType),
 			)
-			// log.DefaultLogger.Info(fmt.Sprintf("%v,%v,%T", columnsSort, columnsType, columnsType))
+
 		}
 		// 添加数据value
 		for _, subValueBycolumns := range valueBycolumns {
@@ -642,14 +652,12 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 
 				columnsValue, err := formatParams(isQuery, "value", timeKeys, returnMetrics, true, returnMetricNames, columnsSort, subValueBycolumns[columnsSort])
 
-				// log.DefaultLogger.Info(fmt.Sprintf("------%v,%v,%v,%v,%T-------", k, i, columnsSort, columnsValue, columnsValue))
+				// log.DefaultLogger.Info(fmt.Sprintf("------%v,%v, %v, %v,%T, %v,%T--------", k, i, columnsSort, columnsValue, columnsValue, subValueBycolumns[columnsSort], subValueBycolumns[columnsSort]))
 
 				//value 类型错误
 				if err != nil {
 					return response, fmt.Errorf(err.Error())
 				}
-
-				// log.DefaultLogger.Info(fmt.Sprintf("------field-value %T,%v---------", subValueBycolumns[columnsSort], subValueBycolumns[columnsSort]))
 
 				vals[i] = columnsValue
 			}
@@ -876,6 +884,7 @@ func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetr
 	if isTime {
 		if formatType == "field" {
 			return []time.Time{}, nil
+
 		} else {
 			if res_kind_string {
 				tv, err := value.(json.Number).Float64()
@@ -897,6 +906,7 @@ func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetr
 				break
 			}
 		}
+
 		if isNumber {
 			//metric 类型
 			isNumber2 := false
@@ -919,40 +929,19 @@ func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetr
 
 			if isNumber2 {
 				if formatType == "field" {
-					if isQuery {
-						return []json.RawMessage{}, nil
-					} else {
-						return []float64{}, nil
-					}
+					return []*float64{}, nil
 
 				} else {
-
+					// 不为nil
 					if res_kind_string {
 						mv, err := value.(json.Number).Float64()
 						if err != nil {
 							return nil, fmt.Errorf(fmt.Sprintf("columns: %v, value: %v 转float64失败,类型%T", columnsSort, value, value))
 						}
-						if isQuery {
-							var mvJson json.RawMessage
-							mvJson, _ = json.Marshal(mv)
-							return mvJson, nil
-						} else {
-							return mv, nil
-						}
+						return &mv, nil
 
 					} else {
-						if isQuery {
-							var mvJson json.RawMessage
-							mvJson, _ = json.Marshal(value)
-							return mvJson, nil
-						} else {
-							var mvNumber float64
-							mvNumber = 0
-							return mvNumber, nil
-						}
-
-						// return value, nil
-						// return nil, fmt.Errorf(fmt.Sprintf("columns: %v, value: %v 断言失败,类型%T", columnsSort, value, value))
+						return (*float64)(nil), nil
 					}
 
 				}
