@@ -179,7 +179,9 @@ export class QueryEditor extends PureComponent<Props> {
   }
 
   get sqlContent() {
-    const content = _.get(SQL_CACHE, this.props.query.refId, '')
+    const requestId = this.props.data?.request?.requestId ?? ''
+    const refId = this.props.query.refId
+    const content = _.get(SQL_CACHE, `${requestId}_${refId}`, '')
     let res = ''
     try {
       const sqlString = sqlFormatter(content, {
