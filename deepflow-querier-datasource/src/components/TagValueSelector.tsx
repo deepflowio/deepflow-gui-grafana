@@ -59,7 +59,7 @@ export const TagValueSelector = (props: {
         return addNullOption ? [nullOption] : []
       }
 
-      let opts = []
+      let opts: LabelItem[] = []
       try {
         // @ts-ignore
         const data = await querierJs.searchBySql(
@@ -79,12 +79,27 @@ export const TagValueSelector = (props: {
           }
         )
 
-        opts = data.map((item: any) => {
-          return {
-            label: item.display_name,
-            value: item.value
-          }
-        })
+        opts = [
+          // if is not tag of resource type, gen custom option by keyword
+          ...(tagMapItem.type !== 'resource' &&
+          keyword &&
+          data.find((item: any) => {
+            return item.display_name !== keyword
+          })
+            ? [
+                {
+                  label: `${keyword} (by input)`,
+                  value: keyword
+                }
+              ]
+            : []),
+          ...data.map((item: any) => {
+            return {
+              label: item.display_name,
+              value: item.value
+            }
+          })
+        ]
       } catch (error) {
         console.log(error)
       }
