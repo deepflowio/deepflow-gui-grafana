@@ -778,6 +778,9 @@ export class QueryEditor extends PureComponent<Props> {
       for (let index = 0; index < tagValuesGroupsKeys.length; index++) {
         const tagName = tagValuesGroupsKeys[index]
         const tagValues = tagValuesGroup[tagName].filter(e => !e.isVariable)
+        if (!tagValues.length) {
+          continue
+        }
         // @ts-ignore
         const data = await querierJs.searchBySql(
           genGetTagValuesSql(
