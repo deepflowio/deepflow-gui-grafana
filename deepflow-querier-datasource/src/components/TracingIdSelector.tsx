@@ -3,9 +3,6 @@ import { Select } from '@grafana/ui'
 import { LabelItem, SelectOpts } from 'QueryEditor'
 import _ from 'lodash'
 
-export const INPUT_TAG_VAL_TYPES = ['int', 'ip', 'mac']
-export const SELECT_TAG_VAL_OPS = ['=', '!=', 'IN', 'NOT IN']
-
 export const TracingIdSelector = (props: {
   tracingId: LabelItem | null
   templateVariableOpts: SelectOpts

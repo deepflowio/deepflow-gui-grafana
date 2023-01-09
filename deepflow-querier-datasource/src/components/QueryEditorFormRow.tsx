@@ -434,7 +434,6 @@ export class QueryEditorFormRow extends PureComponent<Props> {
               basicData.type === 'tag' ? (
                 <TagValueSelector
                   parentProps={this.props}
-                  currentTagType={this.currentTagType}
                   onChange={(ev: any) => this.onValueChange('asyncselect', ev)}
                 ></TagValueSelector>
               ) : (

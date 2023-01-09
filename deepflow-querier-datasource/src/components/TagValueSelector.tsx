@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useCallback } from 'react'
 import { Select, Input, AsyncSelect } from '@grafana/ui'
 import { LabelItem, SelectOpts } from 'QueryEditor'
 import _ from 'lodash'
@@ -8,6 +8,7 @@ import { getTagMapCache } from 'utils/cache'
 
 export const INPUT_TAG_VAL_TYPES = ['int', 'ip', 'mac', 'ip_array']
 export const SELECT_TAG_VAL_OPS = ['=', '!=', 'IN', 'NOT IN']
+export const MULTI_SELECT_TAG_VAL_OPS = ['IN', 'NOT IN', 'LIKE', 'NOT LIKE']
 
 export const TagValueSelector = (props: {
   parentProps: {
@@ -18,11 +19,9 @@ export const TagValueSelector = (props: {
     templateVariableOpts: SelectOpts
     uuid: string
   }
-  currentTagType: string
   onChange: (ev: any) => void
 }) => {
   const { db, from, basicData, gotBasicData, templateVariableOpts, uuid } = props.parentProps
-  const { currentTagType } = props
   const boolOpts = [
     {
       label: '是',
@@ -34,53 +33,66 @@ export const TagValueSelector = (props: {
     }
   ]
 
+  const tagMapItem = useMemo(() => {
+    if (!db || !from || !basicData.key) {
+      return {}
+    }
+    return getTagMapCache(db, from, getRealKey(basicData))
+  }, [db, from, basicData])
+
   const useInput = useMemo(() => {
-    return INPUT_TAG_VAL_TYPES.includes(currentTagType) || !SELECT_TAG_VAL_OPS.includes(basicData.op)
-  }, [currentTagType, basicData.op])
+    return INPUT_TAG_VAL_TYPES.includes(tagMapItem.type) || !SELECT_TAG_VAL_OPS.includes(basicData.op)
+  }, [tagMapItem.type, basicData.op])
 
   const isMulti = useMemo(() => {
-    return ['IN', 'NOT IN', 'LIKE', 'NOT LIKE'].includes(basicData.op)
+    return MULTI_SELECT_TAG_VAL_OPS.includes(basicData.op)
   }, [basicData.op])
 
-  const loadTagValOpts = async (keyword: string) => {
-    if (!db || !from || !basicData.key) {
-      return []
-    }
+  const loadTagValOpts = useCallback(
+    async (keyword: string) => {
+      const nullOption = {
+        label: 'NULL',
+        value: 0
+      }
+      const addNullOption = tagMapItem.type === 'resource' && ['IN', 'NOT IN'].includes(basicData.op)
+      if (!db || !from || !basicData.key) {
+        return addNullOption ? [nullOption] : []
+      }
 
-    const tagMapItem = getTagMapCache(db, from, getRealKey(basicData))
-
-    let opts = []
-    try {
-      // @ts-ignore
-      const data = await querierJs.searchBySql(
-        genGetTagValuesSql({
-          tagName: tagMapItem.name,
-          tagType: tagMapItem.type,
-          from,
-          keyword
-        }),
-        db,
-        (d: any) => {
-          return {
-            ...d,
-            // add requestId to cancel request
-            requestId: uuid
+      let opts = []
+      try {
+        // @ts-ignore
+        const data = await querierJs.searchBySql(
+          genGetTagValuesSql({
+            tagName: tagMapItem.name,
+            tagType: tagMapItem.type,
+            from,
+            keyword
+          }),
+          db,
+          (d: any) => {
+            return {
+              ...d,
+              // add requestId to cancel request
+              requestId: uuid
+            }
           }
-        }
-      )
+        )
 
-      opts = data.map((item: any) => {
-        return {
-          label: item.display_name,
-          value: item.value
-        }
-      })
-    } catch (error) {
-      console.log(error)
-    }
-    const result = templateVariableOpts.concat(opts)
-    return result
-  }
+        opts = data.map((item: any) => {
+          return {
+            label: item.display_name,
+            value: item.value
+          }
+        })
+      } catch (error) {
+        console.log(error)
+      }
+
+      return [...templateVariableOpts, ...(addNullOption ? [nullOption] : []), ...opts]
+    },
+    [uuid, templateVariableOpts, db, from, basicData, tagMapItem]
+  )
 
   const [selectInputOpts, setSelectInputOpts] = useState<SelectOpts>([])
 
@@ -108,8 +120,8 @@ export const TagValueSelector = (props: {
     }
   }, [useInput, basicData.val, templateVariableOpts])
 
-  return gotBasicData && props.currentTagType !== '' && typeof useInput === 'boolean' ? (
-    props.currentTagType === 'bool' ? (
+  return gotBasicData && !!tagMapItem.type && typeof useInput === 'boolean' ? (
+    tagMapItem.type === 'bool' ? (
       <Select
         options={boolOpts}
         value={basicData.val}
