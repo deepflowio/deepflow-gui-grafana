@@ -447,15 +447,24 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
               getGroupName: (d: any): string => {
                 return `分组: ${d}`
               },
-              getGroupNameColor: () => nodeAndLinkColor
+              getGroupNameColor: () => nodeAndLinkColor,
+              setNodeStyle: (node: Node<NodeItem>) => {
+                try {
+                  if (isDark) {
+                    node?.refs?.titleTextEle?.attr('fill', '#ffffff')
+                  }
+                  node?.refs?.iconBackgroundEle?.attr('fill', '#ffffff').attr('r', '16').attr('cx', '22.5')
+                  node?.refs?.iconEle?.attr('x', '11.5').attr('y', '9.5').attr('width', '22').attr('height', '22')
+                } catch (error) {
+                  console.log(error)
+                }
+              }
             }
           : {
               getNodeIcon: (node: Node<NodeItem>) => node.data.node_type,
               setNodeStyle: (node: Node<NodeItem>) => {
                 try {
-                  node.refs.textEle.attr('stroke-width', '')
-                  node.refs.textEle.attr('stroke', '')
-                  node.refs.textEle.attr('paint-order', '')
+                  node?.refs?.textEle?.attr('stroke-width', '').attr('stroke', '').attr('paint-order', '')
                 } catch (error) {
                   console.log(error)
                 }
