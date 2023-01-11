@@ -35,7 +35,7 @@ type LinkItem = {
 
 interface Props extends PanelProps<SimpleOptions> {}
 
-const NO_GROUP_BY_TAGS = ['tap_side']
+const NO_GROUP_BY_TAGS = ['tap_side', 'Enum(tap_side)']
 
 let MINIMAP_CONATAINER_CACHE: undefined | HTMLElement = undefined
 
