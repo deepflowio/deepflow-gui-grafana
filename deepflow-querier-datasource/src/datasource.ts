@@ -216,20 +216,23 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
           }
         })
         const usingGroupBy = sql.includes('group by') && queryData.formatAs === 'timeSeries'
+        const customReturnTags = returnTags
+          .filter((e: any) => {
+            return !e.name.includes('time')
+          })
+          .map((e: any) => {
+            return {
+              ...e,
+              name: e.name.replace(/'/g, '')
+            }
+          })
         const meta = {
           custom: {
-            returnTags: returnTags
-              .filter((e: any) => {
-                return !e.name.includes('time')
-              })
-              .map((e: any) => {
-                return {
-                  ...e,
-                  name: e.name.replace(/'/g, '')
-                }
-              }),
+            returnTags: customReturnTags,
             returnMetrics,
-            ...(queryData.appType === 'accessRelationship' ? getAccessRelationshipeQueryConfig(queryData.groupBy) : {})
+            ...(queryData.appType === 'accessRelationship'
+              ? getAccessRelationshipeQueryConfig(queryData.groupBy, customReturnTags)
+              : {})
           }
         }
         if (!usingGroupBy) {

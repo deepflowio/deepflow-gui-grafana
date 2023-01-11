@@ -124,7 +124,9 @@ export const getResourceIdKey = (key: string) => {
   return key
 }
 
-export function getAccessRelationshipeQueryConfig(groupBy: any) {
+export function getAccessRelationshipeQueryConfig(groupBy: any, returnTags: any[]) {
+  const returnTagsMap = _.keyBy(returnTags, 'name')
+
   const result: {
     from: string[]
     to: string[]
@@ -146,6 +148,9 @@ export function getAccessRelationshipeQueryConfig(groupBy: any) {
           break
         default:
           result.common.push(e.key)
+          if (returnTagsMap[`Enum(${e.key})`]) {
+            result.common.push(`Enum(${e.key})`)
+          }
           break
       }
     }
