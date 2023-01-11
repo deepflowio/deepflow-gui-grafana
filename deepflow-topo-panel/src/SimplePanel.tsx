@@ -407,13 +407,13 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       const titleColor = isDark ? '#bbb' : '#333'
       const nodeAndLinkColor = isDark ? '#206FD6' : '#B6BFD1'
       chartContainer.selectAll('g').remove()
-      const renderFunction = topoType === 'simpleTopo' ? renderSimpleTreeTopoChart : renderTreeTopoChart
+      const renderFunction: any = topoType === 'simpleTopo' ? renderSimpleTreeTopoChart : renderTreeTopoChart
       const bindEventFunction = topoType === 'simpleTopo' ? simpleTopoRender : treeTopoRender
 
       const handleZoomEvent = (event: any) => {
         miniRender(event)
       }
-      const renderOptions: Record<any, any> = {
+      const renderOptions = {
         getNodeV: (node: Node<NodeItem>) => 0,
         getNodeColor: (node: Node<NodeItem>) => nodeAndLinkColor,
         getNodeTitle: (node: Node<NodeItem>) => node.data.displayName,
@@ -463,7 +463,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
               nodeSize: [40, 40]
             })
       }
-      const handler = renderFunction(
+      const handler: any = renderFunction(
         chartContainer,
         {
           nodes,
@@ -483,52 +483,76 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       }
 
       _links.forEach((link: Link<LinkItem>) => {
-        bindEventFunction.bindCustomMouseEvent(link, 'mouseenter', (e: MouseEvent, l: Link<LinkItem>) => {
-          let metricsObj: any
-          if (topoType !== 'simpleTopo') {
-            const type = _.get(link, ['props', 'type'])
-            const currentMetrics = _.get(link, ['data', 'metrics'], {})
-            const otherMetrics = _.get(link, ['props', 'otherSide', 'data', 'metrics'], {})
-            metricsObj =
-              type === 'single'
-                ? currentMetrics
-                : [
-                    ...(Array.isArray(currentMetrics) ? currentMetrics : [currentMetrics]),
-                    ...(Array.isArray(otherMetrics) ? otherMetrics : [otherMetrics])
-                  ]
-          } else {
-            metricsObj = _.get(link, ['data', 'metrics'], {})
+        bindEventFunction.bindCustomMouseEvent(
+          link,
+          'mouseenter',
+          (e: MouseEvent, l: Link<LinkItem> | Node<NodeItem>) => {
+            let metricsObj: any
+            if (topoType !== 'simpleTopo') {
+              const type = _.get(link, ['props', 'type'])
+              const currentMetrics = _.get(link, ['data', 'metrics'], {})
+              const otherMetrics = _.get(link, ['props', 'otherSide', 'data', 'metrics'], {})
+              metricsObj =
+                type === 'single'
+                  ? currentMetrics
+                  : [
+                      ...(Array.isArray(currentMetrics) ? currentMetrics : [currentMetrics]),
+                      ...(Array.isArray(otherMetrics) ? otherMetrics : [otherMetrics])
+                    ]
+            } else {
+              metricsObj = _.get(link, ['data', 'metrics'], {})
+            }
+            setTooltipContent(metricsObj)
           }
-          setTooltipContent(metricsObj)
-        })
-        bindEventFunction.bindCustomMouseEvent(link, 'mousemove', (e: MouseEvent, l: Link<LinkItem>) => {
-          setTimeout(() => {
-            setMousePos({
-              x: e.clientX,
-              y: e.clientY
+        )
+        bindEventFunction.bindCustomMouseEvent(
+          link,
+          'mousemove',
+          (e: MouseEvent, l: Link<LinkItem> | Node<NodeItem>) => {
+            setTimeout(() => {
+              setMousePos({
+                x: e.clientX,
+                y: e.clientY
+              })
             })
-          })
-        })
-        bindEventFunction.bindCustomMouseEvent(link, 'mouseleave', (e: MouseEvent, l: Link<LinkItem>) => {
-          setTooltipContent({})
-        })
+          }
+        )
+        bindEventFunction.bindCustomMouseEvent(
+          link,
+          'mouseleave',
+          (e: MouseEvent, l: Link<LinkItem> | Node<NodeItem>) => {
+            setTooltipContent({})
+          }
+        )
       })
       _nodes.forEach((node: Node<NodeItem>) => {
-        bindEventFunction.bindCustomMouseEvent(node, 'mouseenter', (e: MouseEvent, n: Node<NodeItem>) => {
-          const tagsObj = _.get(node, ['data', 'tags'], {})
-          setTooltipContent(tagsObj)
-        })
-        bindEventFunction.bindCustomMouseEvent(node, 'mousemove', (e: MouseEvent, n: Node<NodeItem>) => {
-          setTimeout(() => {
-            setMousePos({
-              x: e.clientX,
-              y: e.clientY
+        bindEventFunction.bindCustomMouseEvent(
+          node,
+          'mouseenter',
+          (e: MouseEvent, n: Link<LinkItem> | Node<NodeItem>) => {
+            const tagsObj = _.get(node, ['data', 'tags'], {})
+            setTooltipContent(tagsObj)
+          }
+        )
+        bindEventFunction.bindCustomMouseEvent(
+          node,
+          'mousemove',
+          (e: MouseEvent, n: Link<LinkItem> | Node<NodeItem>) => {
+            setTimeout(() => {
+              setMousePos({
+                x: e.clientX,
+                y: e.clientY
+              })
             })
-          })
-        })
-        bindEventFunction.bindCustomMouseEvent(node, 'mouseleave', (e: MouseEvent, n: Node<NodeItem>) => {
-          setTooltipContent({})
-        })
+          }
+        )
+        bindEventFunction.bindCustomMouseEvent(
+          node,
+          'mouseleave',
+          (e: MouseEvent, n: Link<LinkItem> | Node<NodeItem>) => {
+            setTooltipContent({})
+          }
+        )
       })
 
       if (MINIMAP_CONATAINER_CACHE) {
