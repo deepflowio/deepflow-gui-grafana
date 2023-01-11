@@ -37,9 +37,9 @@ interface Props extends PanelProps<SimpleOptions> {}
 
 const NO_GROUP_BY_TAGS = ['tap_side', 'Enum(tap_side)']
 
-let MINIMAP_CONATAINER_CACHE: undefined | HTMLElement = undefined
+const MINIMAP_CONATAINER_CACHE: Record<number, HTMLElement> = {}
 
-export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) => {
+export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height }) => {
   const debouncedWidth = useDebounce(width, 600)
   const debouncedHeight = useDebounce(height, 600)
 
@@ -564,8 +564,8 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         )
       })
 
-      if (MINIMAP_CONATAINER_CACHE) {
-        MINIMAP_CONATAINER_CACHE.remove()
+      if (MINIMAP_CONATAINER_CACHE[id]) {
+        MINIMAP_CONATAINER_CACHE[id].remove()
       }
       const _miniMapContainer = addSvg('.' + randomClassName, false)
       _miniMapContainer
@@ -575,7 +575,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
         .style('position', 'absolute')
         .style('bottom', 0)
         .style('left', 0)
-      MINIMAP_CONATAINER_CACHE = _miniMapContainer
+      MINIMAP_CONATAINER_CACHE[id] = _miniMapContainer
 
       const miniRender = miniMap(
         _nodes,
@@ -605,7 +605,7 @@ export const SimplePanel: React.FC<Props> = ({ options, data, width, height }) =
       setErrMsg(error.toString() || 'draw topo failed')
     }
     window.useTimeLogs && console.timeEnd('[Time Log][Topo: Render]')
-  }, [nodes, links, chartContainer, randomClassName, debouncedWidth, debouncedHeight, isDark, topoType])
+  }, [id, nodes, links, chartContainer, randomClassName, debouncedWidth, debouncedHeight, isDark, topoType])
 
   useEffect(() => {
     if (!topoHandler || !groupTag) {

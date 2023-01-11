@@ -24,9 +24,9 @@ import { IconArrowLeft } from '@douyinfe/semi-icons'
 
 interface Props extends PanelProps<SimpleOptions> {}
 
-let MINIMAP_CONATAINER_CACHE: undefined | HTMLElement = undefined
+const MINIMAP_CONATAINER_CACHE: Record<number, HTMLElement> = {}
 
-export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
+export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
   const [errMsg, setErrMsg] = useState('')
   const debouncedWidth = useDebounce(width, 600)
   const debouncedHeight = useDebounce(height, 600)
@@ -140,8 +140,8 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       flameContainer.selectAll('*').remove()
     }
 
-    if (MINIMAP_CONATAINER_CACHE) {
-      MINIMAP_CONATAINER_CACHE.remove()
+    if (MINIMAP_CONATAINER_CACHE[id]) {
+      MINIMAP_CONATAINER_CACHE[id].remove()
     }
     if (!flameData || !flameData?.length || !flameContainer) {
       return
@@ -205,7 +205,7 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
         .style('position', 'absolute')
         .style('bottom', 0)
         .style('left', 2)
-      MINIMAP_CONATAINER_CACHE = _miniMapContainer
+      MINIMAP_CONATAINER_CACHE[id] = _miniMapContainer
       let miniRender = miniMap(renderResult.bars, [], _miniMapContainer, flameContainer, renderResult.zoom, {
         nodeType: 'rect',
         scaleType: 'xy'
@@ -218,7 +218,16 @@ export const SimplePanel: React.FC<Props> = ({ data, width, height }) => {
       console.log(error)
     }
     window.useTimeLogs && console.timeEnd('[Time Log][Apptracing: Render]')
-  }, [flameData, flameContainer, randomClassName, debouncedWidth, debouncedHeight, setFlameDetailFilter, setMousePos])
+  }, [
+    id,
+    flameData,
+    flameContainer,
+    randomClassName,
+    debouncedWidth,
+    debouncedHeight,
+    setFlameDetailFilter,
+    setMousePos
+  ])
 
   const bodyClassName = document.body.className
   const isDark = useMemo(() => {
