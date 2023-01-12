@@ -28,6 +28,17 @@ func getAutoGroupKeyPrefix(ss map[string]interface{}, role string) string {
 	return ""
 }
 
+func getPriorityField(ss map[string]interface{}, suffix string) string {
+	//   const keys = ['gprocess']
+	//   return keys.find(k => {
+	//     return `${k}${suffix}` in d
+	//   })
+	if _, ok := ss["gprocess"]; ok {
+		return "gprocess" + suffix
+	}
+	return ""
+}
+
 func AddResourceFieldsInData(ss map[string]interface{}, role string) {
 
 	var prefix = ""
@@ -44,30 +55,45 @@ func AddResourceFieldsInData(ss map[string]interface{}, role string) {
 		suffix = "_1"
 	}
 
-	if v, ok := ss[prefix+"node_type"]; ok {
-		nodeType = v.(string)
-	}
-
-	// log
-
-	if resourceKeyPrefix == "" {
-		resourceKeyPrefix = nodeType
-	}
-
-	ss[prefix+"resource_type"] = nodeType
-
-	if nodeType == "ip" || nodeType == "internet_ip" {
-		if v, ok := ss["subnet_id"+suffix]; ok {
-			str := fmt.Sprintf("%v", v)
-			ss[prefix+"resource_id"] = ss["ip"+suffix].(string) + "(" + str + ")"
-		} else {
-			ss[prefix+"resource_id"] = ss["ip"+suffix]
-		}
-		ss[prefix+"resource"] = ss["ip"+suffix]
+	var priorityField = getPriorityField(ss, suffix)
+	if priorityField != "" {
+		ss[prefix+"resource_id"] = ss[priorityField+"_id"+suffix]
+		ss[prefix+"resource"] = ss[priorityField+suffix]
 	} else {
-		ss[prefix+"resource_id"] = ss[resourceKeyPrefix+"_id"+suffix]
-		ss[prefix+"resource"] = ss[resourceKeyPrefix+suffix]
+		if v, ok := ss[prefix+"node_type"]; ok {
+			nodeType = v.(string)
+		}
+
+		// log
+
+		if resourceKeyPrefix == "" {
+			resourceKeyPrefix = nodeType
+		}
+
+		ss[prefix+"resource_type"] = nodeType
+
+		if nodeType == "ip" || nodeType == "internet_ip" {
+			if v, ok := ss["subnet_id"+suffix]; ok {
+				str := fmt.Sprintf("%v", v)
+				ss[prefix+"resource_id"] = ss["ip"+suffix].(string) + "(" + str + ")"
+			} else {
+				ss[prefix+"resource_id"] = ss["ip"+suffix]
+			}
+			ss[prefix+"resource"] = ss["ip"+suffix]
+		} else {
+			if v, ok := ss[nodeType+"_id"+suffix]; ok {
+				ss[prefix+"resource_id"] = v
+			} else {
+				ss[prefix+"resource_id"] = ss[resourceKeyPrefix+"_id"+suffix]
+			}
+			if v, ok := ss[nodeType+suffix]; ok {
+				ss[prefix+"resource"] = v
+			} else {
+				ss[prefix+"resource"] = ss[resourceKeyPrefix+suffix]
+			}
+		}
 	}
+
 }
 
 // 按照时间字段排序

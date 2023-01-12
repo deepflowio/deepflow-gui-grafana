@@ -930,6 +930,7 @@ func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetr
 			if isNumber2 {
 				if formatType == "field" {
 					return []*float64{}, nil
+					// return []float64{}, nil
 
 				} else {
 					// 不为nil
@@ -939,9 +940,12 @@ func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetr
 							return nil, fmt.Errorf(fmt.Sprintf("columns: %v, value: %v 转float64失败,类型%T", columnsSort, value, value))
 						}
 						return &mv, nil
+						// return mv, nil
 
 					} else {
 						return (*float64)(nil), nil
+						// var feildV float64 = 0
+						// return feildV, nil
 					}
 
 				}
