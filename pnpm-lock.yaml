@@ -46,12 +46,12 @@ importers:
     specifiers:
       '@types/json-bigint': ^1.0.1
       copy-to-clipboard: ^3.3.2
-      deepflow-sdk-js: ^0.0.8
+      deepflow-sdk-js: ^0.0.9
       json-bigint-patch: ^0.0.8
       sql-formatter: 10.7.1
     dependencies:
       copy-to-clipboard: 3.3.2
-      deepflow-sdk-js: 0.0.8
+      deepflow-sdk-js: 0.0.9
       json-bigint-patch: 0.0.8
       sql-formatter: 10.7.1
     devDependencies:
@@ -6086,8 +6086,8 @@ packages:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
     dev: false
 
-  /deepflow-sdk-js/0.0.8:
-    resolution: {integrity: sha512-tuPGUiu9iFiFiy/mxS052UoFt1mT3Vt7aihitFIo0NtGEZ3ES9yLx+dO7NEf9WhUZHEQO2vMPdjEMxamEKC8AA==}
+  /deepflow-sdk-js/0.0.9:
+    resolution: {integrity: sha512-1dr27ZWknEub1/vGwmwkl6wgIhH/yqHV7dtBQZxFoBx3IgMM1Rzz0F/rJFxuALGsfgfruRuEirimTBRDxwDQ9A==}
     dependencies:
       process: 0.11.10
       qs: 6.11.0
