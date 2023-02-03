@@ -58,6 +58,7 @@ type Props = {
   usingGroupBy: boolean
   templateVariableOpts: SelectOpts
   uuid: string
+  isUsingAlerting: boolean
 }
 
 const columnTypeOpts = [
@@ -304,7 +305,8 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       removeBtnDisabled,
       typeSelectDisabled,
       subFuncOpts,
-      gotBasicData
+      gotBasicData,
+      isUsingAlerting
     } = this.props
     const tagOptsFilted = config.disableTimeTag
       ? tagOpts.filter(item => {
@@ -387,6 +389,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                 value={basicData.key}
                 isClearable={true}
                 key={basicData.key ? 'keyWithVal' : 'keyWithoutVal'}
+                disabled={rowType === 'groupBy' && isUsingAlerting}
               />
             </div>
             {config.func &&

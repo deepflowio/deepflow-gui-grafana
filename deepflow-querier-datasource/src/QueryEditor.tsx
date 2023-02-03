@@ -169,7 +169,7 @@ export class QueryEditor extends PureComponent<Props> {
   }
 
   get isUsingAlerting() {
-    return this.props.app?.includes('alerting')
+    return !!this.props.app?.includes('alerting')
   }
 
   get appTypeOptsComputed() {
@@ -1126,6 +1126,7 @@ export class QueryEditor extends PureComponent<Props> {
                             {this.state[conf.targetDataKey].map((item: BasicDataWithId, index: number) => {
                               return (
                                 <QueryEditorFormRow
+                                  isUsingAlerting={this.isUsingAlerting}
                                   templateVariableOpts={templateVariableOpts.filter(item => {
                                     return item.variableType !== 'interval' && item.variableType !== 'datasource'
                                   })}
