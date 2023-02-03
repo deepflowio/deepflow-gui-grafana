@@ -121,14 +121,22 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
                 ...tracingQuery
               }
             }
+            q = this.applyTemplateVariables(
+              {
+                ...q,
+                requestId
+              },
+              request.scopedVars
+            )
+            if (range) {
+              const sql = q.sql
+                .replace("'${__from:date:seconds}'", `${range.from.unix()}`)
+                .replace("'${__to:date:seconds}'", `${range.to.unix()}`)
+              _.set(SQL_CACHE, `${requestId}_${q.refId}`, sql)
+            }
+
             return {
-              ...this.applyTemplateVariables(
-                {
-                  ...q,
-                  requestId
-                },
-                request.scopedVars
-              ),
+              ...q,
               datasource,
               datasourceId,
               intervalMs,
@@ -137,7 +145,8 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
           })
           .filter(q => {
             // not appTrcaingFlame type or has no _id value
-            return q._id === undefined || !['', '*'].includes(q._id)
+            const _id = _.get(q, '_id')
+            return _id === undefined || !['', '*'].includes(_id)
           })
 
         // no queries exist
