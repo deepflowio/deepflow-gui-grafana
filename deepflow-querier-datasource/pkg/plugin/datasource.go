@@ -617,7 +617,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 
 	//返回
 	usingGroupBy := false
-	if formatAs == "timeSeries" && strings.Contains(sql, "group by") {
+	if formatAs == "timeSeries" && strings.Contains(sql, "GROUP BY") {
 		usingGroupBy = true
 	}
 
