@@ -20,7 +20,12 @@
         "url": "https://yunshan.net"
       }
     ],
-    "screenshots": [],
+    "screenshots": [
+      {
+        "name": "screenshots",
+        "path": "img/screenshot.jpg"
+      }
+    ],
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
