@@ -20,7 +20,20 @@
         "url": "https://yunshan.net"
       }
     ],
-    "screenshots": [],
+    "screenshots": [
+      {
+        "name": "screenshot-simple-topo",
+        "path": "img/screenshot-simple-topo.jpg"
+      },
+      {
+        "name": "screenshot-tree-topo",
+        "path": "img/screenshot-tree-topo.jpg"
+      },
+      {
+        "name": "screenshot-tree-topo-with-group",
+        "path": "img/screenshot-tree-topo-with-group.jpg"
+      }
+    ],
     "version": "%VERSION%",
     "updated": "%TODAY%"
   },
