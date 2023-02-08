@@ -792,7 +792,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 			frame.AppendRow(vals...)
 		}
 
-		log.DefaultLogger.Info("frame", "数据", &frame.Fields[0])
+		// log.DefaultLogger.Info("frame", "数据", &frame.Fields[0])
 		response.Frames = append(response.Frames, frame)
 	}
 
