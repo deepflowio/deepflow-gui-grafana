@@ -728,10 +728,14 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 				keyPrefix = strings.TrimSuffix(key, ",")
 			}
 		}
+		// log.DefaultLogger.Info("sortItem[0]", "数据", sortItem[0])
+		// log.DefaultLogger.Info("tagKeys", "数据", tagKeys)
+		// log.DefaultLogger.Info("keyrepfix", "数据", keyPrefix)
 
-		frame := data.NewFrame(keyPrefix)
+		// frame := data.NewFrame(keyPrefix)
+		frame := data.NewFrame("")
 		frame.Meta = &FrameMeta
-
+		frameName := ""
 		// 按照排序后添加字段
 		for _, columnsSort := range firstResponseSort {
 			columnsType, _ := formatParams(isQuery, "field", timeKeys, returnMetrics, false, returnMetricNames, columnsSort, nil)
@@ -751,12 +755,20 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 				} else {
 					NewFieldName = keyPrefix
 				}
+				frameName += NewFieldName + ","
 			}
+
+			// log.DefaultLogger.Info("columnsSort", "数据", columnsSort)
+			// log.DefaultLogger.Info("returnMetricNames", "数据", returnMetricNames)
+			// log.DefaultLogger.Info("isMetricName", "数据", isMetricName)
+			// log.DefaultLogger.Info("queryShowMetrics", "数据", queryShowMetrics)
 
 			frame.Fields = append(frame.Fields,
 				data.NewField(NewFieldName, nil, columnsType),
 			)
 		}
+
+		// frame.Name = frameName
 
 		//没有数据,跳过
 		if len(item) <= 0 {
@@ -780,6 +792,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 			frame.AppendRow(vals...)
 		}
 
+		log.DefaultLogger.Info("frame", "数据", &frame.Fields[0])
 		response.Frames = append(response.Frames, frame)
 	}
 
