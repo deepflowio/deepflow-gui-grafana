@@ -169,7 +169,13 @@ export class QueryEditor extends PureComponent<Props> {
   }
 
   get isUsingAlerting() {
-    return !!this.props.app?.includes('alerting')
+    const usingAlerting = !!this.props.app?.includes('alerting')
+    if (usingAlerting) {
+      this.setState({
+        groupBy: defaultFormData.groupBy
+      })
+    }
+    return usingAlerting
   }
 
   get appTypeOptsComputed() {
