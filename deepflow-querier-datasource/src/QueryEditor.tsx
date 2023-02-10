@@ -184,10 +184,16 @@ export class QueryEditor extends PureComponent<Props> {
     })
   }
 
+  get requestId() {
+    return this.props.data?.request?.requestId ?? ''
+  }
+
+  get refId() {
+    return this.props.query.refId
+  }
+
   get sqlContent() {
-    const requestId = this.props.data?.request?.requestId ?? ''
-    const refId = this.props.query.refId
-    const content = _.get(SQL_CACHE, `${requestId}_${refId}`, '')
+    const content = _.get(SQL_CACHE, `${this.requestId}_${this.refId}`, '')
     let res = ''
     try {
       const sqlString = sqlFormatter(content, {
@@ -530,7 +536,7 @@ export class QueryEditor extends PureComponent<Props> {
         // @ts-ignore
         const querierJsResult = querierJs.dfQuery(_.cloneDeep(parsedQueryData))
         const { returnTags, returnMetrics, sql } = querierJsResult.resource[0]
-        _.set(SQL_CACHE, this.props.query.refId, sql)
+        _.set(SQL_CACHE, `${this.requestId}_${this.refId}`, sql)
         const metaExtra =
           dataObj.appType === 'accessRelationship' ? getAccessRelationshipeQueryConfig(dataObj.groupBy, returnTags) : {}
 
