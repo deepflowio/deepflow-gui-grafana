@@ -935,13 +935,14 @@ export class QueryEditor extends PureComponent<Props> {
           return item.type !== TAG_METRIC_TYPE_NUM
         })
         .map((item: any) => {
+          const { name, is_agg, operators, display_name, type } = item
           return {
-            label: `${item.name} (${item.display_name})`,
-            value: item.name,
-            type: item.type,
-            is_agg: item.is_agg,
-            operatorOpts: item.operators
-              ? item.operators.map((op: any) => {
+            label: `${name} (${display_name})`,
+            value: name,
+            type,
+            is_agg,
+            operatorOpts: operators
+              ? operators.map((op: any) => {
                   return {
                     label: op,
                     value: op
@@ -956,45 +957,45 @@ export class QueryEditor extends PureComponent<Props> {
           return !DISABLE_TAGS.includes(item.name)
         })
         .map((item: any) => {
-          const { name, client_name, server_name } = item
-          const operatorOpts = formatTagOperators(item.operators, item)
+          const { name, client_name, server_name, display_name, type } = item
+          const operatorOpts = formatTagOperators(item)
           if (name === client_name && name === server_name) {
             return {
-              label: item.display_name === item.name ? `${item.name}` : `${item.name} (${item.display_name})`,
-              value: item.name,
-              type: item.type,
+              label: display_name === name ? `${name}` : `${name} (${display_name})`,
+              value: name,
+              type,
               operatorOpts
             }
           }
           return [
-            ...((item.type === 'resource' || item.type === 'ip') && (item.client_name || item.server_name)
+            ...((type === 'resource' || type === 'ip') && (client_name || server_name)
               ? [
                   {
-                    label: `${item.name} (${item.display_name})`,
-                    value: item.name,
-                    type: item.type,
+                    label: `${name} (${display_name})`,
+                    value: name,
+                    type,
                     whereOnly: true,
                     operatorOpts
                   }
                 ]
               : []),
-            ...(item.client_name
+            ...(client_name
               ? [
                   {
-                    label: `${item.client_name} (${item.display_name} - ${getI18NLabelByName('client')})`,
-                    value: item.client_name,
-                    type: item.type,
+                    label: `${client_name} (${display_name} - ${getI18NLabelByName('client')})`,
+                    value: client_name,
+                    type,
                     sideType: 'from',
                     operatorOpts
                   }
                 ]
               : []),
-            ...(item.server_name
+            ...(server_name
               ? [
                   {
-                    label: `${item.server_name} (${item.display_name} - ${getI18NLabelByName('server')})`,
-                    value: item.server_name,
-                    type: item.type,
+                    label: `${server_name} (${display_name} - ${getI18NLabelByName('server')})`,
+                    value: server_name,
+                    type,
                     sideType: 'to',
                     operatorOpts
                   }
@@ -1043,7 +1044,28 @@ export class QueryEditor extends PureComponent<Props> {
   }
 
   render() {
-    const { formConfig, tagOpts, funcOpts, subFuncOpts, errorMsg, showErrorAlert, templateVariableOpts } = this.state
+    const {
+      formConfig,
+      tagOpts,
+      funcOpts,
+      subFuncOpts,
+      errorMsg,
+      showErrorAlert,
+      templateVariableOpts,
+      runQueryWarning,
+      appType,
+      db,
+      from,
+      sources,
+      gotBasicData,
+      interval,
+      limit,
+      offset,
+      formatAs,
+      alias,
+      showMetrics,
+      tracingId
+    } = this.state
 
     return (
       <div className={`${this.grafanaTheme} querier-editor`}>
@@ -1063,8 +1085,8 @@ export class QueryEditor extends PureComponent<Props> {
                   type="submit"
                   className="save-btn"
                   style={{
-                    background: this.state.runQueryWarning ? '#F5B73D' : '',
-                    border: this.state.runQueryWarning ? '1px solid #F5B73D' : ''
+                    background: runQueryWarning ? '#F5B73D' : '',
+                    border: runQueryWarning ? '1px solid #F5B73D' : ''
                   }}
                   onClick={this.onSubmit}
                 >
@@ -1084,44 +1106,44 @@ export class QueryEditor extends PureComponent<Props> {
               <InlineField className="custom-label" label="APP" labelWidth={10}>
                 <Select
                   options={this.appTypeOptsComputed}
-                  value={this.state.appType}
+                  value={appType}
                   onChange={(val: any) => this.onFieldChange('appType', val)}
                   placeholder="APP TYPE"
                   width="auto"
                 />
               </InlineField>
-              {this.state.appType !== APPTYPE_APP_TRACING_FLAME ? (
+              {appType !== APPTYPE_APP_TRACING_FLAME ? (
                 <>
                   <InlineField className="custom-label" label="DATABASE" labelWidth={10}>
                     <div className="row-start-center database-selectors">
                       <Select
                         options={this.databaseOptsAfterFilter}
-                        value={this.state.db}
+                        value={db}
                         onChange={(val: any) => this.onFieldChange('db', val)}
                         placeholder="DATABASE"
-                        key={this.state.db ? 'dbWithVal' : 'dbWithoutVal'}
+                        key={db ? 'dbWithVal' : 'dbWithoutVal'}
                         width="auto"
                         className="mr-4"
                       />
                       <Select
                         options={this.tableOptsAfterFilter}
-                        value={this.state.from}
+                        value={from}
                         onChange={(val: any) => {
                           this.setSourcesChange(val)
                           this.onFieldChange('from', val)
                         }}
                         placeholder="TABLE"
-                        key={this.state.from ? 'fromWithVal' : 'fromWithoutVal'}
+                        key={from ? 'fromWithVal' : 'fromWithoutVal'}
                         width="auto"
                         className="mr-4"
                       />
                       {this.dataSourcesTypeOpts ? (
                         <Select
                           options={this.dataSourcesTypeOpts}
-                          value={this.state.sources}
+                          value={sources}
                           onChange={(val: any) => this.onFieldChange('sources', val)}
                           placeholder="DATA_INTERVAL"
-                          key={this.state.sources ? 'sourceWithVal' : 'sourceWithoutVal'}
+                          key={sources ? 'sourceWithVal' : 'sourceWithoutVal'}
                           width="auto"
                         />
                       ) : null}
@@ -1144,9 +1166,9 @@ export class QueryEditor extends PureComponent<Props> {
                                   })}
                                   config={formItemConfigs[conf.targetDataKey]}
                                   basicData={item}
-                                  gotBasicData={this.state.gotBasicData}
-                                  db={this.state.db}
-                                  from={this.state.from}
+                                  gotBasicData={gotBasicData}
+                                  db={db}
+                                  from={from}
                                   usingGroupBy={this.usingGroupBy}
                                   tagOpts={
                                     conf.targetDataKey === 'select'
@@ -1225,9 +1247,9 @@ export class QueryEditor extends PureComponent<Props> {
                           <InlineField className="custom-label" label="INTERVAL" labelWidth={10}>
                             <div className="w-100-percent">
                               <Select
-                                key={this.state.interval ? 'intervalWithVal' : 'intervalWithoutVal'}
+                                key={interval ? 'intervalWithVal' : 'intervalWithoutVal'}
                                 options={this.intervalOptsWithVariables}
-                                value={this.state.interval}
+                                value={interval}
                                 onChange={(val: any) => this.onFieldChange('interval', val)}
                                 placeholder="TIME"
                                 isClearable={true}
@@ -1243,7 +1265,7 @@ export class QueryEditor extends PureComponent<Props> {
                     <InlineField className="custom-label" label="LIMIT" labelWidth={6}>
                       <div className="w-100-percent">
                         <Input
-                          value={this.state.limit}
+                          value={limit}
                           onChange={(ev: any) => this.onFieldChange('limit', ev.target)}
                           placeholder="LIMIT"
                           width={12}
@@ -1253,10 +1275,10 @@ export class QueryEditor extends PureComponent<Props> {
                     <InlineField className="custom-label" label="OFFSET" labelWidth={8}>
                       <div className="w-100-percent">
                         <Input
-                          value={this.state.offset}
+                          value={offset}
                           onChange={(ev: any) => this.onFieldChange('offset', ev.target)}
                           placeholder="OFFSET"
-                          disabled={!this.state.limit}
+                          disabled={!limit}
                           width={12}
                         />
                       </div>
@@ -1267,18 +1289,18 @@ export class QueryEditor extends PureComponent<Props> {
                       <InlineField className="custom-label" label="FORMAT AS" labelWidth={11}>
                         <Select
                           options={formatAsOpts}
-                          value={this.state.formatAs}
+                          value={formatAs}
                           onChange={(val: any) => this.onFieldChange('formatAs', val)}
                           placeholder="FORMAT_AS"
-                          key={this.state.formatAs ? 'formatAsWithVal' : 'formatAsWithoutVal'}
+                          key={formatAs ? 'formatAsWithVal' : 'formatAsWithoutVal'}
                           width="auto"
                         />
                       </InlineField>
-                      {this.state.formatAs === 'timeSeries' ? (
+                      {formatAs === 'timeSeries' ? (
                         <>
                           <InlineField className="custom-label" label="ALIAS" labelWidth={6}>
                             <Input
-                              value={this.state.alias}
+                              value={alias}
                               onChange={(ev: any) => this.onFieldChange('alias', ev.target)}
                               placeholder="${tag0} ${tag1}"
                               width={28}
@@ -1293,10 +1315,10 @@ export class QueryEditor extends PureComponent<Props> {
                             >
                               <Select
                                 options={showMetricsOpts}
-                                value={this.state.showMetrics}
+                                value={showMetrics}
                                 onChange={(val: any) => this.onFieldChange('showMetrics', val)}
                                 placeholder="SHOW METRICS"
-                                key={this.state.showMetrics ? 'showMetricsWithVal' : 'showMetricsWithoutVal'}
+                                key={showMetrics ? 'showMetricsWithVal' : 'showMetricsWithoutVal'}
                                 width="auto"
                               />
                               <Tooltip
@@ -1327,7 +1349,7 @@ export class QueryEditor extends PureComponent<Props> {
               ) : (
                 <InlineField className="custom-label" label="_id" labelWidth={10}>
                   <TracingIdSelector
-                    tracingId={this.state.tracingId}
+                    tracingId={tracingId}
                     onChange={(v: LabelItem) => this.onFieldChange('tracingId', v, true)}
                     templateVariableOpts={templateVariableOpts.filter(item => {
                       return item.variableType !== 'interval' && item.variableType !== 'datasource'
