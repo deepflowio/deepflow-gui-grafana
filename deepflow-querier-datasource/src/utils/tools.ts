@@ -82,7 +82,8 @@ export function isEnumLikelyTag(item: any): boolean {
   return item.type.toLowerCase().includes('enum') && item.type.toLowerCase() !== 'bit_enum'
 }
 
-export function formatTagOperators(operators: string[], item: any) {
+export function formatTagOperators(item: Record<any, any> & { operators: string[] }) {
+  let { operators } = item
   const isEnumLikelyType = isEnumLikelyTag(item)
   if (isEnumLikelyType) {
     operators = [...new Set(['LIKE', 'NOT LIKE', ...operators])]
