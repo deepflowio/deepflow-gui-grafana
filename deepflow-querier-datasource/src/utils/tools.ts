@@ -323,13 +323,15 @@ export function genGetTagValuesSql(
   } else {
     // tag of map type children, can only search by value, but value is same as description
     const ONLY_USE_NAME_LIKE_TAG_TYPES = ['resource', 'int_enum', 'string_enum', 'resource_array']
-    const likeVal = (keyword as string).replace("'", "\\'") || '*'
+
+    const likeVal = (keyword as string) || '*'
     cond = [
       `Enum(${tagName})`,
       ...(ONLY_USE_NAME_LIKE_TAG_TYPES.includes((tagType as string).toLocaleLowerCase()) ? [] : [tagName])
     ]
       .map(e => {
-        return `${e} LIKE '*${likeVal}*'`
+        // @ts-ignore
+        return `${e} LIKE ${querierJs.escape(`*${likeVal}*`)}`
       })
       .join(' OR ')
   }
