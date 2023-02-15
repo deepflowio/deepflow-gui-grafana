@@ -108,6 +108,7 @@ export class QueryEditor extends PureComponent<Props> {
     groupBy: BasicDataWithId[]
     orderBy: BasicDataWithId[]
     interval: string
+    slimit: string
     limit: string
     offset: string
     formatAs: 'timeSeries' | 'table' | ''
@@ -374,6 +375,18 @@ export class QueryEditor extends PureComponent<Props> {
         return item.key
       })
     return groupByKeys.length > 0 || !!interval
+  }
+
+  get showSlimit(): boolean {
+    const { groupBy, interval } = this.state
+    const groupByKeys = groupBy
+      .filter((item: any) => {
+        return item.key
+      })
+      .map((item: any) => {
+        return item.key
+      })
+    return groupByKeys.length > 0 && !!interval
   }
 
   get usingAppTraceType(): boolean {
@@ -735,7 +748,7 @@ export class QueryEditor extends PureComponent<Props> {
       })
       const table = { db: db as string, from: result as string }
       this.getBasicData(table)
-    } else if (field === 'limit') {
+    } else if (field === 'slimit' || field === 'limit') {
       this.setState({
         runQueryWarning: true,
         [field]: result,
@@ -1059,6 +1072,7 @@ export class QueryEditor extends PureComponent<Props> {
       sources,
       gotBasicData,
       interval,
+      slimit,
       limit,
       offset,
       formatAs,
@@ -1262,6 +1276,18 @@ export class QueryEditor extends PureComponent<Props> {
                     ) : null
                   })}
                   <div className="row-start-center">
+                    {this.showSlimit ? (
+                      <InlineField className="custom-label" label="SLIMIT" labelWidth={6}>
+                        <div className="w-100-percent">
+                          <Input
+                            value={slimit}
+                            onChange={(ev: any) => this.onFieldChange('slimit', ev.target)}
+                            placeholder="SLIMIT"
+                            width={12}
+                          />
+                        </div>
+                      </InlineField>
+                    ) : null}
                     <InlineField className="custom-label" label="LIMIT" labelWidth={6}>
                       <div className="w-100-percent">
                         <Input

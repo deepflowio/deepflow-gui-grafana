@@ -158,6 +158,7 @@ export type QueryDataType = {
   groupBy: BasicDataWithId[]
   orderBy: BasicDataWithId[]
   interval: string
+  slimit: string
   limit: string
   offset: string
   formatAs: 'timeSeries' | 'table' | ''
@@ -216,6 +217,7 @@ export const defaultFormData: Omit<QueryDataType, 'appType' | 'db' | 'sources'> 
     }
   ],
   interval: '',
+  slimit: '',
   limit: '100',
   offset: '',
   formatAs: 'timeSeries',
