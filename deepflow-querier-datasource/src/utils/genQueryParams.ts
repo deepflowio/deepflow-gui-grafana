@@ -491,6 +491,7 @@ export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVa
     'groupBy',
     'orderBy',
     'interval',
+    'slimit',
     'limit',
     'offset',
     'appType'
@@ -518,6 +519,7 @@ export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVa
     },
     groupBy: groupByFormat(data, variables),
     orderBy: orderByFormat(data.orderBy as BasicData[]),
+    slimit: data.slimit,
     limit: data.limit,
     offset: data.offset
   }
