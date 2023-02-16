@@ -739,7 +739,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
         ...params,
         ...(datasource
           ? {
-              datasource
+              data_precision: datasource
             }
           : undefined)
       }
