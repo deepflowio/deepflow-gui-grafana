@@ -201,7 +201,7 @@ jobs:
           endpoint: "oss-accelerate.aliyuncs.com"
           access-key-id: "${{ secrets.ALIYUN_OSS_ACCESS_KEY }}"
           access-key-secret: "${{ secrets.ALIYUN_OSS_SECRETS_KEY }}"
-      - name: upload agent artifacts
+      - name: upload plugin artifacts
         run: |
           cd release
           ossutil cp -rf deepflow-gui-grafana.tar.gz oss://deepflow-ce/pkg/grafana-plugin/${{ env.IMAGE_TAG_PREFIX }}/deepflow-gui-grafana.tar.gz
@@ -209,4 +209,4 @@ jobs:
         if: "startsWith(github.ref, 'refs/tags/')"
         run: |
           cd release
-          ossutil cp -rf deepflow-gui-grafana.tar.gz  oss://deepflow-ce/pkg/grafana-plugin/stable/deepflow-gui-grafana.tar.gz
+          ossutil cp -rf deepflow-gui-grafana.tar.gz oss://deepflow-ce/pkg/grafana-plugin/stable/deepflow-gui-grafana.tar.gz
