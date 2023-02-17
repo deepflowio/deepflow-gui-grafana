@@ -202,6 +202,7 @@ export class QueryEditor extends PureComponent<Props> {
         linesBetweenQueries: 2
       })
       res = sqlString
+        .replace('SLIMIT', '\nSLIMIT \n ')
         .split('\n')
         .map(d => {
           return d.startsWith('\t') || d.startsWith(' ') ? `<p>${d}</p>` : `<p class='highlight'>${d}</p>`
