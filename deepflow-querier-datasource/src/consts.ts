@@ -241,3 +241,5 @@ export const showMetricsOpts: SelectOpts = [
     value: 0
   }
 ]
+
+export const SLIMIT_DEFAULT_VALUE = '20'

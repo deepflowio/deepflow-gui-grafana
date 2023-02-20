@@ -37,6 +37,7 @@ import {
   SERVICE_MAP_SUPPORT_TABLE,
   showMetricsOpts,
   ShowMetricsVal,
+  SLIMIT_DEFAULT_VALUE,
   TAG_METRIC_TYPE_NUM,
   TIME_TAG_TYPE,
   VAR_INTERVAL,
@@ -387,7 +388,16 @@ export class QueryEditor extends PureComponent<Props> {
       .map((item: any) => {
         return item.key
       })
-    return groupByKeys.length > 0 && !!interval
+    const result = groupByKeys.length > 0 && !!interval
+    if (result) {
+      if (this.state.slimit === undefined) {
+        this.setState({ slimit: '' })
+      }
+    } else {
+      this.setState({ slimit: undefined })
+    }
+
+    return result
   }
 
   get usingAppTraceType(): boolean {
@@ -1283,7 +1293,7 @@ export class QueryEditor extends PureComponent<Props> {
                           <Input
                             value={slimit}
                             onChange={(ev: any) => this.onFieldChange('slimit', ev.target)}
-                            placeholder="SLIMIT"
+                            placeholder={SLIMIT_DEFAULT_VALUE}
                             width={12}
                           />
                         </div>
