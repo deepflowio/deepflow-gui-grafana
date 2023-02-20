@@ -1,7 +1,7 @@
 import { ScopedVars } from '@grafana/data'
 import { getTemplateSrv } from '@grafana/runtime'
 import { BasicData } from 'components/QueryEditorFormRow'
-import { VAR_INTERVAL, VAR_INTERVAL_QUOTATION } from 'consts'
+import { SLIMIT_DEFAULT_VALUE, VAR_INTERVAL, VAR_INTERVAL_QUOTATION } from 'consts'
 import _ from 'lodash'
 import { LabelItem } from 'QueryEditor'
 // import { MyQuery } from 'types'
@@ -331,8 +331,8 @@ function whereFormat(data: any, variables: any[], scopedVars: ScopedVars) {
       return
     }
     if (e.whereOnly) {
-      const tagNames = ['_0', '_1'].map(clientName => {
-        return `${e.key}${clientName}`
+      const tagNames = ['_0', '_1'].map(side => {
+        return `${e.key}${side}`
       })
       const obj = {
         type: 'tag',
@@ -519,7 +519,9 @@ export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVa
     },
     groupBy: groupByFormat(data, variables),
     orderBy: orderByFormat(data.orderBy as BasicData[]),
-    slimit: data.slimit,
+    ...((data?.groupBy as BasicData[]).filter(e => e.key).length && data.interval
+      ? { slimit: data.slimit === undefined || data.slimit === '' ? SLIMIT_DEFAULT_VALUE : data.slimit }
+      : {}),
     limit: data.limit,
     offset: data.offset
   }
