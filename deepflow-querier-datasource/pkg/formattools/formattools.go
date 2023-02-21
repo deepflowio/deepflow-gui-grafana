@@ -73,13 +73,9 @@ func AddResourceFieldsInData(ss map[string]interface{}, role string) {
 		ss[prefix+"resource_type"] = nodeType
 
 		if nodeType == "ip" || nodeType == "internet_ip" {
-			if v, ok := ss["subnet_id"+suffix]; ok {
-				str := fmt.Sprintf("%v", v)
-				ss[prefix+"resource_id"] = ss["ip"+suffix].(string) + "(" + str + ")"
-			} else {
-				ss[prefix+"resource_id"] = ss["ip"+suffix]
-			}
-			ss[prefix+"resource"] = ss["ip"+suffix]
+			str := fmt.Sprintf("%v(%v)", ss[resourceKeyPrefix+suffix], ss[resourceKeyPrefix+"_id"+suffix])
+			ss[prefix+"resource_id"] = str
+			ss[prefix+"resource"] = ss[resourceKeyPrefix+suffix]
 		} else {
 			if v, ok := ss[nodeType+"_id"+suffix]; ok {
 				ss[prefix+"resource_id"] = v
