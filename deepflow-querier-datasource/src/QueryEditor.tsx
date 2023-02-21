@@ -37,7 +37,7 @@ import {
   SERVICE_MAP_SUPPORT_TABLE,
   showMetricsOpts,
   ShowMetricsVal,
-  SLIMIT_DEFAULT_VALUE,
+  // SLIMIT_DEFAULT_VALUE,
   TAG_METRIC_TYPE_NUM,
   TIME_TAG_TYPE,
   VAR_INTERVAL,
@@ -109,7 +109,7 @@ export class QueryEditor extends PureComponent<Props> {
     groupBy: BasicDataWithId[]
     orderBy: BasicDataWithId[]
     interval: string
-    slimit: string
+    // slimit: string
     limit: string
     offset: string
     formatAs: 'timeSeries' | 'table' | ''
@@ -379,26 +379,26 @@ export class QueryEditor extends PureComponent<Props> {
     return groupByKeys.length > 0 || !!interval
   }
 
-  get showSlimit(): boolean {
-    const { groupBy, interval } = this.state
-    const groupByKeys = groupBy
-      .filter((item: any) => {
-        return item.key
-      })
-      .map((item: any) => {
-        return item.key
-      })
-    const result = groupByKeys.length > 0 && !!interval
-    if (result) {
-      if (this.state.slimit === undefined) {
-        this.setState({ slimit: '' })
-      }
-    } else {
-      this.setState({ slimit: undefined })
-    }
+  // get showSlimit(): boolean {
+  //   const { groupBy, interval } = this.state
+  //   const groupByKeys = groupBy
+  //     .filter((item: any) => {
+  //       return item.key
+  //     })
+  //     .map((item: any) => {
+  //       return item.key
+  //     })
+  //   const result = groupByKeys.length > 0 && !!interval
+  //   if (result) {
+  //     if (this.state.slimit === undefined) {
+  //       this.setState({ slimit: '' })
+  //     }
+  //   } else {
+  //     this.setState({ slimit: undefined })
+  //   }
 
-    return result
-  }
+  //   return result
+  // }
 
   get usingAppTraceType(): boolean {
     return this.state.appType === 'appTracing'
@@ -1085,7 +1085,7 @@ export class QueryEditor extends PureComponent<Props> {
       sources,
       gotBasicData,
       interval,
-      slimit,
+      // slimit,
       limit,
       offset,
       formatAs,
@@ -1289,7 +1289,7 @@ export class QueryEditor extends PureComponent<Props> {
                     ) : null
                   })}
                   <div className="row-start-center">
-                    {this.showSlimit ? (
+                    {/* {this.showSlimit ? (
                       <InlineField className="custom-label" label="SLIMIT" labelWidth={6}>
                         <div className="w-100-percent">
                           <Input
@@ -1300,7 +1300,7 @@ export class QueryEditor extends PureComponent<Props> {
                           />
                         </div>
                       </InlineField>
-                    ) : null}
+                    ) : null} */}
                     <InlineField className="custom-label" label="LIMIT" labelWidth={6}>
                       <div className="w-100-percent">
                         <Input

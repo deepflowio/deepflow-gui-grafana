@@ -1,7 +1,11 @@
 import { ScopedVars } from '@grafana/data'
 import { getTemplateSrv } from '@grafana/runtime'
 import { BasicData } from 'components/QueryEditorFormRow'
-import { SLIMIT_DEFAULT_VALUE, VAR_INTERVAL, VAR_INTERVAL_QUOTATION } from 'consts'
+import {
+  // SLIMIT_DEFAULT_VALUE,
+  VAR_INTERVAL,
+  VAR_INTERVAL_QUOTATION
+} from 'consts'
 import _ from 'lodash'
 import { LabelItem } from 'QueryEditor'
 // import { MyQuery } from 'types'
@@ -519,9 +523,9 @@ export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVa
     },
     groupBy: groupByFormat(data, variables),
     orderBy: orderByFormat(data.orderBy as BasicData[]),
-    ...((data?.groupBy as BasicData[]).filter(e => e.key).length && data.interval
-      ? { slimit: data.slimit === undefined || data.slimit === '' ? SLIMIT_DEFAULT_VALUE : data.slimit }
-      : {}),
+    // ...((data?.groupBy as BasicData[]).filter(e => e.key).length && data.interval
+    //   ? { slimit: data.slimit === undefined || data.slimit === '' ? SLIMIT_DEFAULT_VALUE : data.slimit }
+    //   : {}),
     limit: data.limit,
     offset: data.offset
   }
