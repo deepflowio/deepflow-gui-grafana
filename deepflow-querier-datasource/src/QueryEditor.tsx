@@ -580,7 +580,9 @@ export class QueryEditor extends PureComponent<Props> {
       this.setState({
         runQueryWarning: false
       })
-      this.props.onRunQuery()
+      setTimeout(() => {
+        this.props.onRunQuery()
+      })
     } catch (error: any) {
       console.log(error)
       this.setState({
