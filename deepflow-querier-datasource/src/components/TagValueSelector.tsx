@@ -37,7 +37,7 @@ export const TagValueSelector = (props: {
     if (!db || !from || !basicData.key) {
       return {}
     }
-    return getTagMapCache(db, from, getRealKey(basicData))
+    return getTagMapCache(db, from, getRealKey(basicData)) || {}
   }, [db, from, basicData])
 
   const useInput = useMemo(() => {
