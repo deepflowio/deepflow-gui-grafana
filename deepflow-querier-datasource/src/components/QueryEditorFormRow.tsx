@@ -6,7 +6,7 @@ import _ from 'lodash'
 import { SubFuncsEditor } from './SubFuncsEditor'
 import { BasicDataWithId, FormTypes, MAP_METRIC_TYPE_NUM } from 'consts'
 import { TagValueSelector } from './TagValueSelector'
-import { getRealKey, isEnumLikelyTag } from 'utils/tools'
+import { getRealKey, isAutoGroupTag, isEnumLikelyTag } from 'utils/tools'
 
 export interface RowConfig {
   type: boolean
@@ -196,7 +196,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
             params: [],
             subFuncs: []
           }),
-      ...(result.includes('resource_gl')
+      ...(isAutoGroupTag(result)
         ? {
             as: ''
           }
@@ -454,7 +454,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                   value={basicData.as}
                   onChange={this.onAsInput}
                   disabled={
-                    basicData.key.includes('resource_gl') ||
+                    isAutoGroupTag(basicData.key) ||
                     metricOpts.find(e => e.value === basicData.key)?.type === MAP_METRIC_TYPE_NUM
                   }
                   width={12}
