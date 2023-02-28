@@ -505,3 +505,7 @@ export function getTracingId(tracingId: LabelItem | null | undefined): string {
   }
   return typeof _id === 'string' ? _id.replace(ID_PREFIX, '') : ''
 }
+
+export function isAutoGroupTag(tagName: string) {
+  return /resource_gl|auto_instance|auto_service/.test(tagName)
+}

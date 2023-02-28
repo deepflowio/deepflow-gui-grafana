@@ -32,9 +32,9 @@ const getTooltipSpanName = (data: any) => {
 const getTooltipSpanContent = (data: any) => {
   if (data._barType === 'network') {
     const tapPortName = data.tap_port_name ? `(${data.tap_port_name})` : ''
-    return `${data.tap_port} ${tapPortName} ${data.resource_gl0}`
+    return `${data.tap_port} ${tapPortName} ${data.auto_instance || data.resource_gl0}`
   } else if (data._barType === 'process') {
-    return `${data.process_kname} ${data.resource_gl0}`
+    return `${data.process_kname} ${data.auto_instance || data.resource_gl0}`
   } else {
     return `${data.service_instance_id} ${data.service_name}`
   }
