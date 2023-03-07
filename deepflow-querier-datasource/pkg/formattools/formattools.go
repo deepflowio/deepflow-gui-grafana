@@ -12,17 +12,20 @@ import (
 func getAutoGroupKeyPrefix(ss map[string]interface{}, role string) string {
 
 	var re *regexp.Regexp
+	var re_1 *regexp.Regexp
 	var re_resource *regexp.Regexp
 	var res []string
 
 	if role == "client" {
 		//623被遗弃的字段用auto_xxx代替，页面短时间内可能还会带该字段查询，所以保留
 		re_resource = regexp.MustCompile(`^(resource_gl\d)_id_0$`)
-		re = regexp.MustCompile(`^(auto_instance)_id_\d$`)
+		re = regexp.MustCompile(`^(auto_instance)_id_0$`)
+		re_1 = regexp.MustCompile(`^(auto_service)_id_0$`)
 	} else if role == "server" {
 		//623被遗弃的字段用auto_xxx代替，页面短时间内可能还会带该字段查询，所以保留
 		re_resource = regexp.MustCompile(`^(resource_gl\d)_id_1$`)
-		re = regexp.MustCompile(`^(auto_service)_id_\d$`)
+		re = regexp.MustCompile(`^(auto_service)_id_1$`)
+		re_1 = regexp.MustCompile(`^(auto_instance)_id_1$`)
 	}
 	for k := range ss {
 		// 优先用auto_xxxx
@@ -30,9 +33,14 @@ func getAutoGroupKeyPrefix(ss map[string]interface{}, role string) string {
 		if len(res) > 0 {
 			return res[1]
 		} else {
-			res = re_resource.FindStringSubmatch(k)
+			res = re_1.FindStringSubmatch(k)
 			if len(res) > 0 {
 				return res[1]
+			} else {
+				res = re_resource.FindStringSubmatch(k)
+				if len(res) > 0 {
+					return res[1]
+				}
 			}
 		}
 	}
