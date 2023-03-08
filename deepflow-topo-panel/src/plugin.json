@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
   "type": "panel",
   "name": "DeepFlow Topo",
-  "id": "deepflow-topo-panel",
+  "id": "deepflowio-topo-panel",
   "info": {
     "description": "",
     "author": {
