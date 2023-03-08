@@ -215,7 +215,7 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
             delete item['toString(_id)']
           }
         })
-        const usingGroupBy = sql.includes('group by') && queryData.formatAs === 'timeSeries'
+        const usingGroupBy = sql.toLowerCase().includes('group by') && queryData.formatAs === 'timeSeries'
         const customReturnTags = returnTags
           .filter((e: any) => {
             return !e.name.includes('time')
