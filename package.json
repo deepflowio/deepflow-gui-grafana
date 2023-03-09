@@ -1,6 +1,6 @@
 {
   "name": "deepflow-gui-grafana",
-  "version": "1.0.0",
+  "version": "6.2.5",
   "private": true,
   "workspaces": [
     "./*"
@@ -31,5 +31,6 @@
     "prettier": "^2.7.1",
     "tslib": "^2.4.0",
     "typescript": "^4.7.4"
-  }
+  },
+  "license": "AGPL-3.0"
 }
