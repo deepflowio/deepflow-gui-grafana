@@ -1,10 +1,10 @@
-# DeepFlow-Querier data source
+# DeepFlow data source
 
 [DeepFlow](https://deepflow.yunshan.net/community.html) is a highly automated observability platform open sourced by [YUNSHAN Network Inc](https://www.yunshan.net/). It is a full stack, full span and high-performance data engine built for cloud-native observability application developers. With new technologies such as eBPF, WASM and OpenTelemetry, DeepFlow innovatively implements core mechanisms such as AutoTracing, AutoMetrics, AutoTagging and SmartEncoding, helping developers to improve the automation level of code injection, reducing the maintanence complexity of the observability platform. With the programmability and open API of DeepFlow, developers can quickly integrate it into their observability stack.
 
 For instructions on how to add a data source to Grafana, refer to the [administration documentation](https://grafana.com/docs/grafana/latest/administration/data-source-management/). Only users with the organization administrator role can add data sources.
 
-Once you’ve added the deepflow-querier data source, you can configure it so that your Grafana instance’s users can create queries in its query editor when they build dashboards, use Explore, and annotate visualizations.
+Once you’ve added the deepflow data source, you can configure it so that your Grafana instance’s users can create queries in its query editor when they build dashboards, use Explore, and annotate visualizations.
 
 # Configure the data source
 
@@ -100,16 +100,21 @@ A type for work with `Deepflow Apptracing Panel`, the response data is not a sta
 The only and required form item. Can input and select `traincg _id` or better using with grafana variables.
 
 # Generate grafana variables by tags
--	get all values:
+- get all values
+
 	```SQL
 	show tag ${tag_name} values from ${table_name}
 	```
--	filter by tag name:
+
+- filter by tag name
+
 	```SQL
 	show tag ${tag_name} values from ${table_name} where display_name like '*abc*'
 	```
+
 - filter by other variables value:
-for example, cluster is an existing grafana variable
+
+    for example, cluster is an existing grafana variable
 	- Use `$cluster`, when the value of cluster is id:
 
 	  ```Bash
