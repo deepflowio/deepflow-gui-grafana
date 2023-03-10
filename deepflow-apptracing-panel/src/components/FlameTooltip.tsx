@@ -36,7 +36,7 @@ const getTooltipSpanContent = (data: any) => {
   } else if (data._barType === 'process') {
     return `${data.process_kname} ${data.auto_instance || data.resource_gl0}`
   } else {
-    return `${data.service_instance_id} ${data.service_name}`
+    return `${data.app_instance} ${data.app_service}`
   }
 }
 
