@@ -22,8 +22,12 @@
     ],
     "screenshots": [
       {
-        "name": "screenshots",
+        "name": "screenshot",
         "path": "img/screenshot.jpg"
+      },
+      {
+        "name": "screenshot-tootltip",
+        "path": "img/screenshot-tootltip.jpg"
       }
     ],
     "version": "%VERSION%",
