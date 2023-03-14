@@ -21,7 +21,7 @@ on:
         type: string
 
 env:
-  IMAGE: "deepflow-init-grafana"
+  IMAGE: "deepflowio-init-grafana"
 
 jobs:
   build:
@@ -36,7 +36,7 @@ jobs:
       - name: Checkout Deepflow Dashboards
         uses: actions/checkout@v3
         with:
-          repository: deepflowys/deepflow-dashboards
+          repository: deepflowio/deepflow-dashboards
           path: './deepflow-dashboards'
 
       - name: Copy Dashboards To Datasource
@@ -131,7 +131,7 @@ jobs:
           echo "IMAGE_TAG_PREFIX=${{ github.ref_name }}"|sed 's|main|latest|' >> $GITHUB_ENV
           echo "IMAGE_TAG=$(git rev-list --count HEAD)" >> $GITHUB_ENV
 
-      - name: Build and push deepflow-init-grafana images
+      - name: Build and push deepflowio-init-grafana images
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -150,7 +150,7 @@ jobs:
           username: "${{ secrets.REGISTRY_ALIYUN_USER }}"
           password: "${{ secrets.REGISTRY_PASS }}"
 
-      - name: Build and push deepflow-init-grafana images to aliyun hongkong
+      - name: Build and push deepflowio-init-grafana images to aliyun hongkong
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -168,7 +168,7 @@ jobs:
           username: "${{ secrets.REGISTRY_ALIYUN_USER }}"
           password: "${{ secrets.REGISTRY_PASS }}"
 
-      - name: Build and push deepflow-init-grafana images to aliyun beijing
+      - name: Build and push deepflowio-init-grafana images to aliyun beijing
         uses: docker/build-push-action@v2
         with:
           context: .
