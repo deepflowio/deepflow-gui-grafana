@@ -3,7 +3,13 @@ import { SelectOpts } from 'QueryEditor'
 import { uuid } from 'utils/tools'
 
 // 不支持做分组的 tag: 负载均衡监听器, ingress
-export const SELECT_GROUP_BY_DISABLE_TAGS = ['lb_listener', 'pod_ingress']
+export const SELECT_GROUP_BY_DISABLE_TAGS = [
+  'lb_listener',
+  'pod_ingress',
+  'tap_port_host',
+  'tap_port_chost',
+  'tap_port_pod_node'
+]
 
 export const DISABLE_TAGS = ['_id', 'time']
 
