@@ -1,6 +1,6 @@
 {
   "name": "deepflow-querier-datasource",
-  "version": "6.2.5",
+  "version": "6.2.6",
   "description": "yunshan-deepflow",
   "scripts": {
     "build": "rm -rf ./dist && grafana-toolkit plugin:build --preserveConsole",
