@@ -9,11 +9,10 @@ Once you’ve added the deepflow data source, you can configure it so that your 
 # Configure the data source
 
 ## Data source options
-| Name        | Description |
-| ----------- | ----------- |
-| Request Url | The url address of deepflow-querier server. |
-| API Token   | The api token of deepflow-querier server, only used for enterprise edition authentication. |
-| Tracing Url | The url address of deepflow-app server, only used for `Distributed Tracing` app type. |
+| Name             | Description |
+| ---------------- | ----------- |
+| Request Url      | The url address of deepflow-querier server. |
+| Tracing Url      | The url address of deepflow-app server, only used for `Distributed Tracing` app type. |
 
 # Query editor
 The deepflow query editor is available when editing a panel using a `Deepflow Querier` data source.
