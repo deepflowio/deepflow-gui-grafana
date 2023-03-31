@@ -34,16 +34,6 @@ export class ConfigEditor extends PureComponent<Props, State> {
           </div>
         </div>
         <div className="gf-form">
-          <span className="width-10">API Token</span>
-          <div style={{ flexGrow: 1 }}>
-            <Input
-              value={jsonData.token}
-              onChange={this.onJsonChange('token')}
-              placeholder="token for deepflow"
-            ></Input>
-          </div>
-        </div>
-        <div className="gf-form">
           <span className="width-10">Tracing Url</span>
           <div style={{ flexGrow: 1 }}>
             <Input
