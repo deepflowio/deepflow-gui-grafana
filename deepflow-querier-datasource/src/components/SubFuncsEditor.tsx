@@ -1,12 +1,14 @@
 import React, { useState } from 'react'
-import { Select, Input, Icon, Button } from '@grafana/ui'
-import { LabelItem, SelectOptsWithStringValue } from 'QueryEditor'
-
+import { Select, Icon, Button } from '@grafana/ui'
+import { LabelItem, SelectOpts, SelectOptsWithStringValue } from 'QueryEditor'
+import { SelectableValue } from '@grafana/data'
+import { VAR_INTERVAL_LABEL } from 'consts'
 interface SubFuncsEditorProps {
   customClassName?: string
   subFuncs: any[]
   subFuncOpts: SelectOptsWithStringValue
   onSubFuncsChange: (newSubFuncs: GenFuncDisplayNameParam[]) => void
+  isUsingAlerting: boolean
 }
 
 interface GenFuncDisplayNameParam {
@@ -38,7 +40,7 @@ const mathOpreatorOpts = (Object.keys(mathOpsMap) as MathOpKeys[]).map((key: Mat
 export function SubFuncsEditor(props: SubFuncsEditorProps) {
   const [func, setFunc] = useState('')
   const [op, setOp] = useState('')
-  const [params, setParams] = useState<number | undefined>(undefined)
+  const [params, setParams] = useState<number | string | undefined>(undefined)
 
   function genFuncDisplayName(item: GenFuncDisplayNameParam) {
     if (item.func.toLocaleLowerCase() === 'math') {
@@ -63,7 +65,8 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
   ]
 
   const noFunc = !func
-  const mathWithoutOpOrParams = func.toLocaleLowerCase() === 'math' && (!op || !Number.isInteger(params))
+  const mathWithoutOpOrParams =
+    func.toLocaleLowerCase() === 'math' && (!op || !(Number.isInteger(params) || params === VAR_INTERVAL_LABEL))
   const sunFuncsMaxLen = props.subFuncs.length >= 8
   const addBtnDisable = noFunc || mathWithoutOpOrParams || sunFuncsMaxLen
 
@@ -71,7 +74,7 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
     const basic: {
       func: string
       op?: string
-      params?: number
+      params?: number | string
     } = {
       func
     }
@@ -92,6 +95,17 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
     props.subFuncs.splice(index, 1)
     props.onSubFuncsChange(props.subFuncs)
   }
+
+  const [numberOpts, setNumberOpts] = useState<SelectOpts>(
+    !props.isUsingAlerting
+      ? [
+          {
+            label: VAR_INTERVAL_LABEL,
+            value: VAR_INTERVAL_LABEL
+          }
+        ]
+      : []
+  )
 
   return (
     <div
@@ -125,22 +139,34 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
           ></Select>
         ) : null}
         {func === 'Math' && op ? (
-          <Input
-            width={12}
-            type="number"
+          <Select
+            allowCustomValue
+            options={numberOpts}
             value={params}
-            onKeyDown={e => {
-              if (e.key === 'Enter') {
-                e.preventDefault()
+            onCreateOption={v => {
+              const valueNumber = parseInt(v, 10)
+              let _v: number
+              if (isNaN(valueNumber)) {
+                return
+              } else if (valueNumber < 1) {
+                _v = 1
+              } else {
+                _v = valueNumber
               }
+              const customValue = { value: _v, label: `${_v}` }
+              setNumberOpts([...numberOpts, customValue])
+              setParams(_v)
             }}
-            onChange={(ev: React.ChangeEvent<HTMLInputElement>) => {
-              const { value } = ev.target
-              const valueNumber = Number(value)
-              setParams(valueNumber < 1 ? 1 : valueNumber)
+            onChange={(value: SelectableValue<string | number>) => {
+              setParams(value.value)
             }}
-            placeholder="NUMBER"
-          ></Input>
+            width="auto"
+            key={
+              (Array.isArray(params) && params.length) || (!Array.isArray(params) && params)
+                ? 'selectWithVal'
+                : 'selectWithoutVal'
+            }
+          />
         ) : null}
         <Button
           fill="outline"
