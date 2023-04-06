@@ -1,7 +1,7 @@
 import { ScopedVars } from '@grafana/data'
 import { getTemplateSrv } from '@grafana/runtime'
 import { BasicData } from 'components/QueryEditorFormRow'
-import { SLIMIT_DEFAULT_VALUE, VAR_INTERVAL, VAR_INTERVAL_QUOTATION } from 'consts'
+import { SLIMIT_DEFAULT_VALUE, VAR_INTERVAL, VAR_INTERVAL_LABEL, VAR_INTERVAL_QUOTATION } from 'consts'
 import _ from 'lodash'
 import { LabelItem } from 'QueryEditor'
 // import { MyQuery } from 'types'
@@ -503,7 +503,7 @@ export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVa
   const data = queryData as Data
   const templateSrv = getTemplateSrv()
   const variables = _.cloneDeep(templateSrv.getVariables() as any[])
-  return {
+  const result = {
     format: 'sql',
     db: data.db,
     tableName: data.from,
@@ -525,16 +525,19 @@ export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVa
     limit: data.limit,
     offset: data.offset
   }
+  return result
 }
 
 export const replaceInterval = (queryText: string, scopedVars: ScopedVars) => {
   if (typeof scopedVars?.__interval_ms?.value === 'number') {
-    return (
-      queryText
-        .replace(VAR_INTERVAL_QUOTATION, `${scopedVars.__interval_ms.value / 1000}`)
-        // history data hanlder
-        .replace(VAR_INTERVAL, `${scopedVars.__interval_ms.value / 1000}`)
-    )
+    const intervalSecond = scopedVars.__interval_ms.value / 1000
+    return queryText
+      .split(VAR_INTERVAL_QUOTATION)
+      .join(intervalSecond + '')
+      .split(VAR_INTERVAL)
+      .join(intervalSecond + '')
+      .split(VAR_INTERVAL_LABEL)
+      .join(intervalSecond + '')
   }
   return queryText
 }

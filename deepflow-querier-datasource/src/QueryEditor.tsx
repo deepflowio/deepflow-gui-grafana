@@ -41,6 +41,7 @@ import {
   TAG_METRIC_TYPE_NUM,
   TIME_TAG_TYPE,
   VAR_INTERVAL,
+  VAR_INTERVAL_LABEL,
   VAR_INTERVAL_QUOTATION
 } from 'consts'
 import { DATA_SOURCE_SETTINGS, getTagMapCache, SQL_CACHE } from 'utils/cache'
@@ -198,11 +199,12 @@ export class QueryEditor extends PureComponent<Props> {
     const content = _.get(SQL_CACHE, `${this.requestId}_${this.refId}`, '')
     let res = ''
     try {
-      const sqlString = sqlFormatter(content, {
+      const sqlString = sqlFormatter(content.replace(VAR_INTERVAL_LABEL, VAR_INTERVAL_QUOTATION), {
         tabWidth: 2,
         linesBetweenQueries: 2
       })
       res = sqlString
+        .replace(VAR_INTERVAL_QUOTATION, VAR_INTERVAL_LABEL)
         .replace('SLIMIT', '\nSLIMIT \n ')
         .split('\n')
         .map(d => {
@@ -470,7 +472,7 @@ export class QueryEditor extends PureComponent<Props> {
         !this.isUsingAlerting
           ? [
               {
-                label: '$__interval',
+                label: VAR_INTERVAL_LABEL,
                 value: VAR_INTERVAL_QUOTATION
               }
             ]
@@ -541,7 +543,7 @@ export class QueryEditor extends PureComponent<Props> {
           .concat(having as BasicDataWithId[])
           .concat(orderBy as BasicDataWithId[])
         const funcCheck = funcMetrics.find((item: BasicDataWithId) => {
-          return item.type === 'metric' && item.key !== '' && item.func === ''
+          return !item.key.includes('interval') && item.type === 'metric' && item.key !== '' && item.func === ''
         })
         if (funcCheck) {
           throw new Error("When using group by or interval, metric's func is required")

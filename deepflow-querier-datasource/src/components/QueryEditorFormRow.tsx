@@ -487,6 +487,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
             subFuncs={basicData.subFuncs as any[]}
             subFuncOpts={subFuncOpts}
             onSubFuncsChange={this.onSubFuncsChange}
+            isUsingAlerting={isUsingAlerting}
           ></SubFuncsEditor>
         ) : null}
       </>
