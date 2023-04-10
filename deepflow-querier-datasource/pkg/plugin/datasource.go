@@ -40,14 +40,14 @@ var (
 func NewDatasource(settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
 	opts, err := settings.HTTPClientOptions()
 	if err != nil {
-		return nil, fmt.Errorf("http client options: %w", err)
+		return nil, fmt.Errorf("http client options error : %w", err)
 	}
 	httpclient.DefaultTimeoutOptions.Timeout = 300 * time.Second
 	opts.Timeouts = &httpclient.DefaultTimeoutOptions
 
 	cl, err := httpclient.New(opts)
 	if err != nil {
-		return nil, fmt.Errorf("httpclient new: %w", err)
+		return nil, fmt.Errorf("httpclient new error: %w", err)
 	}
 	return &Datasource{
 		CallResourceHandler: newResourceHandler(),
@@ -83,12 +83,14 @@ func (d *Datasource) QueryData(ctx context.Context, req *backend.QueryDataReques
 
 	defer func() {
 		if r := recover(); r != nil {
-			log.DefaultLogger.Debug("从查询数据错误中恢复", "错误", r)
+			//查询中恢复
+			log.DefaultLogger.Debug("__________Recover from query", "error", r)
 		}
 	}()
 
 	// 记录日志
-	log.DefaultLogger.Info("所有提交的查询", "数据", req)
+	// 所有查询请求数据
+	log.DefaultLogger.Info("__________all submitted queries", "data", req)
 
 	// create response struct
 	response := backend.NewQueryDataResponse()
@@ -98,7 +100,8 @@ func (d *Datasource) QueryData(ctx context.Context, req *backend.QueryDataReques
 		res, err := d.query(ctx, req.PluginContext, q)
 		if err != nil {
 			// return nil, fmt.Errorf("查询错误: %w", err)
-			log.DefaultLogger.Error("子查询错误：" + err.Error())
+			// 子查询错误
+			log.DefaultLogger.Error("__________subquery error: " + err.Error())
 
 			response.Responses[q.RefID] = backend.ErrDataResponse(
 				backend.StatusBadRequest,
@@ -116,8 +119,8 @@ func (d *Datasource) QueryData(ctx context.Context, req *backend.QueryDataReques
 }
 
 func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, query backend.DataQuery) (backend.DataResponse, error) {
-
-	log.DefaultLogger.Info("子查询", "数据", query)
+	// 子查询
+	log.DefaultLogger.Info("__________subquery", "data", query)
 
 	response := backend.DataResponse{}
 
@@ -128,8 +131,9 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	dsj := vv.(map[string]interface{})
 
 	if response.Error != nil {
-		log.DefaultLogger.Warn("settings.JSONData解码失败", "错误", response.Error, "数据", string(d.settings.JSONData))
-		return response, fmt.Errorf("ettings.JSONData解码失败: %w", response.Error)
+		// settings.JSONData解码失败
+		log.DefaultLogger.Error("__________settings.JSONData decoding failed", "error", response.Error, "data", string(d.settings.JSONData))
+		return response, fmt.Errorf("settings.JSONData decoding failed: %w", response.Error)
 	}
 
 	//查询时间段
@@ -146,18 +150,21 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	qj := v.(map[string]interface{})
 
 	if response.Error != nil {
-		log.DefaultLogger.Error("query.JSON解码失败", "错误", response.Error, "数据", string(query.JSON))
-		return response, fmt.Errorf("query.JSON解码失败: %w", response.Error)
+		// query.JSON解码失败
+		log.DefaultLogger.Error("__________query.JSON decoding failed", "error", response.Error, "data", string(query.JSON))
+		return response, fmt.Errorf("query.JSON decoding failed: %w", response.Error)
 	}
 
 	if _, ok := qj["queryText"]; !ok {
-		return response, fmt.Errorf("缺失数据: queryText")
+		// 缺失queryText
+		return response, fmt.Errorf("missing data: queryText")
 	}
 
 	// 格式化queryText
 	var queryText map[string]interface{}
 	if err := json.Unmarshal([]byte(qj["queryText"].(string)), &queryText); err != nil {
-		return response, fmt.Errorf("queryText 序列化失败: " + err.Error())
+		// queryText序列化失败
+		return response, fmt.Errorf("queryText serialization failed: " + err.Error())
 	}
 
 	// 基础校验参数
@@ -207,27 +214,30 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	// 获取sources
 	sources := queryText["sources"].(string)
 
+	//开启debug
+	debug := false
+	if _, ok := qj["debug"]; ok {
+		debug = qj["debug"].(bool)
+	}
+
 	if appType == "appTracingFlame" {
-		//开启debug
-		tracedeug := false
-		if _, ok := qj["debug"]; ok {
-			tracedeug = qj["debug"].(bool)
-		}
 
 		if _, ok := qj["_id"]; !ok {
-			return response, fmt.Errorf("缺失字段: _id")
+			// 缺失_id字段
+			return response, fmt.Errorf("missing field: _id")
 		}
 
 		tracingIdValue := qj["_id"].(string)
 
 		// 获取tracing数据
-		traceRes, err := d.trace(ctx, tracedeug, traceUrl, tracingIdValue, fromTimeInt64, toTimeInt64)
+		traceRes, err := d.trace(ctx, debug, traceUrl, tracingIdValue, fromTimeInt64, toTimeInt64)
 		if err != nil {
 			return response, err
 		}
 
 		if _, ok := traceRes["DATA"]; !ok {
-			return response, fmt.Errorf("trace 查询返回格式错误，缺失DATA")
+			// 缺失data字段
+			return response, fmt.Errorf("the trace query returns a format error, the DATA field is missing")
 		}
 
 		// 空数据
@@ -238,10 +248,12 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		traceResData := traceRes["DATA"].(map[string]interface{})
 
 		if _, ok := traceResData["services"]; !ok {
-			return response, fmt.Errorf("trace 查询返回格式错误，DATA缺失services")
+			// 缺失services
+			return response, fmt.Errorf("the trace query returns a format error, DATA is missing the services field")
 		}
 		if _, ok := traceResData["tracing"]; !ok {
-			return response, fmt.Errorf("trace 查询返回格式错误，DATA缺失tracing")
+			//缺失tracing
+			return response, fmt.Errorf("the trace query returns a format error, DATA is missing the tracing field")
 		}
 
 		services := traceResData["services"].([]interface{})
@@ -251,7 +263,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		tagTranslate := make(map[string]interface{})
 
 		//获取l7_protocol 翻译
-		l7_protocol, err := d.querier(ctx, "flow_log", "show tag l7_protocol values from l7_flow_log", sources, token, requestUrl, fromTimeInt64, toTimeInt64)
+		l7_protocol, err := d.querier(ctx, debug, "flow_log", "show tag l7_protocol values from l7_flow_log", sources, token, requestUrl, fromTimeInt64, toTimeInt64)
 
 		if err != nil {
 			return response, err
@@ -266,7 +278,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		tagTranslate["l7_protocol"] = tag17Protocol
 
 		//获取response_status翻译
-		response_status, err := d.querier(ctx, "flow_log", "show tag response_status values from l7_flow_log", sources, token, requestUrl, fromTimeInt64, toTimeInt64)
+		response_status, err := d.querier(ctx, debug, "flow_log", "show tag response_status values from l7_flow_log", sources, token, requestUrl, fromTimeInt64, toTimeInt64)
 		if err != nil {
 			return response, err
 		}
@@ -278,7 +290,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		tagTranslate["response_status"] = tagResponseStatus
 
 		// 获取tap_side翻译
-		tap_side, err := d.querier(ctx, "flow_log", "show tag tap_side values from l7_flow_log", sources, token, requestUrl, fromTimeInt64, toTimeInt64)
+		tap_side, err := d.querier(ctx, debug, "flow_log", "show tag tap_side values from l7_flow_log", sources, token, requestUrl, fromTimeInt64, toTimeInt64)
 		if err != nil {
 			return response, err
 		}
@@ -289,7 +301,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		}
 		tagTranslate["tap_side"] = tagTapSide
 
-		log.DefaultLogger.Info("tag: ", fmt.Sprintf("%v", tagTranslate))
+		log.DefaultLogger.Info("__________tag: ", fmt.Sprintf("%v", tagTranslate))
 
 		// tracings 追加翻译
 		//生成where
@@ -328,7 +340,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		tracingWhereNew := strings.TrimSuffix(tracingWhere, " or ")
 		tracingsql := sql + tracingWhereNew + " order by `start_time`"
 		// 请求数据
-		tracingsqlRes, err := d.querier(ctx, "flow_log", tracingsql, sources, token, requestUrl, fromTimeInt64, toTimeInt64)
+		tracingsqlRes, err := d.querier(ctx, debug, "flow_log", tracingsql, sources, token, requestUrl, fromTimeInt64, toTimeInt64)
 
 		if err != nil {
 			return response, err
@@ -337,13 +349,15 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		// 获取列
 		var columns []interface{}
 		if _, ok := tracingsqlRes.Result["columns"]; !ok {
-			return response, fmt.Errorf("接口返回数据格缺失字段: columns")
+			// 缺失columns
+			return response, fmt.Errorf("the columns field is missing in the returned data grid")
 		}
 		columns = tracingsqlRes.Result["columns"].([]interface{})
 
 		// 获取值
 		if _, ok := tracingsqlRes.Result["values"]; !ok {
-			return response, fmt.Errorf("接口返回数据格缺失字段: values")
+			//缺失values
+			return response, fmt.Errorf("the values field is missing in the returned data grid")
 		}
 		//
 		var dataListsAll []map[string]interface{}
@@ -360,7 +374,8 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 			for i := 0; i < len(values); i++ {
 				subValue := values[i].([]interface{})
 				if len(subValue) != len(columns) {
-					return response, fmt.Errorf(fmt.Sprintf("value子值: %v和columns: %v长度不一致,", subValue, columns))
+					// value的子值和字段长度不一致
+					return response, fmt.Errorf(fmt.Sprintf("sub-value: %v and columns: %v have different lengths", subValue, columns))
 				}
 				kv := make(map[string]interface{})
 				for j := 0; j < len(columns); j++ {
@@ -371,7 +386,8 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 			dataListsAll = dataLists
 		}
 		//记录日志
-		log.DefaultLogger.Info("columns和value对应后的数据", dataListsAll)
+		//column和value 匹配后数据
+		log.DefaultLogger.Info("__________The data after matching columns and value", dataListsAll)
 
 		//数据
 		frame := data.NewFrame("response")
@@ -474,10 +490,12 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		for k, v := range returnMetrics {
 			vv := v.(map[string]interface{})
 			if _, ok := vv["name"]; !ok {
-				return response, fmt.Errorf("参数: returnMetrics 缺失字段: name")
+				//缺失name
+				return response, fmt.Errorf("returnMetrics Missing fields: name")
 			}
 			if _, ok := vv["type"]; !ok {
-				return response, fmt.Errorf("参数: returnMetrics 缺失字段: type")
+				//缺失type
+				return response, fmt.Errorf("returnMetrics Missing fields: type")
 			}
 			returnMetricNames[k] = vv["name"].(string)
 		}
@@ -486,7 +504,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	//
 
 	// 请求querier
-	body, err := d.querier(ctx, db, sql, sources, token, requestUrl, fromTimeInt64, toTimeInt64)
+	body, err := d.querier(ctx, debug, db, sql, sources, token, requestUrl, fromTimeInt64, toTimeInt64)
 
 	if err != nil {
 		return response, err
@@ -495,13 +513,15 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	// 获取列
 	var columns []interface{}
 	if _, ok := body.Result["columns"]; !ok {
-		return response, fmt.Errorf("接口返回数据格缺失字段: columns")
+		//缺失columns
+		return response, fmt.Errorf("the columns field is missing in the returned data grid")
 	}
 	columns = body.Result["columns"].([]interface{})
 
 	// 获取值
 	if res, ok := body.Result["values"]; !ok {
-		return response, fmt.Errorf("接口返回数据格缺失字段: values")
+		//缺失values
+		return response, fmt.Errorf("the values field is missing in the returned data grid")
 	} else {
 		//查询为空
 		if res == nil {
@@ -516,7 +536,8 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	for i := 0; i < len(values); i++ {
 		subValue := values[i].([]interface{})
 		if len(subValue) != len(columns) {
-			return response, fmt.Errorf(fmt.Sprintf("value子值: %v和columns: %v长度不一致,", subValue, columns))
+			//value子值和columns长度不一致
+			return response, fmt.Errorf(fmt.Sprintf("subvalue: %v and columns: %v lengths are inconsistent", subValue, columns))
 		}
 		kv := make(map[string]interface{})
 		for j := 0; j < len(columns); j++ {
@@ -532,7 +553,8 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		valueBycolumns[i] = kv
 	}
 	//记录日志
-	log.DefaultLogger.Info("columns和value对应后的数据", valueBycolumns)
+	//columns和value 匹配后数据
+	log.DefaultLogger.Info("__________the data after matching columns and value", valueBycolumns)
 
 	if len(valueBycolumns) <= 0 {
 		return response, nil
@@ -591,9 +613,11 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		From          interface{}   `json:"from"`
 		To            interface{}   `json:"to"`
 		Common        interface{}   `json:"common"`
+		Debug         interface{}   `json:"debug"`
 	}
 
 	frameMetasAll := FrameMetas{}
+	frameMetasAll.Debug = body.Debug
 	frameMetasAll.ReturnTags = returnTags
 	frameMetasAll.ReturnMetrics = returnMetrics
 
@@ -613,20 +637,21 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	var FrameMeta data.FrameMeta
 	FrameMeta.Custom = frameMetasAll
 
-	log.DefaultLogger.Info("FrameMeta.Custom数据", FrameMeta)
+	//元数据
+	log.DefaultLogger.Info("__________FrameMeta.Custom", FrameMeta)
 
 	//返回
 	usingGroupBy := false
 	if formatAs == "timeSeries" && strings.Contains(sql, "GROUP BY") {
 		usingGroupBy = true
 	}
-
-	log.DefaultLogger.Info("排序后返回值第一值", firstResponseSort)
+	//排序后的第一个值
+	log.DefaultLogger.Info("__________returns the first value after sorting", firstResponseSort)
 
 	//无需分组，直接一个frame返回
 	if !usingGroupBy {
-
-		log.DefaultLogger.Info("返回数据无需分组处理")
+		//返回数据无需分组处理
+		log.DefaultLogger.Info("__________Return data without group processing")
 
 		//返回
 		frame := data.NewFrame("response")
@@ -667,8 +692,8 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		response.Frames = append(response.Frames, frame)
 		return response, nil
 	}
-
-	log.DefaultLogger.Info("返回时间序列数据&分组")
+	//返回时间序列数据 & 分组依据
+	log.DefaultLogger.Info("__________Return time series data & group by")
 
 	//按照tag分组
 	dataAfterGroupBy := map[string][]map[string]interface{}{}
@@ -800,7 +825,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 }
 
 // 三方trace接口查询
-func (d *Datasource) trace(ctx context.Context, tracedeug bool, traceUrl, tracingIdValue string, fromTime, toTime int64) (res map[string]interface{}, err error) {
+func (d *Datasource) trace(ctx context.Context, debug bool, traceUrl, tracingIdValue string, fromTime, toTime int64) (res map[string]interface{}, err error) {
 
 	var body map[string]interface{}
 
@@ -818,16 +843,17 @@ func (d *Datasource) trace(ctx context.Context, tracedeug bool, traceUrl, tracin
 	postDataMap, _ := json.Marshal(postData)
 	StrPostData := string(postDataMap)
 
-	log.DefaultLogger.Info("请求tracing接口", "数据", StrPostData)
+	//请求tracing接口
+	log.DefaultLogger.Info("__________request tracing interface", "data", StrPostData)
 
 	//请求url
-	tracedeugStr := strconv.FormatBool(tracedeug)
-	traceingUrl := traceUrl + "/v1/stats/querier/L7FlowTracing?debug=" + tracedeugStr
+	tracedebugStr := strconv.FormatBool(debug)
+	traceingUrl := traceUrl + "/v1/stats/querier/L7FlowTracing?debug=" + tracedebugStr
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, traceingUrl, strings.NewReader(StrPostData))
 
 	if err != nil {
-		return body, fmt.Errorf("创建请求失败: %w", err)
+		return body, fmt.Errorf("create request failed: %w", err)
 	}
 
 	req.Header.Add("Content-Type", "application/json; charset=utf-8")
@@ -837,12 +863,12 @@ func (d *Datasource) trace(ctx context.Context, tracedeug bool, traceUrl, tracin
 	//发起请求
 	resp, err := d.httpClient.Do(req)
 	if err != nil {
-		return body, fmt.Errorf("请求接口失败: %w", err)
+		return body, fmt.Errorf("failed to request interface: %w", err)
 	}
 	//
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			log.DefaultLogger.Error("关闭接口响应失败", "错误", err.Error())
+			log.DefaultLogger.Error("__________failed to close the interface response", "error", err.Error())
 		}
 	}()
 	defer resp.Body.Close()
@@ -852,7 +878,7 @@ func (d *Datasource) trace(ctx context.Context, tracedeug bool, traceUrl, tracin
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(resp.Body)
 		newStr := buf.String()
-		return body, fmt.Errorf("预期状态码返回200, 实际返回 %d,参数数据 %v, 返回数据 %v", resp.StatusCode, StrPostData, newStr)
+		return body, fmt.Errorf("the expected status code returns 200, the actual return is %d, the parameter data is %v, and the return data is %v", resp.StatusCode, StrPostData, newStr)
 	}
 
 	// 接口返回格式
@@ -861,7 +887,7 @@ func (d *Datasource) trace(ctx context.Context, tracedeug bool, traceUrl, tracin
 	err = apiRes.Decode(&body)
 
 	if err != nil {
-		return body, fmt.Errorf("接口返回数据格式化失败: %w", err)
+		return body, fmt.Errorf("interface returned data format failed: %w", err)
 	}
 
 	// 记录日志
@@ -902,11 +928,13 @@ func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetr
 			if res_kind_string {
 				tv, err := value.(json.Number).Float64()
 				if err != nil {
-					return nil, fmt.Errorf(fmt.Sprintf("时间: columns: %v, value: %v 断言float64失败,类型%T", columnsSort, value, value))
+					//断言float64失败
+					return nil, fmt.Errorf(fmt.Sprintf("time: columns: %v, value: %v, Assertion failed for float64, type %T", columnsSort, value, value))
 				}
 				return time.Unix(int64(tv), 0), nil
 			} else {
-				return nil, fmt.Errorf(fmt.Sprintf("时间：columns: %v, value: %v 断言失败,类型%T", columnsSort, value, value))
+				//断言失败
+				return nil, fmt.Errorf(fmt.Sprintf("time: columns: %v, value: %v, assertion failed, type %T", columnsSort, value, value))
 			}
 		}
 
@@ -950,7 +978,8 @@ func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetr
 					if res_kind_string {
 						mv, err := value.(json.Number).Float64()
 						if err != nil {
-							return nil, fmt.Errorf(fmt.Sprintf("columns: %v, value: %v 转float64失败,类型%T", columnsSort, value, value))
+							//断言float64 失败
+							return nil, fmt.Errorf(fmt.Sprintf("columns: %v, value: %v, failed to convert float64, type %T", columnsSort, value, value))
 						}
 						return &mv, nil
 						// return mv, nil
@@ -986,43 +1015,43 @@ func (d *Datasource) verifyParamsBase(dsj, qj, queryText map[string]interface{})
 
 	//requestUrl
 	if _, ok := dsj["requestUrl"]; !ok {
-		return fmt.Errorf("缺失数据: requestUrl")
+		return fmt.Errorf("missing data: requestUrl")
 	}
 
 	//traceUrl
 	if _, ok := dsj["traceUrl"]; !ok {
-		return fmt.Errorf("缺失数据: traceUrl")
+		return fmt.Errorf("missing data: traceUrl")
 	}
 
 	// 获取sql
 	if _, ok := qj["sql"]; !ok {
-		return fmt.Errorf("缺失数据: sql")
+		return fmt.Errorf("missing data: sql")
 	}
 	// 获取returnMetrics
 	if _, ok := qj["returnMetrics"]; !ok {
-		return fmt.Errorf("缺失数据: returnMetrics")
+		return fmt.Errorf("missing data: returnMetrics")
 	}
 
 	// 获取returnTags
 	if _, ok := qj["returnTags"]; !ok {
-		return fmt.Errorf("缺失数据: returnTags")
+		return fmt.Errorf("missing data: returnTags")
 	}
 
 	//从queryText获取
 
 	// appType
 	if _, ok := queryText["appType"]; !ok {
-		return fmt.Errorf("缺失数据: appType")
+		return fmt.Errorf("missing data: appType")
 	}
 
 	// 获取db
 	if _, ok := queryText["db"]; !ok {
-		return fmt.Errorf("缺失数据: db")
+		return fmt.Errorf("missing data: db")
 	}
 
 	// 获取sources
 	if _, ok := queryText["sources"]; !ok {
-		return fmt.Errorf("缺失数据: sources")
+		return fmt.Errorf("missing data: sources")
 	}
 
 	return nil
@@ -1034,7 +1063,7 @@ func (d *Datasource) verifyParams(qj, queryText map[string]interface{}) (err err
 	//qj 获取
 	//metaExtra
 	if _, ok := qj["metaExtra"]; !ok {
-		return fmt.Errorf("缺失数据: metaExtra")
+		return fmt.Errorf("missing data: metaExtra")
 	}
 
 	// log.DefaultLogger.Error("query.JSON.queryText", "数据", qj["queryText"], "类型", fmt.Sprintf("%T", qj["queryText"]))
@@ -1043,26 +1072,26 @@ func (d *Datasource) verifyParams(qj, queryText map[string]interface{}) (err err
 
 	//formatAs
 	if _, ok := queryText["formatAs"]; !ok {
-		return fmt.Errorf("缺失数据: formatAs")
+		return fmt.Errorf("missing data: formatAs")
 	}
 
 	//alias
 	if _, ok := queryText["alias"]; !ok {
-		return fmt.Errorf("缺失数据: alias")
+		return fmt.Errorf("missing data: alias")
 	}
 
 	return nil
 }
 
 // 三方querier接口查询
-func (d *Datasource) querier(ctx context.Context, db, sql, sources, token, requestUrl string, fromTimeInt64, toTimeInt64 int64) (res newtypes.ApiMetrics, err error) {
+func (d *Datasource) querier(ctx context.Context, debug bool, db, sql, sources, token, requestUrl string, fromTimeInt64, toTimeInt64 int64) (res newtypes.ApiMetrics, err error) {
 
 	var body newtypes.ApiMetrics
 
 	postData := make(map[string]string)
 
 	if sql == "" {
-		return body, fmt.Errorf("sql不能为空")
+		return body, fmt.Errorf("sql cannot be empty")
 	}
 
 	if timeFrom := strings.Contains(sql, "'${__from:date:seconds}'"); timeFrom {
@@ -1092,16 +1121,17 @@ func (d *Datasource) querier(ctx context.Context, db, sql, sources, token, reque
 
 	// postDataMap, _ := json.Marshal(postData)
 	// StrPostData := string(postDataMap)
-
-	log.DefaultLogger.Info("请求querier接口", "数据", data)
+	//请求querier接口
+	log.DefaultLogger.Info("__________request querier interface", "data", data)
 
 	//请求url
-	querier := requestUrl + "/v1/query/?debug=true"
+	debugStr := strconv.FormatBool(debug)
+	querier := requestUrl + "/v1/query/?debug=" + debugStr
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, querier, bytes.NewReader([]byte(data.Encode())))
 
 	if err != nil {
-		return body, fmt.Errorf("创建请求失败: %w", err)
+		return body, fmt.Errorf("create request failed: %w", err)
 	}
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
@@ -1114,12 +1144,12 @@ func (d *Datasource) querier(ctx context.Context, db, sql, sources, token, reque
 	//发起请求
 	resp, err := d.httpClient.Do(req)
 	if err != nil {
-		return body, fmt.Errorf("请求接口失败: %w", err)
+		return body, fmt.Errorf("failed to request interface: %w", err)
 	}
 	//
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			log.DefaultLogger.Error("关闭接口响应失败", "错误", err.Error())
+			log.DefaultLogger.Error("__________failed to close the interface response", "error", err.Error())
 		}
 	}()
 	defer resp.Body.Close()
@@ -1129,7 +1159,7 @@ func (d *Datasource) querier(ctx context.Context, db, sql, sources, token, reque
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(resp.Body)
 		newStr := buf.String()
-		return body, fmt.Errorf("预期状态码返回200, 实际返回 %d,参数数据 %v, 数据 %v", resp.StatusCode, data, newStr)
+		return body, fmt.Errorf("the expected status code returns 200, the actual return is %d, the parameter data is %v, and the data is %v", resp.StatusCode, data, newStr)
 	}
 
 	// 接口返回格式
@@ -1138,11 +1168,11 @@ func (d *Datasource) querier(ctx context.Context, db, sql, sources, token, reque
 	err = apiRes.Decode(&body)
 
 	if err != nil {
-		return body, fmt.Errorf("接口返回数据格式化失败: %w", err)
+		return body, fmt.Errorf("failed to format interface return data: %w", err)
 	}
 
 	// 记录日志
-	// log.DefaultLogger.Info("格式化后接口返回", "数据", body)
+	//log.DefaultLogger.Info("格式化后接口返回", "数据", body)
 
 	return body, nil
 }
@@ -1173,19 +1203,25 @@ func (d *Datasource) CheckHealth(ctx context.Context, _ *backend.CheckHealthRequ
 	dsj := vv.(map[string]interface{})
 
 	if _, ok := dsj["requestUrl"]; !ok {
-		return newHealthCheckErrorf("缺失配置requestUrl"), nil
+		return newHealthCheckErrorf("Missing configuration: requestUrl"), nil
 	}
 	//requestUrl
 	requestUrl := dsj["requestUrl"].(string)
 
-	_, err := d.querier(ctx, "", "show databases", "", "", requestUrl, 0, 0)
+	//token
+	token := ""
+	if _, ok := dsj["token"]; ok {
+		token = dsj["token"].(string)
+	}
+
+	_, err := d.querier(ctx, false, "", "show databases", "", token, requestUrl, 0, 0)
 
 	if err != nil {
 		return newHealthCheckErrorf(err.Error()), nil
 	}
 	return &backend.CheckHealthResult{
 		Status:  backend.HealthStatusOk,
-		Message: "数据源测试正常",
+		Message: "The data source test is OK",
 	}, nil
 }
 
