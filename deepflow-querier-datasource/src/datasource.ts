@@ -185,7 +185,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
   }
 
   applyTemplateVariables(query: MyQuery & { requestId: string }, scopedVars: ScopedVars): any {
-    const _queryText = query.queryText
+    const _queryText = replaceInterval(query.queryText, scopedVars)
     const queryData = JSON.parse(_queryText)
     const result = {} as MyQuery
     // set new params after replaced variables
@@ -202,7 +202,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
 
       result.returnTags = returnTags
       result.returnMetrics = returnMetrics
-      result.sql = replaceInterval(sql, scopedVars)
+      result.sql = sql
       result.metaExtra = metaExtra
     }
     result.debug = getParamByName('debug') === 'true'

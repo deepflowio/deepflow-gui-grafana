@@ -531,13 +531,16 @@ export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVa
 export const replaceInterval = (queryText: string, scopedVars: ScopedVars) => {
   if (typeof scopedVars?.__interval_ms?.value === 'number') {
     const intervalSecond = scopedVars.__interval_ms.value / 1000
-    return queryText
-      .split(VAR_INTERVAL_QUOTATION)
-      .join(intervalSecond + '')
-      .split(VAR_INTERVAL)
-      .join(intervalSecond + '')
-      .split(VAR_INTERVAL_LABEL)
-      .join(intervalSecond + '')
+    return (
+      queryText
+        .split(VAR_INTERVAL_QUOTATION)
+        .join(intervalSecond + '')
+        .split(VAR_INTERVAL)
+        .join(intervalSecond + '')
+        // convert string to number
+        .split(`"${VAR_INTERVAL_LABEL}"`)
+        .join(intervalSecond + '')
+    )
   }
   return queryText
 }
