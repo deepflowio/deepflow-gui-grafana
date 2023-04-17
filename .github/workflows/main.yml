@@ -22,6 +22,8 @@ on:
 
 env:
   IMAGE: "deepflowio-init-grafana"
+env:
+  GRAFANA_API_KEY: ${{ secrets.GRAFANA_API_KEY }}
 
 jobs:
   build:
@@ -187,12 +189,22 @@ jobs:
           mv deepflow-topo-panel/dist release/deepflow-topo-panel
           cd release
           tar -zcvf deepflow-gui-grafana.tar.gz *
+          zip deepflowio-apptracing-panel-${{ env.IMAGE_TAG_PREFIX }} ./deepflow-apptracing-panel -r
+          rm -r ./deepflow-apptracing-panel
+          md5sum deepflowio-apptracing-panel-${{ env.IMAGE_TAG_PREFIX }}.zip > deepflowio-apptracing-panel-${{ env.IMAGE_TAG_PREFIX }}.zip.md5
+          zip deepflowio-querier-datasource-${{ env.IMAGE_TAG_PREFIX }} ./deepflow-querier-datasource -r
+          rm -r ./deepflow-querier-datasource
+          md5sum deepflowio-querier-datasource-${{ env.IMAGE_TAG_PREFIX }}.zip > deepflowio-deepflow-datasource-${{ env.IMAGE_TAG_PREFIX }}.zip.md5
+          zip deepflowio-topo-panel-${{ env.IMAGE_TAG_PREFIX }} ./deepflow-topo-panel -r
+          rm -r ./deepflow-topo-panel
+          md5sum deepflowio-topo-panel-${{ env.IMAGE_TAG_PREFIX }}.zip > deepflowio-topo-panel-${{ env.IMAGE_TAG_PREFIX }}.zip.md5
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
-          files: release/*
+          files: |
+            ./release/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
