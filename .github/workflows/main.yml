@@ -22,7 +22,6 @@ on:
 
 env:
   IMAGE: "deepflowio-init-grafana"
-env:
   GRAFANA_API_KEY: ${{ secrets.GRAFANA_API_KEY }}
 
 jobs:
