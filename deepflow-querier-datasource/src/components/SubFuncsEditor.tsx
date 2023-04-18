@@ -30,7 +30,7 @@ const mathOpsMap: MathOpsMap = {
   DIVIDE: '/'
 } as const
 type MathOpKeys = keyof MathOpsMap
-const mathOpreatorOpts = (Object.keys(mathOpsMap) as MathOpKeys[]).map((key: MathOpKeys) => {
+const mathOperatorOpts = (Object.keys(mathOpsMap) as MathOpKeys[]).map((key: MathOpKeys) => {
   return {
     label: mathOpsMap[key],
     value: key
@@ -130,7 +130,7 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
         {func === 'Math' ? (
           <Select
             width="auto"
-            options={mathOpreatorOpts}
+            options={mathOperatorOpts}
             value={op}
             onChange={ev => {
               setOp(ev.value || '')

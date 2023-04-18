@@ -10,7 +10,7 @@ import {
   formatTagOperators,
   genGetTagValuesSql,
   getRealKey,
-  getAccessRelationshipeQueryConfig,
+  getAccessRelationshipQueryConfig,
   getParamByName,
   addTimeToWhere,
   uuid
@@ -299,7 +299,7 @@ export class QueryEditor extends PureComponent<Props> {
     return result.filter(e => e !== undefined)
   }
 
-  get basciMetricOpts(): MetricOpts {
+  get basicMetricOpts(): MetricOpts {
     const { groupBy, metricOpts, interval } = this.state
     const groupByKeys = groupBy
       .filter((item: any) => {
@@ -356,7 +356,7 @@ export class QueryEditor extends PureComponent<Props> {
       )
     }
     return this.metricsFromSelect
-      .concat(this.basciMetricOpts)
+      .concat(this.basicMetricOpts)
       .concat([
         {
           label: 'time',
@@ -513,14 +513,14 @@ export class QueryEditor extends PureComponent<Props> {
         .map((item: any) => {
           return item.key
         })
-      const hasMetrciWithEmptyFuncParam = [
+      const hasMetricWithEmptyFuncParam = [
         ...(select as BasicDataWithId[]),
         ...(having as BasicDataWithId[]),
         ...(orderBy as BasicDataWithId[])
       ].find(e => {
         return e.type === 'metric' && e.key && e.params?.length && e.params.join('') === ''
       })
-      if (hasMetrciWithEmptyFuncParam) {
+      if (hasMetricWithEmptyFuncParam) {
         throw new Error('Params is required')
       }
       if (appType === 'accessRelationship') {
@@ -564,7 +564,7 @@ export class QueryEditor extends PureComponent<Props> {
         const { returnTags, returnMetrics, sql } = querierJsResult.resource[0]
         _.set(SQL_CACHE, `${this.requestId}_${this.refId}`, sql)
         const metaExtra =
-          dataObj.appType === 'accessRelationship' ? getAccessRelationshipeQueryConfig(dataObj.groupBy, returnTags) : {}
+          dataObj.appType === 'accessRelationship' ? getAccessRelationshipQueryConfig(dataObj.groupBy, returnTags) : {}
 
         newQuery = {
           returnTags,
@@ -912,7 +912,7 @@ export class QueryEditor extends PureComponent<Props> {
       if (queryText) {
         const formData = JSON.parse(queryText)
         const { db, from, interval } = formData
-        // history data hanlder
+        // history data handler
         if (interval === VAR_INTERVAL) {
           formData.interval = VAR_INTERVAL_QUOTATION
         }
@@ -1229,10 +1229,10 @@ export class QueryEditor extends PureComponent<Props> {
                                     conf.targetDataKey === 'orderBy'
                                       ? this.orderByMetricOpts
                                       : conf.targetDataKey === 'having'
-                                      ? this.metricsFromSelect.concat(this.basciMetricOpts).filter(item => {
+                                      ? this.metricsFromSelect.concat(this.basicMetricOpts).filter(item => {
                                           return item.type !== MAP_METRIC_TYPE_NUM
                                         })
-                                      : this.basciMetricOpts
+                                      : this.basicMetricOpts
                                   }
                                   funcOpts={funcOpts}
                                   subFuncOpts={subFuncOpts}

@@ -111,7 +111,7 @@ const SUPPORT_OP_TEXT_MAP = _.keyBy(
   ({ op }: { op: string }) => op
 )
 
-// conditon merge
+// condition merge
 function jointOrAnd(conditionList: any) {
   const keyMap = _.groupBy(conditionList, o => o.key)
   const result: any[] = []
