@@ -191,9 +191,9 @@ jobs:
           zip deepflowio-tracing-panel-${{ env.IMAGE_TAG_PREFIX }}.zip ./deepflow-apptracing-panel -r
           rm -r ./deepflow-apptracing-panel
           md5sum deepflowio-tracing-panel-${{ env.IMAGE_TAG_PREFIX }}.zip > deepflowio-tracing-panel-${{ env.IMAGE_TAG_PREFIX }}.zip.md5
-          zip deepflowio-querier-datasource-${{ env.IMAGE_TAG_PREFIX }}.zip ./deepflow-querier-datasource -r
+          zip deepflowio-deepflow-datasource-${{ env.IMAGE_TAG_PREFIX }}.zip ./deepflow-querier-datasource -r
           rm -r ./deepflow-querier-datasource
-          md5sum deepflowio-querier-datasource-${{ env.IMAGE_TAG_PREFIX }}.zip > deepflowio-deepflow-datasource-${{ env.IMAGE_TAG_PREFIX }}.zip.md5
+          md5sum deepflowio-deepflow-datasource-${{ env.IMAGE_TAG_PREFIX }}.zip > deepflowio-deepflow-datasource-${{ env.IMAGE_TAG_PREFIX }}.zip.md5
           zip deepflowio-topo-panel-${{ env.IMAGE_TAG_PREFIX }}.zip ./deepflow-topo-panel -r
           rm -r ./deepflow-topo-panel
           md5sum deepflowio-topo-panel-${{ env.IMAGE_TAG_PREFIX }}.zip > deepflowio-topo-panel-${{ env.IMAGE_TAG_PREFIX }}.zip.md5
