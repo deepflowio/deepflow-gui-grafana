@@ -390,11 +390,11 @@ const UNIT_TO_S: Record<any, (n: number) => number> = {
 }
 
 function intervalTrans(intervalWithUnit: string, variableItem: any) {
-  if (intervalWithUnit === '$__auto_interval_intervaltest') {
+  if (intervalWithUnit.includes('$__auto_interval_')) {
     if (QUERY_DATA_CACHE.time_start === undefined || QUERY_DATA_CACHE.time_end === undefined) {
       return intervalWithUnit
     }
-    const range = QUERY_DATA_CACHE.time_end - QUERY_DATA_CACHE!.time_start
+    const range = QUERY_DATA_CACHE.time_end - QUERY_DATA_CACHE.time_start
     const { auto_count, auto_min } = variableItem
     const min_num = parseFloat(auto_min)
     const min_unit = auto_min.split(`${min_num}`)[1]
@@ -419,14 +419,15 @@ function getInterval(intervalStr: string, variables: any[]) {
 }
 
 function groupByFormat(data: any, variables: any[]) {
+  const intervalValue = getInterval(data.interval, variables)
   return [
     ...(data.interval
       ? [
           {
             func: 'interval',
             key: 'time',
-            params: getInterval(data.interval, variables),
-            as: `time_${data.interval}`
+            params: intervalValue,
+            as: `time_${intervalValue}`
           }
         ]
       : []),
