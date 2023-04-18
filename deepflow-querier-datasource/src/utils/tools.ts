@@ -136,7 +136,7 @@ export const getResourceIdKey = (key: string) => {
   return key
 }
 
-export function getAccessRelationshipeQueryConfig(groupBy: any, returnTags: any[]) {
+export function getAccessRelationshipQueryConfig(groupBy: any, returnTags: any[]) {
   const returnTagsMap = _.keyBy(returnTags, 'name')
 
   const result: {

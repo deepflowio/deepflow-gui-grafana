@@ -9,10 +9,10 @@ import { renderTimeBar, addSvg, fitSvgToContainer, TAP_SIDE_OPTIONS_MAP, miniMap
 import { FlameTooltip } from 'components/FlameTooltip'
 import { formatDetailList, genServiceId, getDataByFieldName, getRelatedData, useDebounce } from 'utils/tools'
 import {
-  ACTICON_ROW_VAL,
+  ACTION_ROW_VAL,
   formatDetailData,
-  formatRelatedExtralData,
-  formatRelatedlData,
+  formatRelatedExtraData,
+  formatRelatedData,
   tarnsArrayToTableData,
   tarnsRelatedDataToTableData
 } from 'utils/tables'
@@ -24,7 +24,7 @@ import { IconArrowLeft } from '@douyinfe/semi-icons'
 
 interface Props extends PanelProps<SimpleOptions> {}
 
-const MINIMAP_CONATAINER_CACHE: Record<number, HTMLElement> = {}
+const MINIMAP_CONTAINER_CACHE: Record<number, HTMLElement> = {}
 
 export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
   const [errMsg, setErrMsg] = useState('')
@@ -64,13 +64,13 @@ export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
   const [selectedServiceRowId, setSelectedServiceRowId] = useState('')
   const [flameContainer, setFlameContainer] = useState<any>(undefined)
   const [flameChart, setFlameChart] = useState<any>(undefined)
-  const [detailFilteIds, setDetailFilteIds] = useState<string[]>([])
+  const [detailFilterIds, setDetailFilterIds] = useState<string[]>([])
   const [relatedResource, setRelatedResource] = useState<Record<any, any>>({})
 
   const setFlameDetailFilter = useCallback((serviceId: string, chart: any, selfAndParent?: any) => {
     setSelectedServiceRowId(serviceId)
     if (serviceId === '') {
-      setDetailFilteIds([])
+      setDetailFilterIds([])
       chart.bars.forEach((bar: any) => {
         bar.props.blur = false
       })
@@ -83,7 +83,7 @@ export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
         if (selfAndParent.parent !== undefined) {
           selfAndParent.parent.props.blur = false
         }
-        setDetailFilteIds(selfAndParent.self.data._ids)
+        setDetailFilterIds(selfAndParent.self.data._ids)
       } else {
         let ids: string[] = []
         chart.bars.forEach((bar: any) => {
@@ -93,7 +93,7 @@ export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
           }
           bar.props.blur = blurBoolean
         })
-        setDetailFilteIds(ids)
+        setDetailFilterIds(ids)
       }
     }
     chart.renderBars()
@@ -127,8 +127,8 @@ export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
       flameContainer.selectAll('*').remove()
     }
 
-    if (MINIMAP_CONATAINER_CACHE[id]) {
-      MINIMAP_CONATAINER_CACHE[id].remove()
+    if (MINIMAP_CONTAINER_CACHE[id]) {
+      MINIMAP_CONTAINER_CACHE[id].remove()
     }
     if (!flameData || !flameData?.length || !flameContainer) {
       return
@@ -192,7 +192,7 @@ export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
         .style('position', 'absolute')
         .style('bottom', 0)
         .style('left', 2)
-      MINIMAP_CONATAINER_CACHE[id] = _miniMapContainer
+      MINIMAP_CONTAINER_CACHE[id] = _miniMapContainer
       let miniRender = miniMap(renderResult.bars, [], _miniMapContainer, flameContainer, renderResult.zoom, {
         nodeType: 'rect',
         scaleType: 'xy'
@@ -230,13 +230,13 @@ export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
   const [detailData, setDetailData] = useState([])
   const detailTableData = useMemo(() => {
     setRelatedViewIndex(0)
-    if ((detailData && !Object.keys(detailData)?.length) || !detailFilteIds?.length) {
+    if ((detailData && !Object.keys(detailData)?.length) || !detailFilterIds?.length) {
       return {
         columns: [],
         dataSource: []
       }
     }
-    const _detailData = detailFilteIds.map((e: any) => {
+    const _detailData = detailFilterIds.map((e: any) => {
       return detailData[e]
     })
     const { columns, dataSource } = tarnsArrayToTableData(formatDetailData(_detailData))
@@ -244,7 +244,7 @@ export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
       columns,
       dataSource
     }
-  }, [detailData, detailFilteIds, setRelatedViewIndex])
+  }, [detailData, detailFilterIds, setRelatedViewIndex])
   const panelWidthHeight = useMemo(() => {
     return {
       width: debouncedWidth,
@@ -306,7 +306,7 @@ export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
       if (typeof res === 'string') {
         return text
       }
-      if (res?.val === ACTICON_ROW_VAL) {
+      if (res?.val === ACTION_ROW_VAL) {
         return (
           <Button
             size="small"
@@ -347,7 +347,7 @@ export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
         >{`${res.val}`}</p>
       )
     }
-    const { columns, dataSource } = tarnsRelatedDataToTableData(formatRelatedlData(relatedData), cellRender)
+    const { columns, dataSource } = tarnsRelatedDataToTableData(formatRelatedData(relatedData), cellRender)
     return {
       columns,
       dataSource
@@ -355,7 +355,7 @@ export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
   }, [flameData, relatedResource, onDetailBtnClick, flameChart])
 
   const relatedExtraTableData = useMemo(() => {
-    return tarnsArrayToTableData(formatRelatedExtralData(relatedExtraData))
+    return tarnsArrayToTableData(formatRelatedExtraData(relatedExtraData))
   }, [relatedExtraData])
 
   useEffect(() => {

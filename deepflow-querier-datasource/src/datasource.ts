@@ -12,7 +12,7 @@ import {
 import qs from 'qs'
 import {
   addTimeToWhere,
-  getAccessRelationshipeQueryConfig,
+  getAccessRelationshipQueryConfig,
   getParamByName,
   getTracingId,
   getTracingQuery
@@ -197,7 +197,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       _.set(SQL_CACHE, `${query.requestId}_${query.refId}`, sql)
       const metaExtra =
         queryData.appType === 'accessRelationship'
-          ? getAccessRelationshipeQueryConfig(queryData.groupBy, returnTags)
+          ? getAccessRelationshipQueryConfig(queryData.groupBy, returnTags)
           : {}
 
       result.returnTags = returnTags

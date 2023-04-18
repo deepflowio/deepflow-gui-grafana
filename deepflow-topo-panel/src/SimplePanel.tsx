@@ -37,7 +37,7 @@ interface Props extends PanelProps<SimpleOptions> {}
 
 const NO_GROUP_BY_TAGS = ['tap_side', 'Enum(tap_side)']
 
-const MINIMAP_CONATAINER_CACHE: Record<number, HTMLElement> = {}
+const MINIMAP_CONTAINER_CACHE: Record<number, HTMLElement> = {}
 
 export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height }) => {
   const debouncedWidth = useDebounce(width, 600)
@@ -167,7 +167,7 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
     if (!selectedData?.fields?.length || !sourceSide.length || !destinationSide.length || !queryConfig?.returnMetrics) {
       return []
     }
-    window.useTimeLogs && console.time('[Time Log][Topo: Comput links]')
+    window.useTimeLogs && console.time('[Time Log][Topo: Compute links]')
     const filedNames = selectedData.fields.map(field => field.name)
     const dataIsMatched = [
       ...sourceSide,
@@ -243,8 +243,8 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
                   return {
                     ...Object.fromEntries(
                       NO_GROUP_BY_TAGS.map(k => {
-                        const eunmKey = `Enum(${k})`
-                        return eunmKey in g ? [eunmKey, g[eunmKey]] : [k, g[k]]
+                        const enumKey = `Enum(${k})`
+                        return enumKey in g ? [enumKey, g[enumKey]] : [k, g[k]]
                       })
                     ),
                     ...Object.fromEntries(
@@ -294,7 +294,7 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
             })
       }
     })
-    window.useTimeLogs && console.timeEnd('[Time Log][Topo: Comput links]')
+    window.useTimeLogs && console.timeEnd('[Time Log][Topo: Compute links]')
     return result
   }, [selectedData, sourceSide, destinationSide, queryConfig])
 
@@ -302,7 +302,7 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
     if (!links?.length || !queryConfig?.from?.length || !queryConfig?.to?.length) {
       return []
     }
-    window.useTimeLogs && console.time('[Time Log][Topo: Comput nodes]')
+    window.useTimeLogs && console.time('[Time Log][Topo: Compute nodes]')
     const _commonTags = Array.isArray(queryConfig.common)
       ? queryConfig.common.filter((key: string) => {
           return !NO_GROUP_BY_TAGS.includes(key)
@@ -372,7 +372,7 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
         ]
       })
       .flat(Infinity)
-    window.useTimeLogs && console.timeEnd('[Time Log][Topo: Comput nodes]')
+    window.useTimeLogs && console.timeEnd('[Time Log][Topo: Compute nodes]')
     return _.uniqBy(result, 'id')
   }, [links, queryConfig, nodeDisplayTags])
 
@@ -564,8 +564,8 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
         )
       })
 
-      if (MINIMAP_CONATAINER_CACHE[id]) {
-        MINIMAP_CONATAINER_CACHE[id].remove()
+      if (MINIMAP_CONTAINER_CACHE[id]) {
+        MINIMAP_CONTAINER_CACHE[id].remove()
       }
       const _miniMapContainer = addSvg('.' + randomClassName, false)
       _miniMapContainer
@@ -575,7 +575,7 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
         .style('position', 'absolute')
         .style('bottom', 0)
         .style('left', 0)
-      MINIMAP_CONATAINER_CACHE[id] = _miniMapContainer
+      MINIMAP_CONTAINER_CACHE[id] = _miniMapContainer
 
       const miniRender = miniMap(
         _nodes,

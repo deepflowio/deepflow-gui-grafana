@@ -24,7 +24,7 @@ interface ComProps {
 
 const TD_HEIGHT = 24
 const TABLE_HEADER_HEIGHT = 40
-const TABLE_SCORLL_BAR_WIDTH = 8
+const TABLE_SCROLL_BAR_WIDTH = 8
 const BORDER_WIDTH = 1
 
 export function DYTable({
@@ -59,9 +59,9 @@ export function DYTable({
       }
     }
     const { width: totalWidth, height: totalHeight } = tableWHSettings
-    const heightFixNum = width - totalWidth > 0 ? 0 : TABLE_SCORLL_BAR_WIDTH
+    const heightFixNum = width - totalWidth > 0 ? 0 : TABLE_SCROLL_BAR_WIDTH
     return {
-      x: width - totalWidth > 0 ? undefined : width - TABLE_SCORLL_BAR_WIDTH - BORDER_WIDTH,
+      x: width - totalWidth > 0 ? undefined : width - TABLE_SCROLL_BAR_WIDTH - BORDER_WIDTH,
       y: height - totalHeight > 0 ? totalHeight + heightFixNum : height - TABLE_HEADER_HEIGHT - BORDER_WIDTH
     }
   }, [wrapWidthHeight, tableWHSettings])
@@ -80,7 +80,7 @@ export function DYTable({
           ...e,
           ...(index === 0
             ? {
-                width: e.width + widthDiffer - BORDER_WIDTH - TABLE_SCORLL_BAR_WIDTH
+                width: e.width + widthDiffer - BORDER_WIDTH - TABLE_SCROLL_BAR_WIDTH
                 // width: undefined
               }
             : {})

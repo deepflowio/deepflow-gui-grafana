@@ -308,12 +308,12 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       gotBasicData,
       isUsingAlerting
     } = this.props
-    const tagOptsFilted = config.disableTimeTag
+    const tagOptsAfterFilter = config.disableTimeTag
       ? tagOpts.filter(item => {
           return !['start_time', 'end_time'].includes(item.value as string)
         })
       : tagOpts
-    const opts = basicData.type === 'tag' ? tagOptsFilted : metricOpts
+    const opts = basicData.type === 'tag' ? tagOptsAfterFilter : metricOpts
 
     // 当 key 存在, 且 opts 存在
     // 检查当前值是否存在在 opts 内, 若不存在, 置空 key 的值

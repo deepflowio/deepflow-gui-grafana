@@ -11,7 +11,7 @@ export function getStringLen(str: string) {
   try {
     const res = JSON.parse(str)
     if (typeof res !== 'string') {
-      _str = res?.val === ACTICON_ROW_VAL ? ACTICON_ROW_VAL : `${res.val}`
+      _str = res?.val === ACTION_ROW_VAL ? ACTION_ROW_VAL : `${res.val}`
     }
   } catch (error) {}
   return _str.split('').reduce((prev: number, current: string) => {
@@ -37,8 +37,8 @@ export const RELATED_DATA_DISPLAY_COLUMNS = [
 
 export const HIGH_LIGHTS_KEY = '__hightLights'
 export const SERVICE_UID = 'service_uid'
-export const ACTICON_ROW = 'acticon'
-export const ACTICON_ROW_VAL = 'acticon_val'
+export const ACTION_ROW = 'action'
+export const ACTION_ROW_VAL = 'action_val'
 
 export function tarnsArrayToTableData(data: any[]) {
   if (!Array.isArray(data)) {
@@ -93,21 +93,21 @@ export function tarnsArrayToTableData(data: any[]) {
   }
 }
 
-export function formatRelatedlData(data: any) {
+export function formatRelatedData(data: any) {
   const result: any = []
 
-  ;[...RELATED_DATA_DISPLAY_COLUMNS, HIGH_LIGHTS_KEY, ACTICON_ROW].forEach((k, i) => {
+  ;[...RELATED_DATA_DISPLAY_COLUMNS, HIGH_LIGHTS_KEY, ACTION_ROW].forEach((k, i) => {
     result.push({
       keyName: k,
       ...Object.fromEntries(
         data.map((col: any, index: number) => {
-          if (k === ACTICON_ROW) {
+          if (k === ACTION_ROW) {
             const _ids = _.get(col, ['_ids'], [])
             return [
               `column${index + 1}_value`,
               JSON.stringify({
                 _ids: _ids,
-                val: ACTICON_ROW_VAL
+                val: ACTION_ROW_VAL
               })
             ]
           }
@@ -224,7 +224,7 @@ export function formatDetailData(data: any) {
   return result
 }
 
-export function formatRelatedExtralData(data: any[]) {
+export function formatRelatedExtraData(data: any[]) {
   const result: any = []
   if (!data.length) {
     return []
