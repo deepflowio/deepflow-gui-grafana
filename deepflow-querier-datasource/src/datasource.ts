@@ -20,7 +20,7 @@ import {
 import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
 import { genQueryParams, replaceInterval } from 'utils/genQueryParams'
-import { DATA_SOURCE_SETTINGS, SQL_CACHE } from 'utils/cache'
+import { DATA_SOURCE_SETTINGS, QUERY_DATA_CACHE, SQL_CACHE } from 'utils/cache'
 import { MyVariableQuery } from 'components/VariableQueryEditor'
 import { Observable, of, zip } from 'rxjs'
 import { catchError, switchMap } from 'rxjs/operators'
@@ -78,6 +78,12 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     }
     const basicPromisesLen = promisesList.length
     const { intervalMs, maxDataPoints, targets, range, requestId } = request
+
+    if (range) {
+      QUERY_DATA_CACHE.time_start = range!.from.unix()
+      QUERY_DATA_CACHE.time_end = range!.to.unix()
+    }
+
     let tracingQueryIndex = -1
     const _targets = targets.filter(q => {
       return !!q.queryText
