@@ -1,6 +1,6 @@
 const getCommonWebpackConfig = (config, options) => {
   return {
-    devtool: 'none'
+    // devtool: 'none'
   }
 }
 

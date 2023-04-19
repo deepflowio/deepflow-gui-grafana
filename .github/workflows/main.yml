@@ -85,6 +85,10 @@ jobs:
           cd ./deepflow-querier-datasource
           mage -v
 
+      - name: Sign All plugin
+        run: pnpm run sign:all
+        if: ${{ env.GRAFANA_API_KEY != '' }}
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
         with:
@@ -188,15 +192,18 @@ jobs:
           mv deepflow-topo-panel/dist release/deepflow-topo-panel
           cd release
           tar -zcvf deepflow-gui-grafana.tar.gz *
-          zip deepflowio-tracing-panel-${{ env.IMAGE_TAG_PREFIX }}.zip ./deepflow-apptracing-panel -r
-          rm -r ./deepflow-apptracing-panel
+          mv deepflow-apptracing-panel deepflowio-tracing-panel
+          zip deepflowio-tracing-panel-${{ env.IMAGE_TAG_PREFIX }}.zip ./deepflowio-tracing-panel -r
           md5sum deepflowio-tracing-panel-${{ env.IMAGE_TAG_PREFIX }}.zip > deepflowio-tracing-panel-${{ env.IMAGE_TAG_PREFIX }}.zip.md5
-          zip deepflowio-deepflow-datasource-${{ env.IMAGE_TAG_PREFIX }}.zip ./deepflow-querier-datasource -r
-          rm -r ./deepflow-querier-datasource
+          rm -r ./deepflowio-tracing-panel
+          mv deepflow-querier-datasource deepflowio-deepflow-datasource
+          zip deepflowio-deepflow-datasource-${{ env.IMAGE_TAG_PREFIX }}.zip ./deepflowio-deepflow-datasource -r
           md5sum deepflowio-deepflow-datasource-${{ env.IMAGE_TAG_PREFIX }}.zip > deepflowio-deepflow-datasource-${{ env.IMAGE_TAG_PREFIX }}.zip.md5
-          zip deepflowio-topo-panel-${{ env.IMAGE_TAG_PREFIX }}.zip ./deepflow-topo-panel -r
-          rm -r ./deepflow-topo-panel
+          rm -r ./deepflowio-deepflow-datasource
+          mv deepflow-topo-panel deepflowio-topo-panel
+          zip deepflowio-topo-panel-${{ env.IMAGE_TAG_PREFIX }}.zip ./deepflowio-topo-panel -r
           md5sum deepflowio-topo-panel-${{ env.IMAGE_TAG_PREFIX }}.zip > deepflowio-topo-panel-${{ env.IMAGE_TAG_PREFIX }}.zip.md5
+          rm -r ./deepflowio-topo-panel
 
       - name: Release
         if: startsWith(github.ref, 'refs/tags/')

@@ -14,7 +14,11 @@
     "b-dev:querier": "pnpm run --filter deepflow-querier-datasource builddev",
     "b-dev:topo": "pnpm run --filter deepflow-topo-panel builddev",
     "b-dev:all": "pnpm run b-dev:apptracing && pnpm run b-dev:querier && pnpm run b-dev:topo",
-    "b:all": "pnpm run b:apptracing && pnpm run b:querier && pnpm run b:topo"
+    "b:all": "pnpm run b:apptracing && pnpm run b:querier && pnpm run b:topo",
+    "sign:apptracing": "pnpm run --filter deepflow-apptracing-panel sign",
+    "sign:querier": "pnpm run --filter deepflow-querier-datasource sign",
+    "sign:topo": "pnpm run --filter deepflow-topo-panel sign",
+    "sign:all": "pnpm run sign:apptracing && pnpm run sign:querier && pnpm run sign:topo"
   },
   "dependencies": {
     "@grafana/data": "^8.5.6",
