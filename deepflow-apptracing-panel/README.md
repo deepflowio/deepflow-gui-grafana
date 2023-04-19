@@ -4,13 +4,11 @@ The DeepFlow Tracing Panel visualizes the full-stack call path of distributed li
 
 **Note: A part of [DeepFlow](https://deepflow.yunshan.net/community.html), can only work with DeepFlow datasource and use the `Distributed Tracing - Flame` app type.**
 
-![DeepFlow Tracing](./src/img/screenshot.jpg)
+![DeepFlow Tracing](https://raw.githubusercontent.com/deepflowio/deepflow-gui-grafana/main/deepflow-apptracing-panel/src/img/screenshot.jpg)
 
 ## Feature
 
 The DeepFlow Tracing Panel consists of four parts: Flame Graph, Service List, Request Log, and Related Data. Flame Graph visualizes each service call that occurs during the execution path of a request as a bar, and displays different information for each bar based on the actual call. Clicking on a bar will display the corresponding service, log, and related data in the data panel on the right, helping you quickly analyze program performance. Next, we will provide a detailed explanation of the usage and functions of each part.
-
-![flame.png](https://yunshan-guangzhou.oss-cn-beijing.aliyuncs.com/pub/pic/20230407642f82b251c2e.png)
 
 ### Flame Graph
 
