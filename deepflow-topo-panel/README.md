@@ -4,7 +4,6 @@ The Topology Panel of DeepFlow can be used to display the dependency relationshi
 
 ## Usage of Topology Graph use
 
-![topo_use.png](https://yunshan-guangzhou.oss-cn-beijing.aliyuncs.com/pub/pic/20230407642f82713d0bc.png)
 
 ## Panel Options
 
@@ -22,7 +21,7 @@ The Topology Panel of DeepFlow can be used to display the dependency relationshi
 
 ## Simple Topo
 
-![simple_topo.png](https://yunshan-guangzhou.oss-cn-beijing.aliyuncs.com/pub/pic/20230407642f82706192c.png)
+![simple-topo.jpg](https://raw.githubusercontent.com/deepflowio/deepflow-gui-grafana/main/deepflow-topo-panel/src/img/screenshot-simple-topo.jpg)
 
 Simple Topo consists of `nodes`, `paths`, and some operations:
 
@@ -37,12 +36,12 @@ Simple Topo consists of `nodes`, `paths`, and some operations:
 
 ## Tree Topo
 
-![tree_topo.png](https://yunshan-guangzhou.oss-cn-beijing.aliyuncs.com/pub/pic/20230407642f826e5270d.png)
+![tree_topo.jpg](https://raw.githubusercontent.com/deepflowio/deepflow-gui-grafana/main/deepflow-topo-panel/src/img/screenshot-tree-topo.jpg)
 
 Tree Topo consists of nodes, curves, and some operations. Data nodes are displayed in square form, showing the node type and name of the node. The squares with request associations are connected by curves. The operation can refer to the operations of Simple Topo.
 
 ## Tree Topo With Group
 
-![tree_topo_with_group.png](https://yunshan-guangzhou.oss-cn-beijing.aliyuncs.com/pub/pic/20230407642f826f39316.png)
+![tree_topo_with_group.jpg](https://raw.githubusercontent.com/deepflowio/deepflow-gui-grafana/main/deepflow-topo-panel/src/img/screenshot-tree-topo-with-group.jpg)
 
 Supports grouping queries for data and dividing nodes in the same group, with group names marked. The usage of Tree Topo With Group is similar to that of Tree Topo.

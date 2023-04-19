@@ -4,13 +4,11 @@ DeepFlow Tracing Panel 通过火焰图的形式来可视化分布式链路的全
 
 **DeepFlow 的一部分，只能与 DeepFlow 数据源一起使用，并使用“分布式跟踪 - Flame”应用程序类型。**
 
-![DeepFlow Tracing](./src/img/screenshot.jpg)
+![DeepFlow Tracing](https://raw.githubusercontent.com/deepflowio/deepflow-gui-grafana/main/deepflow-apptracing-panel/src/img/screenshot.jpg)
 
 ## Feature
 
 DeepFlow Tracing Panel 由 Flame Graph, Service List, Request Log, Related Data 四个部分组。Flame Graph 支持对请求执行路径期间发生的每一次服务调用进行可视化为条状 bar，每一个 bar 根据实际调用展示不同信息，点击条状 bar，右侧数据面板展示对应 Span 的服务、日志、相关数据，帮助您快速分析程序性能状态。接下来将为您详细介绍每部分功能的使用与说明。
-
-![flame.png](https://yunshan-guangzhou.oss-cn-beijing.aliyuncs.com/pub/pic/20230407642f82b251c2e.png)
 
 ### Flame Graph
 

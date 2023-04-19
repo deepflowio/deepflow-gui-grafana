@@ -4,7 +4,6 @@ DeepFlow 的流量拓扑可用于展示服务或资源之间的依赖关系，�
 
 ## 拓扑图的使用
 
-![topo_use.png](https://yunshan-guangzhou.oss-cn-beijing.aliyuncs.com/pub/pic/20230407642f82713d0bc.png)
 
 ## Panel Options
 
@@ -18,11 +17,11 @@ DeepFlow 的流量拓扑可用于展示服务或资源之间的依赖关系，�
 
 #### Node tags
 
-- Set tags to be displayed on the topo graph node.
+- 设置在拓扑图中, 节点上显示的 tag
 
 ## Simple Topo
 
-![simple_topo.png](https://yunshan-guangzhou.oss-cn-beijing.aliyuncs.com/pub/pic/20230407642f82706192c.png)
+![simple-topo.jpg](https://raw.githubusercontent.com/deepflowio/deepflow-gui-grafana/main/deepflow-topo-panel/src/img/screenshot-simple-topo.jpg)
 
 Simple Topo 由`节点`、`路径`及一些`操作`组成:
 
@@ -37,12 +36,12 @@ Simple Topo 由`节点`、`路径`及一些`操作`组成:
 
 ## Tree Topo
 
-![tree_topo.png](https://yunshan-guangzhou.oss-cn-beijing.aliyuncs.com/pub/pic/20230407642f826e5270d.png)
+![tree_topo.jpg](https://raw.githubusercontent.com/deepflowio/deepflow-gui-grafana/main/deepflow-topo-panel/src/img/screenshot-tree-topo.jpg)
 
 Tree Topo 由`节点`、`曲线`及一些`操作`组成。数据节点方块的形式展示，在方块内显示 node 类型以及该节点的名称。有请求关联的方块之间用曲线进行连接。`操作`可参考 Simple Topo 的`操作`
 
 ## Tree Topo With Group
 
-![tree_topo_with_group.png](https://yunshan-guangzhou.oss-cn-beijing.aliyuncs.com/pub/pic/20230407642f826f39316.png)
+![tree_topo_with_group.jpg](https://raw.githubusercontent.com/deepflowio/deepflow-gui-grafana/main/deepflow-topo-panel/src/img/screenshot-tree-topo-with-group.jpg)
 
 支持对数据进行分组查询，同时对同一组内的节点进行划分，并标记分组名称。`Tree Topo With Group`使用方式与`Tree Topo`基本一致。
