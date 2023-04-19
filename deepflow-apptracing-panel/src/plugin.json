@@ -26,8 +26,8 @@
         "path": "img/screenshot.jpg"
       },
       {
-        "name": "screenshot-tootltip",
-        "path": "img/screenshot-tootltip.jpg"
+        "name": "screenshot-tooltip",
+        "path": "img/screenshot-tooltip.jpg"
       }
     ],
     "version": "%VERSION%",
