@@ -13,7 +13,8 @@ import {
   getAccessRelationshipQueryConfig,
   getParamByName,
   addTimeToWhere,
-  uuid
+  uuid,
+  queryCondsFilter
 } from 'utils/tools'
 import { getTemplateSrv } from '@grafana/runtime'
 import {
@@ -40,9 +41,7 @@ import {
   SLIMIT_DEFAULT_VALUE,
   TAG_METRIC_TYPE_NUM,
   TIME_TAG_TYPE,
-  VAR_INTERVAL,
-  VAR_INTERVAL_LABEL,
-  VAR_INTERVAL_QUOTATION
+  VAR_INTERVAL_LABEL
 } from 'consts'
 import { DATA_SOURCE_SETTINGS, getTagMapCache, SQL_CACHE } from 'utils/cache'
 import { INPUT_TAG_VAL_TYPES, SELECT_TAG_VAL_OPS } from 'components/TagValueSelector'
@@ -199,12 +198,12 @@ export class QueryEditor extends PureComponent<Props> {
     const content = _.get(SQL_CACHE, `${this.requestId}_${this.refId}`, '')
     let res = ''
     try {
-      const sqlString = sqlFormatter(content.replace(VAR_INTERVAL_LABEL, VAR_INTERVAL_QUOTATION), {
+      const sqlString = sqlFormatter(content.replace(/\$/g, 'symbol_dollar'), {
         tabWidth: 2,
         linesBetweenQueries: 2
       })
       res = sqlString
-        .replace(VAR_INTERVAL_QUOTATION, VAR_INTERVAL_LABEL)
+        .replace(/symbol_dollar/g, '$')
         .replace('SLIMIT', '\nSLIMIT \n ')
         .split('\n')
         .map(d => {
@@ -473,7 +472,7 @@ export class QueryEditor extends PureComponent<Props> {
           ? [
               {
                 label: VAR_INTERVAL_LABEL,
-                value: VAR_INTERVAL_QUOTATION
+                value: VAR_INTERVAL_LABEL
               }
             ]
           : []
@@ -494,7 +493,7 @@ export class QueryEditor extends PureComponent<Props> {
     }
   }
 
-  onSubmit = async () => {
+  onSubmit = async (stopQuery = false) => {
     const dataObj = _.pick(this.state, [
       'appType',
       ...Object.keys({
@@ -505,56 +504,60 @@ export class QueryEditor extends PureComponent<Props> {
     ])
 
     try {
+      dataObj.where = queryCondsFilter(dataObj?.where, 'tag')
+      dataObj.having = queryCondsFilter(dataObj?.having, 'metric')
       const { appType, groupBy, select, interval, where, having, orderBy } = dataObj
-      const groupByKeys = (groupBy as BasicDataWithId[])
-        .filter((item: any) => {
-          return item.key
-        })
-        .map((item: any) => {
-          return item.key
-        })
-      const hasMetricWithEmptyFuncParam = [
-        ...(select as BasicDataWithId[]),
-        ...(having as BasicDataWithId[]),
-        ...(orderBy as BasicDataWithId[])
-      ].find(e => {
-        return e.type === 'metric' && e.key && e.params?.length && e.params.join('') === ''
-      })
-      if (hasMetricWithEmptyFuncParam) {
-        throw new Error('Params is required')
-      }
-      if (appType === 'accessRelationship') {
-        const _resourceGroupBy = groupBy!.filter(e => e.isResourceType || e.isIpType)
-        if (!_resourceGroupBy.find(e => e.sideType === 'from') || !_resourceGroupBy.find(e => e.sideType === 'to')) {
-          throw new Error(
-            'When using service map, need select at least one resource type tag as client and server in group by'
-          )
-        }
-        if (
-          !(select as BasicDataWithId[]).filter((item: any) => {
+      if (!stopQuery) {
+        const groupByKeys = (groupBy as BasicDataWithId[])
+          .filter((item: any) => {
             return item.key
-          }).length
-        ) {
-          throw new Error('When using accessRelationship, need to set at least one metric in SELECT')
-        }
-      }
-      if (groupByKeys.length > 0 || interval) {
-        const funcMetrics = (select as BasicDataWithId[])
-          .concat(having as BasicDataWithId[])
-          .concat(orderBy as BasicDataWithId[])
-        const funcCheck = funcMetrics.find((item: BasicDataWithId) => {
-          return !item.key.includes('interval') && item.type === 'metric' && item.key !== '' && item.func === ''
+          })
+          .map((item: any) => {
+            return item.key
+          })
+        const hasMetricWithEmptyFuncParam = [
+          ...(select as BasicDataWithId[]),
+          ...(having as BasicDataWithId[]),
+          ...(orderBy as BasicDataWithId[])
+        ].find(e => {
+          return e.type === 'metric' && e.key && e.params?.length && e.params.join('') === ''
         })
-        if (funcCheck) {
-          throw new Error("When using group by or interval, metric's func is required")
+        if (hasMetricWithEmptyFuncParam) {
+          throw new Error('Params is required')
         }
-      }
-      const valMetrics = (where as BasicDataWithId[]).concat(having as BasicDataWithId[])
-      const valCheck = valMetrics.find((item: BasicDataWithId) => {
-        return item.key !== '' && (item.op === '' || item.val === '')
-      })
-      if (valCheck) {
-        throw new Error('When using where or having, op and val is required')
+        if (appType === 'accessRelationship') {
+          const _resourceGroupBy = groupBy!.filter(e => e.isResourceType || e.isIpType)
+          if (!_resourceGroupBy.find(e => e.sideType === 'from') || !_resourceGroupBy.find(e => e.sideType === 'to')) {
+            throw new Error(
+              'When using service map, need select at least one resource type tag as client and server in group by'
+            )
+          }
+          if (
+            !(select as BasicDataWithId[]).filter((item: any) => {
+              return item.key
+            }).length
+          ) {
+            throw new Error('When using accessRelationship, need to set at least one metric in SELECT')
+          }
+        }
+        if (groupByKeys.length > 0 || interval) {
+          const funcMetrics = (select as BasicDataWithId[])
+            .concat(having as BasicDataWithId[])
+            .concat(orderBy as BasicDataWithId[])
+          const funcCheck = funcMetrics.find((item: BasicDataWithId) => {
+            return !item.key.includes('interval') && item.type === 'metric' && item.key !== '' && item.func === ''
+          })
+          if (funcCheck) {
+            throw new Error("When using group by or interval, metric's func is required")
+          }
+        }
+        const valMetrics = (where as BasicDataWithId[]).concat(having as BasicDataWithId[])
+        const valCheck = valMetrics.find((item: BasicDataWithId) => {
+          return item.key !== '' && (item.op === '' || item.val === '')
+        })
+        if (valCheck) {
+          throw new Error('When using where or having, op and val is required')
+        }
       }
       let newQuery
       if (appType !== APPTYPE_APP_TRACING_FLAME) {
@@ -582,9 +585,11 @@ export class QueryEditor extends PureComponent<Props> {
       this.setState({
         runQueryWarning: false
       })
-      setTimeout(() => {
-        this.props.onRunQuery()
-      })
+      if (!stopQuery) {
+        setTimeout(() => {
+          this.props.onRunQuery()
+        })
+      }
     } catch (error: any) {
       console.log(error)
       this.setState({
@@ -634,6 +639,9 @@ export class QueryEditor extends PureComponent<Props> {
         showErrorAlert: false,
         runQueryWarning: true
       }
+    })
+    setTimeout(() => {
+      this.onSubmit(true)
     })
   }
 
@@ -784,6 +792,12 @@ export class QueryEditor extends PureComponent<Props> {
         [field]: result
       })
     }
+
+    if (['db', 'from', 'interval', 'slimit', 'limit', 'offset'].includes(field)) {
+      setTimeout(() => {
+        this.onSubmit(true)
+      })
+    }
   }
 
   getTemplateVariables() {
@@ -911,11 +925,7 @@ export class QueryEditor extends PureComponent<Props> {
       const { queryText } = this.props.query
       if (queryText) {
         const formData = JSON.parse(queryText)
-        const { db, from, interval } = formData
-        // history data handler
-        if (interval === VAR_INTERVAL) {
-          formData.interval = VAR_INTERVAL_QUOTATION
-        }
+        const { db, from } = formData
         if (db) {
           this.getTableOpts(db)
         }
@@ -1117,7 +1127,9 @@ export class QueryEditor extends PureComponent<Props> {
                     background: runQueryWarning ? '#F5B73D' : '',
                     border: runQueryWarning ? '1px solid #F5B73D' : ''
                   }}
-                  onClick={this.onSubmit}
+                  onClick={() => {
+                    this.onSubmit()
+                  }}
                 >
                   Run Query
                 </Button>
@@ -1401,7 +1413,9 @@ export class QueryEditor extends PureComponent<Props> {
             </>
           }
         </div>
-        <div className="sql-content" dangerouslySetInnerHTML={{ __html: this.sqlContent }}></div>
+        {appType !== APPTYPE_APP_TRACING_FLAME ? (
+          <div className="sql-content" dangerouslySetInnerHTML={{ __html: this.sqlContent }}></div>
+        ) : null}
       </div>
     )
   }
