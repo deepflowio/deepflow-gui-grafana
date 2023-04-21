@@ -5,7 +5,8 @@ import {
   MAP_METRIC_TYPE_NUM,
   MAP_TAG_TYPE,
   SELECT_GROUP_BY_DISABLE_TAGS,
-  TAG_METRIC_TYPE_NUM
+  TAG_METRIC_TYPE_NUM,
+  defaultItem
 } from 'consts'
 import _ from 'lodash'
 import { getI18NLabelByName } from './i18n'
@@ -508,4 +509,21 @@ export function getTracingId(tracingId: LabelItem | null | undefined): string {
 
 export function isAutoGroupTag(tagName: string) {
   return /resource_gl|auto_instance|auto_service/.test(tagName)
+}
+
+export function queryCondsFilter(conds: BasicDataWithId[] | undefined, type: 'tag' | 'metric') {
+  const defaultCond = [
+    {
+      ...defaultItem(),
+      type
+    }
+  ]
+  if (conds === undefined) {
+    return defaultCond
+  }
+  const result = conds.filter(e => {
+    const hasVal = Array.isArray(e.val) ? e.val.length : e.val
+    return e.key && e.op && hasVal
+  })
+  return result?.length ? result : defaultCond
 }
