@@ -106,8 +106,6 @@ export const intervalOpts: SelectOpts = [
 ]
 
 export const VAR_INTERVAL_LABEL = '$__interval'
-export const VAR_INTERVAL = '$__interval_ms'
-export const VAR_INTERVAL_QUOTATION = "'$__interval_ms'"
 
 export const formItemConfigs = {
   groupBy: {
@@ -178,7 +176,7 @@ export const defaultFormDB: Pick<QueryDataType, 'db' | 'sources'> = {
   sources: ''
 }
 
-const defaultItem = () => {
+export const defaultItem = () => {
   return {
     key: '',
     func: '',

@@ -1,7 +1,7 @@
 import { ScopedVars } from '@grafana/data'
 import { getTemplateSrv } from '@grafana/runtime'
 import { BasicData } from 'components/QueryEditorFormRow'
-import { SLIMIT_DEFAULT_VALUE, VAR_INTERVAL, VAR_INTERVAL_LABEL, VAR_INTERVAL_QUOTATION } from 'consts'
+import { SLIMIT_DEFAULT_VALUE, VAR_INTERVAL_LABEL } from 'consts'
 import _ from 'lodash'
 import { LabelItem } from 'QueryEditor'
 // import { MyQuery } from 'types'
@@ -534,10 +534,6 @@ export const replaceInterval = (queryText: string, scopedVars: ScopedVars) => {
     const intervalSecond = scopedVars.__interval_ms.value / 1000
     return (
       queryText
-        .split(VAR_INTERVAL_QUOTATION)
-        .join(intervalSecond + '')
-        .split(VAR_INTERVAL)
-        .join(intervalSecond + '')
         // convert string to number
         .split(`"${VAR_INTERVAL_LABEL}"`)
         .join(intervalSecond + '')

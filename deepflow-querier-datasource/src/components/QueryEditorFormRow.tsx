@@ -7,6 +7,7 @@ import { SubFuncsEditor } from './SubFuncsEditor'
 import { BasicDataWithId, FormTypes, MAP_METRIC_TYPE_NUM } from 'consts'
 import { TagValueSelector } from './TagValueSelector'
 import { getRealKey, isAutoGroupTag, isEnumLikelyTag } from 'utils/tools'
+import { SelectableValue } from '@grafana/data'
 
 export interface RowConfig {
   type: boolean
@@ -143,7 +144,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
     )
   }
 
-  onColumnTypeSelect = (val: any) => {
+  onColumnTypeSelect = (val: SelectableValue<string>) => {
     const result = val ? val.value : ''
     this.props.onRowValChange({
       type: result,
@@ -224,11 +225,17 @@ export class QueryEditorFormRow extends PureComponent<Props> {
     this.props.onRowValChange({
       func: result,
       params: new Array(paramsLen).fill(''),
+      subFuncs: basicData?.cache?.subFuncs || [],
       cache: {
         ...basicData?.cache,
         func: result,
         params: new Array(paramsLen).fill('')
-      }
+      },
+      ...(result === ''
+        ? {
+            subFuncs: []
+          }
+        : {})
     })
   }
 
