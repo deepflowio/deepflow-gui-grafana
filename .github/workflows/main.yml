@@ -34,6 +34,16 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      - name: Setup Yarn
+        uses: DerYeger/yarn-setup-action@master
+        with:
+          node-version: 16
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.0
+
       - name: Checkout Deepflow Dashboards
         uses: actions/checkout@v3
         with:
@@ -43,27 +53,18 @@ jobs:
       - name: Copy Dashboards To Datasource
         run: mkdir ./deepflow-querier-datasource/src/dashboards && cp -r ./deepflow-dashboards/dashboards/* ./deepflow-querier-datasource/src/dashboards
 
-      - name: Set up node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 14.0
-
       - name: Update plugin.json
         run: node ./deepflow-querier-datasource/src/update-dashboards.js
 
       - name: Review plugin.json
         run: cat ./deepflow-querier-datasource/src/plugin.json
 
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v2.2.2
-        with:
-            version: 7.3.0
 
       - name: Install dependencies
-        run: 'test -d deepflow-apptracing-panel/dist  || pnpm install'
+        run: 'test -d deepflow-apptracing-panel/dist  || yarn install:all'
 
       - name: Build all
-        run: 'test -d deepflow-apptracing-panel/dist  || pnpm run b:all'
+        run: 'test -d deepflow-apptracing-panel/dist  || yarn build:all'
 
       - name: set up go
         uses: actions/setup-go@v3
@@ -86,7 +87,7 @@ jobs:
           mage -v
 
       - name: Sign All plugin
-        run: pnpm run sign:all
+        run: yarn sign:all
         if: ${{ env.GRAFANA_API_KEY != '' }}
 
       - name: Set up Docker Buildx

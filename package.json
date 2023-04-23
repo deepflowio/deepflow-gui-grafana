@@ -2,39 +2,19 @@
   "name": "deepflow-gui-grafana",
   "version": "6.2.6",
   "private": true,
-  "workspaces": [
-    "./*"
-  ],
   "scripts": {
-    "preinstall": "npx only-allow pnpm",
-    "b:apptracing": "pnpm run --filter deepflow-apptracing-panel build",
-    "b:querier": "pnpm run --filter deepflow-querier-datasource build",
-    "b:topo": "pnpm run --filter deepflow-topo-panel build",
-    "b-dev:apptracing": "pnpm run --filter deepflow-apptracing-panel builddev",
-    "b-dev:querier": "pnpm run --filter deepflow-querier-datasource builddev",
-    "b-dev:topo": "pnpm run --filter deepflow-topo-panel builddev",
-    "b-dev:all": "pnpm run b-dev:apptracing && pnpm run b-dev:querier && pnpm run b-dev:topo",
-    "b:all": "pnpm run b:apptracing && pnpm run b:querier && pnpm run b:topo",
-    "sign:apptracing": "pnpm run --filter deepflow-apptracing-panel sign",
-    "sign:querier": "pnpm run --filter deepflow-querier-datasource sign",
-    "sign:topo": "pnpm run --filter deepflow-topo-panel sign",
-    "sign:all": "pnpm run sign:apptracing && pnpm run sign:querier && pnpm run sign:topo"
-  },
-  "dependencies": {
-    "@grafana/data": "^8.5.6",
-    "@grafana/runtime": "^8.5.6",
-    "@grafana/toolkit": "^8.5.6",
-    "@grafana/ui": "^9.1.5",
-    "deepflow-vis-js": "^0.0.15",
-    "lodash": "^4.17.21",
-    "qs": "^6.11.0"
-  },
-  "devDependencies": {
-    "@types/lodash": "^4.14.182",
-    "@types/react-dom": "^18.0.6",
-    "prettier": "^2.7.1",
-    "tslib": "^2.4.0",
-    "typescript": "^4.7.4"
+    "install:tracing": "cd deepflow-apptracing-panel && yarn",
+    "install:querier": "cd deepflow-querier-datasource && yarn",
+    "install:topo": "cd deepflow-topo-panel && yarn",
+    "install:all": "yarn install:tracing && yarn install:querier && yarn install:topo",
+    "build:tracing": "cd deepflow-apptracing-panel && yarn build",
+    "build:querier": "cd deepflow-querier-datasource && yarn build",
+    "build:topo": "cd deepflow-topo-panel && yarn build",
+    "build:all": "yarn build:tracing && yarn build:querier && yarn build:topo",
+    "sign:tracing": "cd deepflow-apptracing-panel && yarn sign",
+    "sign:querier": "cd deepflow-querier-datasource && yarn sign",
+    "sign:topo": "cd deepflow-topo-panel && yarn sign",
+    "sign:all": "yarn sign:tracing && yarn sign:querier && yarn sign:topo"
   },
   "license": "AGPL-3.0"
 }
