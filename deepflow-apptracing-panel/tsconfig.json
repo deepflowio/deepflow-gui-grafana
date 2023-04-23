@@ -1,5 +1,5 @@
 {
-  "extends": "../tsconfig.json",
+  "extends": "@grafana/toolkit/src/config/tsconfig.plugin.json",
   "include": [
     "src",
     "types"
