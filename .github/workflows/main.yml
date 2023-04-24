@@ -60,18 +60,18 @@ jobs:
         run: cat ./deepflow-querier-datasource/src/plugin.json
 
 
-      - name: Install dependencies
+      - name: Install All Dependencies
         run: 'test -d deepflow-apptracing-panel/dist  || yarn install:all'
 
-      - name: Build all
+      - name: Build All Plugins
         run: 'test -d deepflow-apptracing-panel/dist  || yarn build:all'
 
-      - name: set up go
+      - name: Setup Go
         uses: actions/setup-go@v3
         with:
           go-version: '1.19.1'
 
-      - name: Install go mage
+      - name: Install Go Mage
         run: |
           cd ./deepflow-querier-datasource
           go env
@@ -81,16 +81,16 @@ jobs:
           go run bootstrap.go
           whereis mage
 
-      - name: Build backend plugin
+      - name: Build Backend Plugin
         run: |
           cd ./deepflow-querier-datasource
           mage -v
 
-      - name: Sign All plugin
-        run: yarn sign:all
-        if: ${{ env.GRAFANA_API_KEY != '' }}
+      # - name: Sign All plugins
+      #   run: yarn sign:all
+      #   if: ${{ env.GRAFANA_API_KEY != '' }}
 
-      - name: Set up Docker Buildx
+      - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v2
         with:
           install: true
@@ -107,37 +107,37 @@ jobs:
           tag: "v2.0.5"
           fileName: "grafana-clickhouse-datasource-2.0.5.linux_amd64.zip"
 
-      - name: Unzip grafana clickhouse datasource
+      - name: Unzip grafana-clickhouse-datasource
         run: |
           unzip -d plugin-amd64 grafana-clickhouse-datasource-2.0.5.linux_amd64.zip
           unzip -d plugin-arm64 grafana-clickhouse-datasource-2.0.5.linux_arm64.zip
 
-      - name: Log in to GitHub Docker Registry
+      - name: Log into GitHub Docker Registry
         uses: docker/login-action@v2
         with:
           registry: "ghcr.io"
           username: "${{ github.repository_owner }}"
           password: "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: Log in to Docker Registry
+      - name: Log into Docker Registry
         uses: docker/login-action@v2
         with:
           username: "deepflowce"
           password: "${{ secrets.REGISTRY_PASS }}"
 
-      - name: Log in to ALIYUN Docker Registry
+      - name: Log into ALIYUN Docker Registry
         uses: docker/login-action@v2
         with:
           registry: "registry.cn-beijing.aliyuncs.com"
           username: "${{ secrets.REGISTRY_ALIYUN_USER }}"
           password: "${{ secrets.REGISTRY_PASS }}"
 
-      - name: set env
+      - name: Set Env
         run: |
           echo "IMAGE_TAG_PREFIX=${{ github.ref_name }}"|sed 's|main|latest|' >> $GITHUB_ENV
           echo "IMAGE_TAG=$(git rev-list --count HEAD)" >> $GITHUB_ENV
 
-      - name: Build and push deepflowio-init-grafana images
+      - name: Build And Push deepflowio-init-grafana Images
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -149,14 +149,14 @@ jobs:
             "ghcr.io/${{ github.repository_owner }}/deepflow-ce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}"
             "deepflowce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}"
 
-      - name: Log in to ALIYUN HongKong Docker Registry
+      - name: Log into ALIYUN HongKong Docker Registry
         uses: docker/login-action@v2
         with:
           registry: "registry.cn-hongkong.aliyuncs.com"
           username: "${{ secrets.REGISTRY_ALIYUN_USER }}"
           password: "${{ secrets.REGISTRY_PASS }}"
 
-      - name: Build and push deepflowio-init-grafana images to aliyun hongkong
+      - name: Build And Push deepflowio-init-grafana Images to ALIYUN HongKong
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -167,14 +167,14 @@ jobs:
             "registry.cn-hongkong.aliyuncs.com/deepflow-ce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}-${{ env.IMAGE_TAG }}"
             "registry.cn-hongkong.aliyuncs.com/deepflow-ce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}"
 
-      - name: Log in to ALIYUN Docker Registry
+      - name: Log into ALIYUN Docker Registry
         uses: docker/login-action@v2
         with:
           registry: "registry.cn-beijing.aliyuncs.com"
           username: "${{ secrets.REGISTRY_ALIYUN_USER }}"
           password: "${{ secrets.REGISTRY_PASS }}"
 
-      - name: Build and push deepflowio-init-grafana images to aliyun beijing
+      - name: Build And Push deepflowio-init-grafana Images To ALIYUN BeiJing
         uses: docker/build-push-action@v2
         with:
           context: .
@@ -220,11 +220,13 @@ jobs:
           endpoint: "oss-accelerate.aliyuncs.com"
           access-key-id: "${{ secrets.ALIYUN_OSS_ACCESS_KEY }}"
           access-key-secret: "${{ secrets.ALIYUN_OSS_SECRETS_KEY }}"
-      - name: upload plugin artifacts
+
+      - name: Upload Plugin Artifacts
         run: |
           cd release
           ossutil cp -rf deepflow-gui-grafana.tar.gz oss://deepflow-ce/pkg/grafana-plugin/${{ env.IMAGE_TAG_PREFIX }}/deepflow-gui-grafana.tar.gz
-      - name: upload stable artifacts
+
+      - name: Upload Stable Artifacts
         if: "startsWith(github.ref, 'refs/tags/')"
         run: |
           cd release
