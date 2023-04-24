@@ -8,19 +8,25 @@
   "alerting": true,
   "executable": "gpx_deepflow-grafana-backend-plugin",
   "info": {
-    "description": "Grafana datasource plugin for DeepFlow",
+    "description": "",
     "author": {
-      "name": "yunshan",
-      "url": "https://yunshan.net"
+      "name": "Deepflow",
+      "url": "https://deepflow.io/community.html"
     },
     "keywords": [
-      "DeepFlow"
+      "DeepFlow",
+      "Deepflowio DeepFlow Datasource"
     ],
     "logos": {
       "small": "img/logo.svg",
       "large": "img/logo.svg"
     },
-    "links": [],
+    "links": [
+      {
+        "name": "DeepFlow",
+        "url": "https://deepflow.io/community.html"
+      }
+    ],
     "screenshots": [
       {
         "name": "screenshot",

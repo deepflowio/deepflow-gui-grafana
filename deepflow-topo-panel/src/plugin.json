@@ -6,18 +6,21 @@
   "info": {
     "description": "",
     "author": {
-      "name": "yunshandev",
-      "url": "https://yunshan.net"
+      "name": "DeepFlow",
+      "url": "https://deepflow.io/community.html"
     },
-    "keywords": ["DeepFlow Topo Panel"],
+    "keywords": [
+      "DeepFlow",
+      "DeepFlowio Topo Panel"
+    ],
     "logos": {
       "small": "img/logo.svg",
       "large": "img/logo.svg"
     },
     "links": [
       {
-        "name": "Website",
-        "url": "https://yunshan.net"
+        "name": "DeepFlow",
+        "url": "https://deepflow.io/community.html"
       }
     ],
     "screenshots": [
