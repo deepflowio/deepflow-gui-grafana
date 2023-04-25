@@ -112,20 +112,20 @@ jobs:
           unzip -d plugin-amd64 grafana-clickhouse-datasource-2.0.5.linux_amd64.zip
           unzip -d plugin-arm64 grafana-clickhouse-datasource-2.0.5.linux_arm64.zip
 
-      - name: Log into GitHub Docker Registry
+      - name: Log In To GitHub Docker Registry
         uses: docker/login-action@v2
         with:
           registry: "ghcr.io"
           username: "${{ github.repository_owner }}"
           password: "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: Log into Docker Registry
+      - name: Log In To Docker Registry
         uses: docker/login-action@v2
         with:
           username: "deepflowce"
           password: "${{ secrets.REGISTRY_PASS }}"
 
-      - name: Log into ALIYUN Docker Registry
+      - name: Log In To ALIYUN Docker Registry
         uses: docker/login-action@v2
         with:
           registry: "registry.cn-beijing.aliyuncs.com"
@@ -149,7 +149,7 @@ jobs:
             "ghcr.io/${{ github.repository_owner }}/deepflow-ce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}"
             "deepflowce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}"
 
-      - name: Log into ALIYUN HongKong Docker Registry
+      - name: Log In To ALIYUN HongKong Docker Registry
         uses: docker/login-action@v2
         with:
           registry: "registry.cn-hongkong.aliyuncs.com"
@@ -167,7 +167,7 @@ jobs:
             "registry.cn-hongkong.aliyuncs.com/deepflow-ce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}-${{ env.IMAGE_TAG }}"
             "registry.cn-hongkong.aliyuncs.com/deepflow-ce/${{ env.IMAGE }}:${{ env.IMAGE_TAG_PREFIX }}"
 
-      - name: Log into ALIYUN Docker Registry
+      - name: Log In To ALIYUN Docker Registry
         uses: docker/login-action@v2
         with:
           registry: "registry.cn-beijing.aliyuncs.com"
