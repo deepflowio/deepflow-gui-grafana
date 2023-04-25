@@ -537,6 +537,8 @@ export const replaceInterval = (queryText: string, scopedVars: ScopedVars) => {
         // convert string to number
         .split(`"${VAR_INTERVAL_LABEL}"`)
         .join(intervalSecond + '')
+        .split(VAR_INTERVAL_LABEL)
+        .join(intervalSecond + '')
     )
   }
   return queryText
