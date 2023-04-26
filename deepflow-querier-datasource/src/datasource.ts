@@ -86,7 +86,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
 
     let tracingQueryIndex = -1
     const _targets = targets.filter(q => {
-      return !!q.queryText
+      return !!q.queryText && !q.hide
     })
     let hasAddedTracingConfig = false
     _targets.forEach(q => {
