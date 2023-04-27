@@ -1,6 +1,5 @@
 FROM busybox:1.28
-COPY dashboards /dashboards
-ARG TARGETARCH 
+ARG TARGETARCH
 RUN --mount=target=/tmp-mount \
     mkdir -p /deepflow-plugins/grafana-clickhouse-datasource && \
     cp -raf /tmp-mount/plugin-${TARGETARCH}/grafana-clickhouse-datasource/* /deepflow-plugins/grafana-clickhouse-datasource/
