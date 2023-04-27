@@ -233,6 +233,7 @@ export function getRelatedData(item: any, fullData: any) {
 
 export function formatDetailList(detailList: any[], metaCustom: any) {
   const MAP_METRIC_TYPE_NUM = 7
+  const TIME_METRIC_TYPE_NUM = 3
   const tagsGroupbyCategory = _.groupBy(
     metaCustom.tags.map((e: any) => {
       return {
@@ -296,7 +297,7 @@ export function formatDetailList(detailList: any[], metaCustom: any) {
                     }
                     return []
                   }
-                  if (type === 3) {
+                  if (type === TIME_METRIC_TYPE_NUM) {
                     return [key, formatUsUnit(val)]
                   }
                   const valAfterFormat = numberToShort(val)
