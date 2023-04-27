@@ -17,7 +17,7 @@ import {
   miniMap
 } from 'deepflow-vis-js'
 import { TopoTooltip } from 'components/TopoTooltip'
-import { formatUsUnit, genUniqueFieldByTag, numberToShort, useDebounce } from 'utils/tools'
+import { formatedMetrics, genUniqueFieldByTag, useDebounce } from 'utils/tools'
 
 type NodeItem = {
   id: string
@@ -247,20 +247,7 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
                         return enumKey in g ? [enumKey, g[enumKey]] : [k, g[k]]
                       })
                     ),
-                    ...Object.fromEntries(
-                      queryConfig.returnMetrics.map(metric => {
-                        const key = metric.name
-                        const type = metric.type
-                        const unit = metric.unit
-                        const val = g[key]
-
-                        if (type === 3) {
-                          return [key, formatUsUnit(val)]
-                        }
-                        const valAfterFormat = numberToShort(val)
-                        return [key, `${valAfterFormat}${valAfterFormat !== null && valAfterFormat !== '' ? unit : ''}`]
-                      })
-                    )
+                    ...formatedMetrics(queryConfig.returnMetrics, g)
                   }
                 })
               ].flat(),
@@ -275,20 +262,7 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
               metrics: {
                 FROM: _.get(item, ['client_resource']),
                 TO: _.get(item, ['server_resource']),
-                ...Object.fromEntries(
-                  queryConfig.returnMetrics.map(metric => {
-                    const key = metric.name
-                    const type = metric.type
-                    const unit = metric.unit
-                    const val = e[key]
-
-                    if (type === 3) {
-                      return [key, formatUsUnit(val)]
-                    }
-                    const valAfterFormat = numberToShort(val)
-                    return [key, `${valAfterFormat}${valAfterFormat !== null && valAfterFormat !== '' ? unit : ''}`]
-                  })
-                )
+                ...formatedMetrics(queryConfig.returnMetrics, e)
               },
               metricValue: _.get(e, [_.get(queryConfig, ['returnMetrics', 0, 'name'])])
             })
