@@ -49,7 +49,7 @@ import { TracingIdSelector } from 'components/TracingIdSelector'
 import { format as sqlFormatter } from 'sql-formatter'
 import './QueryEditor.css'
 import { getI18NLabelByName } from 'utils/i18n'
-import { genQueryParams } from 'utils/genQueryParams'
+import { genQueryParams, replaceIntervalAndVariables } from 'utils/genQueryParams'
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>
 
@@ -561,7 +561,8 @@ export class QueryEditor extends PureComponent<Props> {
       }
       let newQuery
       if (appType !== APPTYPE_APP_TRACING_FLAME) {
-        const parsedQueryData = genQueryParams(addTimeToWhere(dataObj), {})
+        const _queryText = JSON.stringify(addTimeToWhere(dataObj))
+        const parsedQueryData = genQueryParams(JSON.parse(replaceIntervalAndVariables(_queryText)), {})
         // @ts-ignore
         const querierJsResult = querierJs.dfQuery(_.cloneDeep(parsedQueryData))
         const { returnTags, returnMetrics, sql } = querierJsResult.resource[0]
