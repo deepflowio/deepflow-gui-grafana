@@ -19,7 +19,7 @@ import {
 } from 'utils/tools'
 import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
-import { genQueryParams, replaceInterval } from 'utils/genQueryParams'
+import { genQueryParams, replaceIntervalAndVariables } from 'utils/genQueryParams'
 import { DATA_SOURCE_SETTINGS, QUERY_DATA_CACHE, SQL_CACHE } from 'utils/cache'
 import { MyVariableQuery } from 'components/VariableQueryEditor'
 import { Observable, of, zip } from 'rxjs'
@@ -191,7 +191,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
   }
 
   applyTemplateVariables(query: MyQuery & { requestId: string }, scopedVars: ScopedVars): any {
-    const _queryText = replaceInterval(query.queryText, scopedVars)
+    const _queryText = replaceIntervalAndVariables(query.queryText, scopedVars)
     const queryData = JSON.parse(_queryText)
     const result = {} as MyQuery
     // set new params after replaced variables
