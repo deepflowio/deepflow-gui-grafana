@@ -497,7 +497,7 @@ export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVa
     'offset',
     'appType'
   ] as const
-  type KeyTypes = typeof keys[number]
+  type KeyTypes = (typeof keys)[number]
   type Data = {
     [K in KeyTypes]?: string | BasicData[]
   }
@@ -529,19 +529,18 @@ export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVa
   return result
 }
 
-export const replaceInterval = (queryText: string, scopedVars: ScopedVars) => {
+export const replaceIntervalAndVariables = (queryText: string, scopedVars?: ScopedVars) => {
+  let _queryText = queryText
   if (typeof scopedVars?.__interval_ms?.value === 'number') {
     const intervalSecond = scopedVars.__interval_ms.value / 1000
-    return (
-      queryText
-        // convert string to number
-        .split(`"${VAR_INTERVAL_LABEL}"`)
-        .join(intervalSecond + '')
-        .split(VAR_INTERVAL_LABEL)
-        .join(intervalSecond + '')
-    )
+    _queryText = queryText
+      // convert string to number
+      .split(`"${VAR_INTERVAL_LABEL}"`)
+      .join(intervalSecond + '')
+      .split(VAR_INTERVAL_LABEL)
+      .join(intervalSecond + '')
   }
-  return queryText
+  return getTemplateSrv().replace(_queryText, scopedVars)
 }
 
 export default genQueryParams
