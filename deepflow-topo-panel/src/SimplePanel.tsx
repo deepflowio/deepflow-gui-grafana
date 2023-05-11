@@ -197,8 +197,13 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
     if (_commonTags.length !== queryConfig.common?.length) {
       const fullDataAfterGroupBy = _.groupBy(fullData, item => {
         return [...sourceSide, ...destinationSide, ..._commonTags]
-          .map((key: string) => {
-            return genUniqueFieldByTag(key, item)
+          .map((tagName: string) => {
+            // must use type and id to unique a auto group by tag
+            if (/resource_gl|auto_instance|auto_service/.test(tagName)) {
+              const nodeTypeId = item[tagName.replace('_id', '_type')]
+              return [genUniqueFieldByTag(tagName, item), nodeTypeId].join(',')
+            }
+            return genUniqueFieldByTag(tagName, item)
           })
           .join(',')
       })

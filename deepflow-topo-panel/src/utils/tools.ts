@@ -135,13 +135,11 @@ export function formatUsUnit(num: any, unit = 1000, digits = 2, lang = 'en') {
 //  ip: 255, internet_ip: 0
 const IP_LIKELY_NODE_TYPE_IDS = [255, 0]
 export function genUniqueFieldByTag(tagName: string, item: any): string {
-  // must use type and id to unique a auto group by tag
   if (/resource_gl|auto_instance|auto_service/.test(tagName)) {
     const nodeTypeId = item[tagName.replace('_id', '_type')]
     if (IP_LIKELY_NODE_TYPE_IDS.includes(Number(nodeTypeId))) {
-      return [nodeTypeId, item[tagName], item[tagName.replace('_id', '')]].join(',')
+      return `${item[tagName.replace('_id', '')]},${item[tagName]}`
     }
-    return [nodeTypeId, item[tagName]].join(',')
   }
   return item[tagName]
 }
