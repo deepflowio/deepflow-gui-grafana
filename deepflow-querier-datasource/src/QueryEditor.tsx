@@ -676,6 +676,9 @@ export class QueryEditor extends PureComponent<Props> {
         [target]: result
       }
     })
+    setTimeout(() => {
+      this.onSubmit(true)
+    })
   }
 
   onFieldChange = (field: string, val: LabelItem | boolean | string, disableFormat?: boolean) => {
