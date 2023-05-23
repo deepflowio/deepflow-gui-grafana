@@ -1,5 +1,7 @@
+import { FormattedValue, getValueFormat } from '@grafana/data'
 import _ from 'lodash'
 import { useState, useEffect, useRef } from 'react'
+import { SimpleOptions } from 'types'
 
 export function useDebounce(value: any, delay: any) {
   const [debouncedValue, setDebouncedValue] = useState<any>(undefined)
@@ -145,14 +147,24 @@ export function genUniqueFieldByTag(tagName: string, item: any): string {
 }
 
 const TIME_METRIC_TYPE_NUM = 3
-export function formatedMetrics(returnMetrics: any[], e: any) {
+export function formatMetrics(returnMetrics: any[], e: any, metricsUnits: SimpleOptions['metricsUnits']) {
   return Object.fromEntries(
     returnMetrics.map(metric => {
       const key = metric.name
       const type = metric.type
       const unit = metric.unit
       const val = e[key]
+      if (metricsUnits[key]) {
+        const formatFn = getValueFormat(metricsUnits[key])
+        const { prefix, text, suffix } = formatFn(val) as FormattedValue
 
+        const valAfterFormat = [prefix, text, suffix]
+          .filter(e => {
+            return !!e
+          })
+          .join('')
+        return [key, valAfterFormat]
+      }
       if (type === TIME_METRIC_TYPE_NUM) {
         return [key, formatUsUnit(val)]
       }

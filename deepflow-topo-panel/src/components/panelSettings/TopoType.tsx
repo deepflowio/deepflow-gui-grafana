@@ -18,7 +18,7 @@ export const TOPO_TYPE_OPTS = [
 ]
 export type TOPO_TYPE = 'simpleTopo' | 'treeTopo' | 'treeTopoWithGroup'
 
-export const TopoTypeSelector: React.FC<
+export const TopoType: React.FC<
   StandardEditorProps<{
     type: TOPO_TYPE
     nodeTags: string[]

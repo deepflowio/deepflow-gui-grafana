@@ -17,7 +17,7 @@ import {
   miniMap
 } from 'deepflow-vis-js'
 import { TopoTooltip } from 'components/TopoTooltip'
-import { formatedMetrics, genUniqueFieldByTag, useDebounce } from 'utils/tools'
+import { formatMetrics, genUniqueFieldByTag, useDebounce } from 'utils/tools'
 
 type NodeItem = {
   id: string
@@ -48,6 +48,9 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
   }, [options])
   const nodeDisplayTags = useMemo(() => {
     return options.topoSettings.nodeTags
+  }, [options])
+  const metricsUnits = useMemo(() => {
+    return options.metricsUnits
   }, [options])
   const [errMsg, setErrMsg] = useState('')
   const [chartContainer, setChartContainer] = useState<any>(undefined)
@@ -252,7 +255,7 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
                         return enumKey in g ? [enumKey, g[enumKey]] : [k, g[k]]
                       })
                     ),
-                    ...formatedMetrics(queryConfig.returnMetrics, g)
+                    ...formatMetrics(queryConfig.returnMetrics, g, metricsUnits)
                   }
                 })
               ].flat(),
@@ -267,7 +270,7 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
               metrics: {
                 FROM: _.get(item, ['client_resource']),
                 TO: _.get(item, ['server_resource']),
-                ...formatedMetrics(queryConfig.returnMetrics, e)
+                ...formatMetrics(queryConfig.returnMetrics, e, metricsUnits)
               },
               metricValue: _.get(e, [_.get(queryConfig, ['returnMetrics', 0, 'name'])])
             })
@@ -275,7 +278,7 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
     })
     window.useTimeLogs && console.timeEnd('[Time Log][Topo: Compute links]')
     return result
-  }, [selectedData, sourceSide, destinationSide, queryConfig])
+  }, [selectedData, sourceSide, destinationSide, queryConfig, metricsUnits])
 
   const nodes: NodeItem[] = useMemo(() => {
     if (!links?.length || !queryConfig?.from?.length || !queryConfig?.to?.length) {
