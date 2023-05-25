@@ -1124,6 +1124,11 @@ func (d *Datasource) querier(ctx context.Context, debug bool, db, sql, sources, 
 	//请求querier接口
 	log.DefaultLogger.Info("__________request querier interface", "data", data)
 
+	// 如果有token,说明是从网关访问的，需要加服务前缀和header: Authorization
+	if token != "" {
+		requestUrl += "/api/querier"
+	}
+
 	//请求url
 	debugStr := strconv.FormatBool(debug)
 	querier := requestUrl + "/v1/query/?debug=" + debugStr
@@ -1210,6 +1215,7 @@ func (d *Datasource) CheckHealth(ctx context.Context, _ *backend.CheckHealthRequ
 
 	//token
 	token := ""
+
 	if _, ok := dsj["token"]; ok {
 		token = dsj["token"].(string)
 	}
