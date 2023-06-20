@@ -836,7 +836,6 @@ func (d *Datasource) trace(ctx context.Context, debug bool, traceUrl, tracingIdV
 	postData["DATABASE"] = "flow_log"
 	postData["TABLE"] = "l7_flow_log"
 	postData["MAX_ITERATION"] = 30
-	postData["NETWORK_DELAY_US"] = 3000000
 	postData["time_end"] = toTime
 	postData["time_start"] = fromTime
 
