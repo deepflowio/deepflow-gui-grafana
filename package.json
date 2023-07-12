@@ -1,6 +1,6 @@
 {
   "name": "deepflow-gui-grafana",
-  "version": "6.3.2",
+  "version": "6.3.3",
   "private": true,
   "scripts": {
     "install:tracing": "cd deepflow-apptracing-panel && yarn",
