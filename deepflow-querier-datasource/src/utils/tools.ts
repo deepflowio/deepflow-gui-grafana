@@ -339,6 +339,8 @@ export function genGetTagValuesSql(
   return `show tag ${tagName} values FROM ${from} WHERE ${cond}${!useEqual ? ' LIMIT 0,100' : ''}`
 }
 
+export const TIME_VARIABLE_FROM = '${__from:date:seconds}'
+export const TIME_VARIABLE_TO = '${__to:date:seconds}'
 export function addTimeToWhere(queryData: any) {
   const result = _.cloneDeep(queryData)
   const key = 'time'
@@ -346,13 +348,13 @@ export function addTimeToWhere(queryData: any) {
     type: 'tag',
     key,
     op: '>=',
-    val: '${__from:date:seconds}'
+    val: TIME_VARIABLE_FROM
   })
   result.where.push({
     type: 'tag',
     key,
     op: '<=',
-    val: '${__to:date:seconds}'
+    val: TIME_VARIABLE_TO
   })
   return result
 }

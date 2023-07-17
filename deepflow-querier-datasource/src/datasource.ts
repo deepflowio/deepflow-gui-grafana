@@ -11,6 +11,8 @@ import {
 } from '@grafana/runtime'
 import qs from 'qs'
 import {
+  TIME_VARIABLE_FROM,
+  TIME_VARIABLE_TO,
   addTimeToWhere,
   getAccessRelationshipQueryConfig,
   getParamByName,
@@ -136,8 +138,8 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
             )
             if (range) {
               const sql = q.sql
-                .replace("'${__from:date:seconds}'", `${range.from.unix()}`)
-                .replace("'${__to:date:seconds}'", `${range.to.unix()}`)
+                .replace(`'${TIME_VARIABLE_FROM}'`, `${range.from.unix()}`)
+                .replace(`'${TIME_VARIABLE_TO}'`, `${range.to.unix()}`)
               _.set(SQL_CACHE, `${requestId}_${q.refId}`, sql)
             }
 
