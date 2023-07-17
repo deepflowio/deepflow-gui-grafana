@@ -6,7 +6,7 @@ import _ from 'lodash'
 import { LabelItem } from 'QueryEditor'
 // import { MyQuery } from 'types'
 import { getTagMapCache, QUERY_DATA_CACHE } from './cache'
-import { getRealKey, isEnumLikelyTag } from './tools'
+import { getRealKey, isEnumLikelyTag, TIME_VARIABLE_FROM, TIME_VARIABLE_TO } from './tools'
 
 // Secondary Operators and Concatenated Strings Map:
 // {
@@ -531,6 +531,8 @@ export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVa
 
 export const replaceIntervalAndVariables = (queryText: string, scopedVars?: ScopedVars) => {
   let _queryText = queryText
+    .replace(`"${TIME_VARIABLE_FROM}"`, TIME_VARIABLE_FROM)
+    .replace(`"${TIME_VARIABLE_TO}"`, TIME_VARIABLE_TO)
   if (typeof scopedVars?.__interval_ms?.value === 'number') {
     const intervalSecond = scopedVars.__interval_ms.value / 1000
     _queryText = queryText
