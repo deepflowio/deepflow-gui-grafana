@@ -459,14 +459,14 @@ export function getTracingQuery({ metrics, tags }: any) {
         }),
         METRICS: metrics
           .filter((e: any) => {
-            const isJSONMetirc = JSON_METRICS.find(jsonTag => {
+            const isJSONMetric = JSON_METRICS.find(jsonTag => {
               return e.category === jsonTag.category
             })
             const isMainJSONMetric = JSON_METRICS.find(jsonTag => {
               return e.name === jsonTag.groupName
             })
-            const isSubJSONMetric = isJSONMetirc && !isMainJSONMetric
-            return e.type !== TAG_METRIC_TYPE_NUM && !isSubJSONMetric
+            const isSubJSONMetric = isJSONMetric && !isMainJSONMetric
+            return e.type !== TAG_METRIC_TYPE_NUM && !isSubJSONMetric && !e.is_agg
           })
           .map((e: any) => {
             return e.name
