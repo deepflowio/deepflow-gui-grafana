@@ -1,6 +1,6 @@
 {
   "name": "deepflow-querier-datasource",
-  "version": "6.3.3",
+  "version": "6.3.4",
   "description": "",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
