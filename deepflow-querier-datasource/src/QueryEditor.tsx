@@ -50,6 +50,7 @@ import { format as sqlFormatter } from 'sql-formatter'
 import './QueryEditor.css'
 import { getI18NLabelByName } from 'utils/i18n'
 import { genQueryParams, replaceIntervalAndVariables } from 'utils/genQueryParams'
+import copy from 'copy-text-to-clipboard'
 
 type Props = QueryEditorProps<DataSource, MyQuery, MyDataSourceOptions>
 
@@ -121,6 +122,7 @@ export class QueryEditor extends PureComponent<Props> {
     gotBasicData: boolean
     templateVariableOpts: SelectOpts
     runQueryWarning: boolean
+    copied: boolean
   }
   constructor(props: any) {
     super(props)
@@ -166,7 +168,8 @@ export class QueryEditor extends PureComponent<Props> {
       showErrorAlert: false,
       gotBasicData: false,
       templateVariableOpts: [],
-      runQueryWarning: false
+      runQueryWarning: false,
+      copied: false
     }
   }
 
@@ -1084,6 +1087,17 @@ export class QueryEditor extends PureComponent<Props> {
       showErrorAlert: false
     })
   }
+  onCopySQLBtnClick = () => {
+    copy(_.get(SQL_CACHE, `${this.requestId}_${this.refId}`, ''))
+    this.setState({
+      copied: true
+    })
+    setTimeout(() => {
+      this.setState({
+        copied: false
+      })
+    }, 1800)
+  }
 
   render() {
     const {
@@ -1109,7 +1123,6 @@ export class QueryEditor extends PureComponent<Props> {
       showMetrics,
       tracingId
     } = this.state
-
     return (
       <div className={`${this.grafanaTheme} querier-editor`}>
         <div
@@ -1418,7 +1431,15 @@ export class QueryEditor extends PureComponent<Props> {
           }
         </div>
         {appType !== APPTYPE_APP_TRACING_FLAME ? (
-          <div className="sql-content" dangerouslySetInnerHTML={{ __html: this.sqlContent }}></div>
+          <div className="sql-content-wrapper">
+            <div className="sql-content" dangerouslySetInnerHTML={{ __html: this.sqlContent }}></div>
+            <Button
+              style={{ position: 'absolute', right: 0, top: 0 }}
+              fill="text"
+              icon={this.state.copied ? 'check' : 'copy'}
+              onClick={this.onCopySQLBtnClick}
+            />
+          </div>
         ) : null}
       </div>
     )
