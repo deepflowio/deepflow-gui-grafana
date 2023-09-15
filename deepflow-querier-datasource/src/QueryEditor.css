@@ -191,16 +191,19 @@
 }
 
 /* sql highlight style */
+.sql-content-wrapper {
+  position: relative;
+}
 .sql-content {
   min-width: 120px;
   margin-left: 12px;
   overflow: auto;
-  padding: 0 4px;
+  padding: 8px 12px 8px 6px;
   background: #00262f;
   border-radius: 2px;
   box-shadow: 0px 0px 1px 0 #938d8d;
   white-space: pre-wrap;
-  user-select: all;
+  user-select: none;
 }
 
 .sql-content p {

@@ -5,7 +5,7 @@ import { SimpleOptions } from 'types'
 import { DYTable } from 'components/DYTable'
 import { Alert } from '@grafana/ui'
 import _ from 'lodash'
-import { renderTimeBar, addSvg, fitSvgToContainer, TAP_SIDE_OPTIONS_MAP, miniMap } from 'deepflow-vis-js'
+import { renderTimeBar, addSvg, fitSvgToContainer, miniMap } from 'deepflow-vis-js'
 import { FlameTooltip } from 'components/FlameTooltip'
 import { formatDetailList, genServiceId, getDataByFieldName, getRelatedData, useDebounce } from 'utils/tools'
 import {
@@ -138,15 +138,27 @@ export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
       let handleZoomEvent: any
       const renderResult = renderTimeBar(flameData)(flameContainer, {
         formatBarName: (data: any, type: string) => {
-          if (type === 'app' || type === 'process') {
-            const result = [
-              data['Enum(l7_protocol)'] || data.l7_protocol_str,
-              ...(data.request_resource ? [data.request_type, data.request_resource] : [data.endpoint])
-            ]
-            return result.filter(e => !!e).join(' ')
-          } else {
-            return _.get(TAP_SIDE_OPTIONS_MAP, [data.tap_side, 'label'], data.tap_side)
-          }
+           if (type === 'network') {
+             if (data.tap_id === 3) {
+               return `${data['Enum(tap_side)']} ${data.auto_instance} ${data.tap_port_name}`
+             } else {
+               return data.tap
+             }
+           } else {
+             let l7_protocol
+             if ([0, 1].includes(data.l7_protocol)) {
+               l7_protocol = data.l7_protocol_str || ''
+             } else {
+               l7_protocol = data['Enum(l7_protocol)'] ?? ''
+             }
+             let request_detail
+             if (!data.request_resource) {
+               request_detail = ` ${data.endpoint || ''}`
+             } else {
+               request_detail = `${data.request_type || ''}  ${data.request_resource || ''}`
+             }
+             return `${l7_protocol} ${request_detail}`
+           }
         },
         watchZoomEvent: (event: any) => handleZoomEvent(event)
       })
