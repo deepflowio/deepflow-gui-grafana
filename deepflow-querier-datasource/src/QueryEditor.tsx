@@ -200,6 +200,9 @@ export class QueryEditor extends PureComponent<Props> {
   get sqlContent() {
     const content = _.get(SQL_CACHE, `${this.requestId}_${this.refId}`, '')
     let res = ''
+    if (content === '') {
+      return res
+    }
     try {
       const sqlString = sqlFormatter(content.replace(/\$/g, 'symbol_dollar'), {
         tabWidth: 2,
@@ -1430,7 +1433,7 @@ export class QueryEditor extends PureComponent<Props> {
             </>
           }
         </div>
-        {appType !== APPTYPE_APP_TRACING_FLAME ? (
+        {appType !== APPTYPE_APP_TRACING_FLAME && this.sqlContent ? (
           <div className="sql-content-wrapper">
             <div className="sql-content" dangerouslySetInnerHTML={{ __html: this.sqlContent }}></div>
             <Button
