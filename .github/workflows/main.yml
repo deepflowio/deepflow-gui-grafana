@@ -98,19 +98,19 @@ jobs:
       - uses: robinraju/release-downloader@v1.4
         with:
           repository: "grafana/clickhouse-datasource"
-          tag: "v2.0.5"
-          fileName: "grafana-clickhouse-datasource-2.0.5.linux_arm64.zip"
+          tag: "v2.2.1"
+          fileName: "grafana-clickhouse-datasource-2.2.1.linux_arm64.zip"
 
       - uses: robinraju/release-downloader@v1.4
         with:
           repository: "grafana/clickhouse-datasource"
-          tag: "v2.0.5"
-          fileName: "grafana-clickhouse-datasource-2.0.5.linux_amd64.zip"
+          tag: "v2.2.1"
+          fileName: "grafana-clickhouse-datasource-2.2.1.linux_amd64.zip"
 
       - name: Unzip grafana-clickhouse-datasource
         run: |
-          unzip -d plugin-amd64 grafana-clickhouse-datasource-2.0.5.linux_amd64.zip
-          unzip -d plugin-arm64 grafana-clickhouse-datasource-2.0.5.linux_arm64.zip
+          unzip -d plugin-amd64 grafana-clickhouse-datasource-2.2.1.linux_amd64.zip
+          unzip -d plugin-arm64 grafana-clickhouse-datasource-2.2.1.linux_arm64.zip
 
       - name: Log In To GitHub Docker Registry
         uses: docker/login-action@v2
