@@ -34,6 +34,19 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
+      - name: Set Env
+        run: |
+          echo "IMAGE_TAG_PREFIX=${{ github.ref_name }}"|sed 's|main|latest|' >> $GITHUB_ENV
+          echo "IMAGE_TAG=$(git rev-list --count HEAD)" >> $GITHUB_ENV
+
+      - name: Update Version
+        run: |
+          files=(package.json */package.json)
+          version=${{ env.IMAGE_TAG_PREFIX }}
+          for file in "${files[@]}"; do
+            sed -i "s/\"version\": \".*\"/\"version\": \"$version\"/" $file
+          done
+
       - name: Setup Yarn
         uses: DerYeger/yarn-setup-action@master
         with:
@@ -131,11 +144,6 @@ jobs:
           registry: "registry.cn-beijing.aliyuncs.com"
           username: "${{ secrets.REGISTRY_ALIYUN_USER }}"
           password: "${{ secrets.REGISTRY_PASS }}"
-
-      - name: Set Env
-        run: |
-          echo "IMAGE_TAG_PREFIX=${{ github.ref_name }}"|sed 's|main|latest|' >> $GITHUB_ENV
-          echo "IMAGE_TAG=$(git rev-list --count HEAD)" >> $GITHUB_ENV
 
       - name: Build And Push deepflowio-init-grafana Images
         uses: docker/build-push-action@v2
