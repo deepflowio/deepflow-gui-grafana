@@ -90,7 +90,6 @@ jobs:
           cd ./deepflow-querier-datasource
           go env
           go install -mod=mod github.com/magefile/mage
-          go run bootstrap.go
           whereis mage
 
       - name: Build Backend Plugin
