@@ -1,6 +1,6 @@
 module deepflow-grafana-backend-plugin
 
-go 1.19
+go 1.21.3
 
 require github.com/grafana/grafana-plugin-sdk-go v0.187.0
 
