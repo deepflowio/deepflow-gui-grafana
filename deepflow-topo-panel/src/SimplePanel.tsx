@@ -88,6 +88,9 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
       if (chartContainer) {
         chartContainer.select('g').remove()
       }
+      if (MINIMAP_CONTAINER_CACHE[id]) {
+        MINIMAP_CONTAINER_CACHE[id].remove()
+      }
       return {
         fields: []
       }
@@ -96,7 +99,7 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
     }
     setTooltipContent({})
     return series[targetIndex]
-  }, [series, chartContainer])
+  }, [series, chartContainer, id])
 
   const queryConfig = useMemo(() => {
     const customData = series[targetIndex]?.meta?.custom
