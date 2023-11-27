@@ -39,14 +39,6 @@ jobs:
           echo "IMAGE_TAG_PREFIX=${{ github.ref_name }}"|sed 's|main|latest|' >> $GITHUB_ENV
           echo "IMAGE_TAG=$(git rev-list --count HEAD)" >> $GITHUB_ENV
 
-      - name: Update Version
-        run: |
-          files=(package.json */package.json)
-          version=${{ env.IMAGE_TAG_PREFIX }}
-          for file in "${files[@]}"; do
-            sed -i "s/\"version\": \".*\"/\"version\": \"$version\"/" $file
-          done
-
       - name: Setup Yarn
         uses: DerYeger/yarn-setup-action@master
         with:
@@ -72,9 +64,17 @@ jobs:
       - name: Review plugin.json
         run: cat ./deepflow-querier-datasource/src/plugin.json
 
-
       - name: Install All Dependencies
         run: 'test -d deepflow-apptracing-panel/dist  || yarn install:all'
+
+      - name: Update Version
+        run: |
+          files=(package.json */package.json)
+          version=${{ env.IMAGE_TAG_PREFIX }}
+          version=${version#v}
+          for file in "${files[@]}"; do
+            sed -i "s/\"version\": \".*\"/\"version\": \"$version\"/" $file
+          done
 
       - name: Build All Plugins
         run: 'test -d deepflow-apptracing-panel/dist  || yarn build:all'
