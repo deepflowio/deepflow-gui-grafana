@@ -862,6 +862,7 @@ export class QueryEditor extends PureComponent<Props> {
     try {
       const { db, from, where } = formData
       const tagValuesGroup: Record<any, any[]> = {}
+      const tagTypeGroup: Record<any, string> = {}
       where.forEach((item: BasicDataWithId) => {
         if (!item.key) {
           return
@@ -869,6 +870,7 @@ export class QueryEditor extends PureComponent<Props> {
         const tagMapItem = getTagMapCache(db, from, getRealKey(item))
         const tagName = tagMapItem.name
         const tagType = _.get(tagMapItem, 'type')
+        tagTypeGroup[tagName] = tagType
         if (!INPUT_TAG_VAL_TYPES.includes(tagType) && SELECT_TAG_VAL_OPS.includes(item.op)) {
           if (!tagValuesGroup[tagName]) {
             tagValuesGroup[tagName] = []
@@ -888,6 +890,7 @@ export class QueryEditor extends PureComponent<Props> {
           genGetTagValuesSql(
             {
               tagName,
+              tagType: _.get(tagTypeGroup, [tagName]),
               from,
               keyword: [...new Set(tagValues.map(e => e.value))]
             },
