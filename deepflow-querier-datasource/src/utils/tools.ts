@@ -308,7 +308,7 @@ export function genGetTagValuesSql(
     keyword
   }: {
     tagName: string
-    tagType?: string
+    tagType: string
     from: string
     keyword: string | Array<number | string>
   },
@@ -318,17 +318,18 @@ export function genGetTagValuesSql(
   if (useEqual) {
     cond = (keyword as Array<number | string>)
       .map(kw => {
-        return `${tagName}=${typeof kw === 'number' ? kw : `'${kw}'`}`
+        return `${tagType === 'resource' ? `${tagName}_id` : tagName}=${typeof kw === 'number' ? kw : `'${kw}'`}`
       })
       .join(' OR ')
   } else {
     // tag of map type children, can only search by value, but value is same as description
-    const ONLY_USE_NAME_LIKE_TAG_TYPES = ['resource', 'int_enum', 'string_enum', 'resource_array']
+    const ONLY_USE_NAME_LIKELY_TAG_TYPES = ['resource', 'int_enum', 'string_enum', 'resource_array']
+    const ENUM_LIKELY_TAG_TYPES = ['enum', 'int_enum', 'string_enum']
 
     const likeVal = (keyword as string) || '*'
     cond = [
-      `Enum(${tagName})`,
-      ...(ONLY_USE_NAME_LIKE_TAG_TYPES.includes((tagType as string).toLocaleLowerCase()) ? [] : [tagName])
+      ENUM_LIKELY_TAG_TYPES.includes(tagType as string) ? `Enum(${tagName})` : tagName,
+      ...(ONLY_USE_NAME_LIKELY_TAG_TYPES.includes((tagType as string).toLocaleLowerCase()) ? [] : [tagName])
     ]
       .map(e => {
         // @ts-ignore
