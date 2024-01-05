@@ -139,7 +139,7 @@ export const formItemConfigs = {
   },
   orderBy: {
     type: false,
-    func: true,
+    func: false,
     op: false,
     val: false,
     as: false,
