@@ -8,7 +8,7 @@ interface SubFuncsEditorProps {
   subFuncs: any[]
   subFuncOpts: SelectOptsWithStringValue
   onSubFuncsChange: (newSubFuncs: GenFuncDisplayNameParam[]) => void
-  isUsingAlerting: boolean
+  usingAlerting: boolean
 }
 
 interface GenFuncDisplayNameParam {
@@ -97,7 +97,7 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
   }
 
   const [numberOpts, setNumberOpts] = useState<SelectOpts>(
-    !props.isUsingAlerting
+    !props.usingAlerting
       ? [
           {
             label: VAR_INTERVAL_LABEL,

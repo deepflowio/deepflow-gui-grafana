@@ -3,7 +3,7 @@ import { QueryEditorProps, VariableModel } from '@grafana/data'
 import { DataSource } from './datasource'
 import { MyDataSourceOptions, MyQuery } from './types'
 import { Button, InlineField, Select, Input, Alert, getTheme, Icon, Tooltip } from '@grafana/ui'
-import { QueryEditorFormRow } from './components/QueryEditorFormRow'
+import { BasicData, QueryEditorFormRow } from './components/QueryEditorFormRow'
 import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
 import {
@@ -173,7 +173,7 @@ export class QueryEditor extends PureComponent<Props> {
     }
   }
 
-  get isUsingAlerting() {
+  get usingAlerting() {
     const usingAlerting = !!this.props.app?.includes('alerting')
     if (usingAlerting) {
       this.setState({
@@ -185,7 +185,7 @@ export class QueryEditor extends PureComponent<Props> {
 
   get appTypeOptsComputed() {
     return appTypeOpts.filter(e => {
-      return !this.isUsingAlerting || ALERTING_ALLOW_APP_TYPE.includes(e.value)
+      return !this.usingAlerting || ALERTING_ALLOW_APP_TYPE.includes(e.value)
     })
   }
 
@@ -474,7 +474,7 @@ export class QueryEditor extends PureComponent<Props> {
         return item.variableType === 'interval'
       })
       .concat(
-        !this.isUsingAlerting
+        !this.usingAlerting
           ? [
               {
                 label: VAR_INTERVAL_LABEL,
@@ -484,6 +484,24 @@ export class QueryEditor extends PureComponent<Props> {
           : []
       )
       .concat(intervalOpts)
+  }
+
+  get usingDerivativePreFunc(): any {
+    const hasNotSet = ['select', 'having'].every(key => {
+      const current = _.get(this.state, key)
+      return current.every((e: BasicData) => {
+        return !('preFunc' in e)
+      })
+    })
+    return (
+      hasNotSet ||
+      ['select', 'having'].find(key => {
+        const current = _.get(this.state, key)
+        return current.find((e: BasicData) => {
+          return e.type === 'metric' && e.key && e.preFunc === 'Derivative'
+        })
+      })
+    )
   }
 
   setSourcesChange(val: LabelItem & { dataSources: null | string[] }) {
@@ -631,17 +649,45 @@ export class QueryEditor extends PureComponent<Props> {
       : {}
   }
 
+  preFuncChecker = (oldData: BasicData, newData: BasicData) => {
+    if (oldData.preFunc === newData.preFunc) {
+      return
+    }
+    const abc: Record<string, any> = {}
+    ;['select', 'having', 'orderBy'].forEach(key => {
+      const current = _.get(this.state, key)
+      abc[key] = current.map((e: BasicData) => {
+        if (e.type === 'metric' && e.key) {
+          e.preFunc = newData.preFunc
+        }
+        return {
+          ...e,
+          ...(e.type === 'metric' && e.key ? { preFunc: newData.preFunc } : {})
+        }
+      })
+    })
+    return abc
+  }
+
   onRowValChange = (a: any, newValue: any) => {
     const { target, index } = a
     this.setState((state: any, props) => {
       const _result = state[target]
       const result = JSON.parse(JSON.stringify(_result))
+      let abc
+      if (Object.keys(newValue).length === 1 && 'preFunc' in newValue ) {
+        abc = this.preFuncChecker(result[index], {
+          ...result[index],
+          ...newValue
+        })
+      }
       result[index] = {
         ...result[index],
         ...newValue
       }
       return {
         [target]: result,
+        ...abc,
         errorMsg: '',
         showErrorAlert: false,
         runQueryWarning: true
@@ -1093,6 +1139,7 @@ export class QueryEditor extends PureComponent<Props> {
       showErrorAlert: false
     })
   }
+
   onCopySQLBtnClick = () => {
     copy(_.get(SQL_CACHE, `${this.requestId}_${this.refId}`, ''))
     this.setState({
@@ -1224,7 +1271,7 @@ export class QueryEditor extends PureComponent<Props> {
                             {this.state[conf.targetDataKey].map((item: BasicDataWithId, index: number) => {
                               return (
                                 <QueryEditorFormRow
-                                  isUsingAlerting={this.isUsingAlerting}
+                                  usingAlerting={this.usingAlerting}
                                   templateVariableOpts={templateVariableOpts.filter(item => {
                                     return item.variableType !== 'interval' && item.variableType !== 'datasource'
                                   })}
@@ -1300,6 +1347,7 @@ export class QueryEditor extends PureComponent<Props> {
                                       type
                                     )
                                   }
+                                  usingDerivativePreFunc={this.usingDerivativePreFunc}
                                 />
                               )
                             })}
