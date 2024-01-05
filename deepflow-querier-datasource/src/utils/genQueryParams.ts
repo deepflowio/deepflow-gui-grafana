@@ -148,8 +148,16 @@ function jointOrAnd(conditionList: any) {
   return result
 }
 
-function formatWithsubFuncs(target: any) {
-  const { subFuncs, func, key, params } = target
+function formatWithSubFuncs(target: any) {
+  const { subFuncs: _subFuncs, func: _func, key, params, preFunc } = target
+  let subFuncs = _.cloneDeep(_subFuncs) || []
+  let func = _func
+  if (preFunc && _func) {
+    func = preFunc
+    subFuncs.unshift({
+      func: _func
+    })
+  }
   if (!Array.isArray(subFuncs) || !subFuncs.length) {
     return target
   }
@@ -197,7 +205,7 @@ function selectFormat(data: any): {
       return item.key
     })
     .forEach((item: BasicData) => {
-      const validKeys = ['key', 'func', 'params', 'as', 'subFuncs'] as const
+      const validKeys = ['key', 'func', 'params', 'as', 'subFuncs', 'preFunc'] as const
       const result: any = {}
       validKeys.forEach(key => {
         if (_.isNumber(item[key]) || !_.isEmpty(item[key])) {
@@ -209,7 +217,7 @@ function selectFormat(data: any): {
       if (resultKeys.length === 1 && resultKeys[0] === 'key') {
         target.push(result.key)
       } else {
-        target.push(formatWithsubFuncs(result))
+        target.push(formatWithSubFuncs(result))
       }
     })
 
@@ -277,7 +285,7 @@ export function getValueByVariablesName(val: LabelItem, variables: any[], op: st
 function whereFormat(data: any, variables: any[], scopedVars: ScopedVars) {
   const { db, from, where, having } = data
   const fullData = where.concat(having)
-  const validKeys = ['type', 'key', 'func', 'op', 'val', 'params', 'subFuncs', 'whereOnly'] as const
+  const validKeys = ['type', 'key', 'func', 'op', 'val', 'params', 'subFuncs', 'whereOnly', 'preFunc'] as const
   const result = fullData
     .filter((item: BasicData) => {
       return item.key
@@ -308,13 +316,13 @@ function whereFormat(data: any, variables: any[], scopedVars: ScopedVars) {
       const isEnumTag = result.type === 'tag' && isEnumLikelyTag(tagMapItem)
       return {
         isForbidden: false,
-        ...(result.type === 'tag' || !result?.subFuncs?.length
-          ? result
-          : {
+        ...(result.type === 'metric' && (result?.subFuncs?.length || (result.preFunc && result.func))
+          ? {
               type: result.type,
               op: result.op,
-              val: [formatWithsubFuncs(result), result.val]
-            }),
+              val: [formatWithSubFuncs(result), result.val]
+            }
+          : result),
         ...(isEnumTag && (result.op.toUpperCase().includes('LIKE') || result.op.toUpperCase().includes('REGEXP'))
           ? {
               func: 'Enum'
@@ -449,7 +457,7 @@ function groupByFormat(data: any, variables: any[]) {
 }
 
 function orderByFormat(orderBy: BasicData[]) {
-  const validKeys = ['key', 'func', 'params', 'sort', 'subFuncs'] as const
+  const validKeys = ['key', 'func', 'params', 'sort', 'subFuncs', 'preFunc'] as const
   return orderBy
     .filter((item: BasicData) => {
       return item.key
@@ -476,7 +484,7 @@ function orderByFormat(orderBy: BasicData[]) {
         }
       })
       return {
-        ...formatWithsubFuncs(result),
+        ...formatWithSubFuncs(result),
         desc: result.desc
       }
     })
@@ -526,6 +534,7 @@ export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVa
     limit: data.limit,
     offset: data.offset
   }
+
   return result
 }
 
