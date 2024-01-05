@@ -38,6 +38,7 @@ export interface BasicData {
     params: string[]
     subFuncs: any[]
   }
+  preFunc?: string
 }
 
 type Props = {
@@ -59,7 +60,8 @@ type Props = {
   usingGroupBy: boolean
   templateVariableOpts: SelectOpts
   uuid: string
-  isUsingAlerting: boolean
+  usingAlerting: boolean
+  usingDerivativePreFunc: boolean
 }
 
 const columnTypeOpts = [
@@ -87,6 +89,13 @@ const enumLikelyTagFuncs = [
   {
     label: 'Enum',
     value: 'Enum'
+  }
+] as FuncSelectOpts
+
+const preFuncs = [
+  {
+    label: 'Derivative',
+    value: 'Derivative'
   }
 ] as FuncSelectOpts
 
@@ -144,6 +153,19 @@ export class QueryEditorFormRow extends PureComponent<Props> {
     )
   }
 
+  get showPreFuncsSelector(): boolean {
+    const { config, db, from, basicData, usingGroupBy } = this.props
+    const isPromDB = db === 'prometheus'
+    const tableNameHasTotal = from.includes('total')
+    const { type, fromSelect } = basicData
+    return usingGroupBy && config.func && !fromSelect && type === 'metric' && isPromDB && tableNameHasTotal
+  }
+
+  get preFuncsOpts(): FuncSelectOpts {
+    const { basicData } = this.props
+    return this.showPreFuncsSelector && basicData.key ? preFuncs : []
+  }
+
   onColumnTypeSelect = (val: SelectableValue<string>) => {
     const result = val ? val.value : ''
     this.props.onRowValChange({
@@ -153,13 +175,14 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       func: '',
       val: '',
       params: [],
-      subFuncs: []
+      subFuncs: [],
+      preFunc: ''
     })
   }
 
   onColumnSelect = (val: any) => {
     const result = val ? val.value : ''
-    const { tagOpts, metricOpts, funcOpts, basicData } = this.props
+    const { tagOpts, metricOpts, funcOpts, basicData, usingDerivativePreFunc, usingGroupBy } = this.props
 
     let newFuncOpts
     let _isEnumLikelyTag = false
@@ -211,7 +234,21 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       sideType: val?.sideType,
       isResourceType: val?.type === 'resource',
       isIpType: val?.type === 'ip',
-      fromSelect: val?.fromSelect
+      fromSelect: val?.fromSelect,
+      ...(basicData.type === 'metric'
+        ? this.showPreFuncsSelector
+          ? {
+              preFunc: !result ? '' : usingGroupBy && usingDerivativePreFunc ? 'Derivative' : ''
+            }
+          : { preFunc: '' }
+        : { preFunc: '' })
+    })
+  }
+
+  onPreFuncChange = (val: any) => {
+    const result = val ? val.value : ''
+    this.props.onRowValChange({
+      preFunc: result
     })
   }
 
@@ -313,7 +350,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       typeSelectDisabled,
       subFuncOpts,
       gotBasicData,
-      isUsingAlerting
+      usingAlerting
     } = this.props
     const tagOptsAfterFilter = config.disableTimeTag
       ? tagOpts.filter(item => {
@@ -356,6 +393,14 @@ export class QueryEditorFormRow extends PureComponent<Props> {
               fromSelect: hasCurrentItem.fromSelect
             })
           }
+        } else if (rowType === 'having') {
+          if (hasCurrentItem.fromSelect && hasCurrentItem.fromSelect.key !== getRealKey(basicData)) {
+            this.props.onRowValChange({
+              op: '',
+              val: '',
+              fromSelect: hasCurrentItem.fromSelect
+            })
+          }
         } else {
           if (basicData.type === 'metric' && hasCurrentItem.fromSelect) {
             const latest = _.pick(hasCurrentItem.fromSelect, ['func', 'params', 'subFuncs'])
@@ -371,6 +416,10 @@ export class QueryEditorFormRow extends PureComponent<Props> {
           }
         }
       }
+    }
+    
+    if (!this.showPreFuncsSelector && 'preFunc' in basicData && basicData.preFunc !== '') {
+      this.onPreFuncChange('')
     }
 
     return (
@@ -396,9 +445,21 @@ export class QueryEditorFormRow extends PureComponent<Props> {
                 value={basicData.key}
                 isClearable={true}
                 key={basicData.key ? 'keyWithVal' : 'keyWithoutVal'}
-                disabled={rowType === 'groupBy' && isUsingAlerting}
+                disabled={rowType === 'groupBy' && usingAlerting}
               />
             </div>
+            {this.showPreFuncsSelector ? (
+              <Select
+                width="auto"
+                options={this.preFuncsOpts}
+                onChange={this.onPreFuncChange}
+                placeholder="PRE_FUNC"
+                value={basicData.preFunc}
+                isClearable={true}
+                key={basicData.preFunc ? 'preFuncWithVal' : 'preFuncWithoutVal'}
+                disabled={!usingGroupBy}
+              />
+            ) : null}
             {config.func &&
             !basicData.fromSelect &&
             (basicData.type === 'metric' ||
@@ -494,7 +555,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
             subFuncs={basicData.subFuncs as any[]}
             subFuncOpts={subFuncOpts}
             onSubFuncsChange={this.onSubFuncsChange}
-            isUsingAlerting={isUsingAlerting}
+            usingAlerting={usingAlerting}
           ></SubFuncsEditor>
         ) : null}
       </>
