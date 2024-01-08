@@ -156,7 +156,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
   get showPreFuncsSelector(): boolean {
     const { config, db, from, basicData, usingGroupBy } = this.props
     const isPromDB = db === 'prometheus'
-    const tableNameHasTotal = from.includes('total')
+    const tableNameHasTotal = from.toLowerCase().endsWith('_total')
     const { type, fromSelect } = basicData
     return usingGroupBy && config.func && !fromSelect && type === 'metric' && isPromDB && tableNameHasTotal
   }
