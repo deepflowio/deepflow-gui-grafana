@@ -528,6 +528,11 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 			return response, nil
 		}
 	}
+
+	// schemas := body.Result["schemas"].([]interface{})
+	// //column为key，格式化数据
+	// valueByschemas := make([]map[string]interface{}, len(schemas))
+
 	values := body.Result["values"].([]interface{})
 
 	//column为key，格式化数据
@@ -761,9 +766,10 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		frame := data.NewFrame("")
 		frame.Meta = &FrameMeta
 		frameName := ""
+		// log.DefaultLogger.Info("____________field")
 		// 按照排序后添加字段
 		for _, columnsSort := range firstResponseSort {
-			columnsType, _ := formatParams(isQuery, "field", timeKeys, returnMetrics, false, returnMetricNames, columnsSort, nil)
+			columnsType, _ := formatParams(isQuery, "field", timeKeys, returnMetrics, false, returnMetricNames, columnsSort, firstResponse[columnsSort])
 			//
 			NewFieldName := columnsSort
 			//
@@ -801,6 +807,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 			continue
 		}
 
+		// log.DefaultLogger.Info("____________value")
 		// 添加数据value
 		for _, subValueBycolumns := range sortItem {
 			vals := make([]interface{}, len(firstResponseSort))
@@ -909,7 +916,8 @@ func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetr
 			res_kind_string = true
 		}
 	}
-
+	// log.DefaultLogger.Info("____________value", "数据", value)
+	// log.DefaultLogger.Info("____________res_kind_string", "数据", res_kind_string)
 	//判断k是否是时间类型
 	isTime := false
 	for _, subTimeKeys := range timeKeys {
@@ -940,10 +948,12 @@ func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetr
 	} else {
 		//判断是否是Metric数据
 		isNumber := false
-		for _, subReturnMetricNames := range returnMetricNames {
-			if columnsSort == subReturnMetricNames {
-				isNumber = true
-				break
+		if !res_kind_string {
+			for _, subReturnMetricNames := range returnMetricNames {
+				if columnsSort == subReturnMetricNames {
+					isNumber = true
+					break
+				}
 			}
 		}
 
