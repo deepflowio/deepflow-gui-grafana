@@ -17,17 +17,20 @@ func getAutoGroupKeyPrefix(ss map[string]interface{}, role string) string {
 	var res []string
 
 	if role == "client" {
+
 		//623被遗弃的字段用auto_xxx代替，页面短时间内可能还会带该字段查询，所以保留
 		re_resource = regexp.MustCompile(`^(resource_gl\d)_id_0$`)
 		re = regexp.MustCompile(`^(auto_instance)_id_0$`)
 		re_1 = regexp.MustCompile(`^(auto_service)_id_0$`)
 	} else if role == "server" {
+
 		//623被遗弃的字段用auto_xxx代替，页面短时间内可能还会带该字段查询，所以保留
 		re_resource = regexp.MustCompile(`^(resource_gl\d)_id_1$`)
 		re = regexp.MustCompile(`^(auto_service)_id_1$`)
 		re_1 = regexp.MustCompile(`^(auto_instance)_id_1$`)
 	}
 	for k := range ss {
+
 		// 优先用auto_xxxx
 		res = re.FindStringSubmatch(k)
 		if len(res) > 0 {
@@ -48,6 +51,7 @@ func getAutoGroupKeyPrefix(ss map[string]interface{}, role string) string {
 }
 
 func getPriorityField(ss map[string]interface{}, suffix string) string {
+
 	//   const keys = ['gprocess']
 	//   return keys.find(k => {
 	//     return `${k}${suffix}` in d
