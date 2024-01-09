@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -905,19 +904,44 @@ func (d *Datasource) trace(ctx context.Context, debug bool, traceUrl, tracingIdV
 // 返回格式处理，columns&value字段类型
 func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetrics []interface{}, verifyMetricsType bool, returnMetricNames []string, columnsSort string, value interface{}) (res interface{}, err error) {
 
-	var res_kind_string bool
+	// var res_kind_string bool
 
-	if value == nil {
-		res_kind_string = false
-	} else {
-		type_res := reflect.TypeOf(value)
-		res_kind := type_res.Kind()
-		if res_kind == reflect.String {
-			res_kind_string = true
-		}
-	}
 	// log.DefaultLogger.Info("____________value", "数据", value)
+
+	// if value == nil {
+	// 	res_kind_string = false
+	// } else {
+	// 	type_res := reflect.TypeOf(value)
+	// 	res_kind := type_res.Kind()
+
+	// 	if res_kind == reflect.String {
+	// 		res_kind_string = true
+	// 	}
+	// }
+
+	var is_nil bool
+	var is_number bool
+
+	switch value.(type) {
+	case json.Number:
+		// log.DefaultLogger.Info("____________value type number", t.String())
+		// res_kind_string = false
+		is_nil = false
+		is_number = true
+	case nil:
+		// log.DefaultLogger.Info("____________value type nil", nil)
+		// res_kind_string = false
+		is_nil = true
+		is_number = false
+	default:
+		// log.DefaultLogger.Info("____________value type string", value.(string))
+		// res_kind_string = true
+		is_nil = false
+		is_number = false
+	}
+
 	// log.DefaultLogger.Info("____________res_kind_string", "数据", res_kind_string)
+
 	//判断k是否是时间类型
 	isTime := false
 	for _, subTimeKeys := range timeKeys {
@@ -932,7 +956,7 @@ func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetr
 			return []time.Time{}, nil
 
 		} else {
-			if res_kind_string {
+			if _, ok := value.(json.Number); ok {
 				tv, err := value.(json.Number).Float64()
 				if err != nil {
 					//断言float64失败
@@ -948,7 +972,8 @@ func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetr
 	} else {
 		//判断是否是Metric数据
 		isNumber := false
-		if !res_kind_string {
+		// Metric 有可能是字符串
+		if is_number {
 			for _, subReturnMetricNames := range returnMetricNames {
 				if columnsSort == subReturnMetricNames {
 					isNumber = true
@@ -977,6 +1002,8 @@ func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetr
 				isNumber2 = true
 			}
 
+			// log.DefaultLogger.Info("____________isNumber2", "数据", isNumber2)
+
 			if isNumber2 {
 				if formatType == "field" {
 					return []*float64{}, nil
@@ -984,7 +1011,7 @@ func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetr
 
 				} else {
 					// 不为nil
-					if res_kind_string {
+					if !is_nil {
 						mv, err := value.(json.Number).Float64()
 						if err != nil {
 							//断言float64 失败
