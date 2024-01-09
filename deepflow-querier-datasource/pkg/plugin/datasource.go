@@ -665,7 +665,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 
 		// 按照排序后添加字段
 		for _, columnsSort := range firstResponseSort {
-			columnsType, _ := formatParams(isQuery, "field", timeKeys, returnMetrics, true, returnMetricNames, columnsSort, nil)
+			columnsType, _ := formatParams(isQuery, "field", timeKeys, returnMetrics, true, returnMetricNames, columnsSort, firstResponse[columnsSort])
 
 			// log.DefaultLogger.Info(fmt.Sprintf("%v,%v,%T", columnsSort, columnsType, columnsType))
 
