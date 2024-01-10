@@ -932,7 +932,7 @@ func formatParams(isQuery bool, formatType string, timeKeys []string, returnMetr
 		// log.DefaultLogger.Info("____________value type nil", nil)
 		// res_kind_string = false
 		is_nil = true
-		is_number = false
+		is_number = true
 	default:
 		// log.DefaultLogger.Info("____________value type string", value.(string))
 		// res_kind_string = true
