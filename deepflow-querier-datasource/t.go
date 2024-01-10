@@ -7,8 +7,6 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-
-	"github.com/grafana/grafana-plugin-sdk-go/data"
 )
 
 func ValueToString(val interface{}) interface{} {
@@ -92,7 +90,7 @@ func main() {
 	// values_0_0 := make([]interface{}, 2)
 
 	values_0[0] = 1704683117
-	values_0[1] = "{}"
+	values_0[1] = 0
 
 	values[0] = values_0
 
@@ -105,6 +103,8 @@ func main() {
 	//column为key，格式化数据
 	valueBycolumns := make([]map[string]interface{}, len(values))
 
+	var res_kind_string bool
+
 	for i := 0; i < len(values); i++ {
 		subValue := values[i].([]interface{})
 
@@ -116,6 +116,20 @@ func main() {
 				kvName = "_id"
 				kvValue = "id-" + ValueToString(kvValue).(string)
 			}
+
+			fmt.Println(kvValue)
+			if kvValue == nil {
+				res_kind_string = false
+			} else {
+				type_res := reflect.TypeOf(kvValue)
+				res_kind := type_res.Kind()
+				fmt.Println(res_kind)
+				if res_kind == reflect.String {
+					res_kind_string = true
+				}
+			}
+
+			fmt.Println(res_kind_string)
 
 			kv[kvName] = kvValue
 		}
@@ -175,113 +189,113 @@ func main() {
 	fmt.Println(dataAfterGroupBy)
 
 	// 分组返回
-	for _, item := range dataAfterGroupBy {
+	// for _, item := range dataAfterGroupBy {
 
-		timeTypeKey := ""
-		if len(timeKeys) > 0 {
-			//只取第一个？
-			timeTypeKey = timeKeys[0]
-		}
-		//默认不排序
-		sortItem := item
+	// 	timeTypeKey := ""
+	// 	if len(timeKeys) > 0 {
+	// 		//只取第一个？
+	// 		timeTypeKey = timeKeys[0]
+	// 	}
+	// 	//默认不排序
+	// 	sortItem := item
 
-		//timeKeys有值，按照time排序
-		if timeTypeKey != "" && len(item) > 0 {
-			sortItem, err := FieldSort(item, timeTypeKey)
-			if err != nil {
-				fmt.Errorf(err.Error())
-			}
-		}
+	// 	//timeKeys有值，按照time排序
+	// 	if timeTypeKey != "" && len(item) > 0 {
+	// 		sortItem, err := FieldSort(item, timeTypeKey)
+	// 		if err != nil {
+	// 			fmt.Errorf(err.Error())
+	// 		}
+	// 	}
 
-		// 别名替换
-		aliasName := GetMetricFieldNameByAlias(alias, sortItem[0])
+	// 	// 别名替换
+	// 	aliasName := GetMetricFieldNameByAlias(alias, sortItem[0])
 
-		//key拼接
-		keyPrefix := "*"
-		if aliasName != "" {
-			keyPrefix = aliasName
-		} else {
-			key := ""
-			for _, v := range tagKeys {
-				if !strings.Contains(v, "_id") {
-					if len(sortItem) > 0 {
-						if keyValue, ok := sortItem[0][v]; ok {
-							keys := ValueToString(keyValue)
-							key = key + keys.(string) + ","
-						}
+	// 	//key拼接
+	// 	keyPrefix := "*"
+	// 	if aliasName != "" {
+	// 		keyPrefix = aliasName
+	// 	} else {
+	// 		key := ""
+	// 		for _, v := range tagKeys {
+	// 			if !strings.Contains(v, "_id") {
+	// 				if len(sortItem) > 0 {
+	// 					if keyValue, ok := sortItem[0][v]; ok {
+	// 						keys := ValueToString(keyValue)
+	// 						key = key + keys.(string) + ","
+	// 					}
 
-					}
-				}
-			}
-			if len(key) > 0 {
-				keyPrefix = strings.TrimSuffix(key, ",")
-			}
-		}
-		// log.DefaultLogger.Info("sortItem[0]", "数据", sortItem[0])
-		// log.DefaultLogger.Info("tagKeys", "数据", tagKeys)
-		// log.DefaultLogger.Info("keyrepfix", "数据", keyPrefix)
+	// 				}
+	// 			}
+	// 		}
+	// 		if len(key) > 0 {
+	// 			keyPrefix = strings.TrimSuffix(key, ",")
+	// 		}
+	// 	}
+	// 	// log.DefaultLogger.Info("sortItem[0]", "数据", sortItem[0])
+	// 	// log.DefaultLogger.Info("tagKeys", "数据", tagKeys)
+	// 	// log.DefaultLogger.Info("keyrepfix", "数据", keyPrefix)
 
-		// frame := data.NewFrame(keyPrefix)
-		frame := data.NewFrame("")
+	// 	// frame := data.NewFrame(keyPrefix)
+	// 	frame := data.NewFrame("")
 
-		frameName := ""
-		// 按照排序后添加字段
-		for _, columnsSort := range firstResponseSort {
-			columnsType, _ := formatParams(isQuery, "field", timeKeys, returnMetrics, false, returnMetricNames, columnsSort, nil)
-			//
-			NewFieldName := columnsSort
-			//
-			isMetricName := false
-			for _, v := range returnMetricNames {
-				if columnsSort == v {
-					isMetricName = true
-					break
-				}
-			}
-			if isMetricName {
-				if queryShowMetrics {
-					NewFieldName = keyPrefix + "-" + columnsSort
-				} else {
-					NewFieldName = keyPrefix
-				}
-				frameName += NewFieldName + ","
-			}
+	// 	frameName := ""
+	// 	// 按照排序后添加字段
+	// 	for _, columnsSort := range firstResponseSort {
+	// 		columnsType, _ := formatParams(isQuery, "field", timeKeys, returnMetrics, false, returnMetricNames, columnsSort, nil)
+	// 		//
+	// 		NewFieldName := columnsSort
+	// 		//
+	// 		isMetricName := false
+	// 		for _, v := range returnMetricNames {
+	// 			if columnsSort == v {
+	// 				isMetricName = true
+	// 				break
+	// 			}
+	// 		}
+	// 		if isMetricName {
+	// 			if queryShowMetrics {
+	// 				NewFieldName = keyPrefix + "-" + columnsSort
+	// 			} else {
+	// 				NewFieldName = keyPrefix
+	// 			}
+	// 			frameName += NewFieldName + ","
+	// 		}
 
-			// log.DefaultLogger.Info("columnsSort", "数据", columnsSort)
-			// log.DefaultLogger.Info("returnMetricNames", "数据", returnMetricNames)
-			// log.DefaultLogger.Info("isMetricName", "数据", isMetricName)
-			// log.DefaultLogger.Info("queryShowMetrics", "数据", queryShowMetrics)
+	// 		// log.DefaultLogger.Info("columnsSort", "数据", columnsSort)
+	// 		// log.DefaultLogger.Info("returnMetricNames", "数据", returnMetricNames)
+	// 		// log.DefaultLogger.Info("isMetricName", "数据", isMetricName)
+	// 		// log.DefaultLogger.Info("queryShowMetrics", "数据", queryShowMetrics)
 
-			frame.Fields = append(frame.Fields,
-				data.NewField(NewFieldName, nil, columnsType),
-			)
-		}
+	// 		frame.Fields = append(frame.Fields,
+	// 			data.NewField(NewFieldName, nil, columnsType),
+	// 		)
+	// 	}
 
-		// frame.Name = frameName
+	// 	// frame.Name = frameName
 
-		//没有数据,跳过
-		if len(item) <= 0 {
-			continue
-		}
+	// 	//没有数据,跳过
+	// 	if len(item) <= 0 {
+	// 		continue
+	// 	}
 
-		// 添加数据value
-		for _, subValueBycolumns := range sortItem {
-			vals := make([]interface{}, len(firstResponseSort))
-			for i, columnsSort := range firstResponseSort {
-				//转换类型后的value
-				columnsValue, err := formatParams(isQuery, "value", timeKeys, returnMetrics, false, returnMetricNames, columnsSort, subValueBycolumns[columnsSort])
-				//value 类型错误
-				if err != nil {
-					fmt.Errorf(err.Error())
-				}
+	// 	// 添加数据value
+	// 	for _, subValueBycolumns := range sortItem {
+	// 		vals := make([]interface{}, len(firstResponseSort))
+	// 		for i, columnsSort := range firstResponseSort {
+	// 			//转换类型后的value
+	// 			columnsValue, err := formatParams(isQuery, "value", timeKeys, returnMetrics, false, returnMetricNames, columnsSort, subValueBycolumns[columnsSort])
+	// 			//value 类型错误
+	// 			if err != nil {
+	// 				fmt.Errorf(err.Error())
+	// 			}
 
-				vals[i] = columnsValue
-			}
-			frame.AppendRow(vals...)
-		}
+	// 			vals[i] = columnsValue
+	// 		}
+	// 		frame.AppendRow(vals...)
+	// 	}
 
-		// log.DefaultLogger.Info("frame", "数据", &frame.Fields[0])
+	// 	// log.DefaultLogger.Info("frame", "数据", &frame.Fields[0])
 
-	}
+	// }
 
 }
