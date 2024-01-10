@@ -785,7 +785,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 				} else {
 					NewFieldName = keyPrefix
 				}
-				frameName += NewFieldName + ","
+				frameName += NewFieldName + ", "
 			}
 
 			// log.DefaultLogger.Info("columnsSort", "数据", columnsSort)
