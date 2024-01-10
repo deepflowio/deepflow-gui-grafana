@@ -706,10 +706,10 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		for _, v := range tagKeys {
 			if vv, ok := item[v]; ok {
 
-				key = key + formattools.ValueToString(vv).(string) + ","
+				key = key + formattools.ValueToString(vv).(string) + ", "
 			}
 		}
-		preKey := strings.TrimSuffix(key, ",")
+		preKey := strings.TrimSuffix(key, ", ")
 
 		dataAfterGroupBy[preKey] = append(dataAfterGroupBy[preKey], item)
 	}
@@ -747,14 +747,14 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 					if len(sortItem) > 0 {
 						if keyValue, ok := sortItem[0][v]; ok {
 							keys := formattools.ValueToString(keyValue)
-							key = key + keys.(string) + ","
+							key = key + keys.(string) + ", "
 						}
 
 					}
 				}
 			}
 			if len(key) > 0 {
-				keyPrefix = strings.TrimSuffix(key, ",")
+				keyPrefix = strings.TrimSuffix(key, ", ")
 			}
 		}
 		// log.DefaultLogger.Info("sortItem[0]", "数据", sortItem[0])
