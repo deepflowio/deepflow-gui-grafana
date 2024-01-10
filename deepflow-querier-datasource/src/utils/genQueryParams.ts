@@ -149,14 +149,19 @@ function jointOrAnd(conditionList: any) {
 }
 
 function formatWithSubFuncs(target: any) {
-  const { subFuncs: _subFuncs, func: _func, key, params, preFunc } = target
+  const { subFuncs: _subFuncs, func: _func, key: _key, params: _params, preFunc } = target
   let subFuncs = _.cloneDeep(_subFuncs) || []
   let func = _func
+  let params = _params
+  let key = _key
   if (preFunc && _func) {
     func = preFunc
     subFuncs.unshift({
-      func: _func
+      func: _func,
+      params: params
     })
+
+    params = ''
   }
   if (!Array.isArray(subFuncs) || !subFuncs.length) {
     return target
@@ -176,7 +181,7 @@ function formatWithSubFuncs(target: any) {
           key,
           params
         },
-        e.params
+        ...(Array.isArray(e.params) ? e.params : [e.params])
       ]
     } else {
       const prev = result[i - 1]
