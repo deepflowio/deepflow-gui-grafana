@@ -486,22 +486,29 @@ export class QueryEditor extends PureComponent<Props> {
       .concat(intervalOpts)
   }
 
-  get usingDerivativePreFunc(): any {
+  get usingDerivativePreFunc(): {
+    hasNotSet: boolean
+    commonPreFunc: any
+  } {
     const hasNotSet = ['select', 'having'].every(key => {
       const current = _.get(this.state, key)
       return current.every((e: BasicData) => {
-        return !('preFunc' in e)
+        return !('preFunc' in e) || e.preFunc === undefined
       })
     })
-    return (
-      hasNotSet ||
-      ['select', 'having'].find(key => {
+    let commonPreFunc = ['select', 'having']
+      .map(key => {
         const current = _.get(this.state, key)
-        return current.find((e: BasicData) => {
-          return e.type === 'metric' && e.key && e.preFunc === 'Derivative'
-        })
+        return current
       })
-    )
+      .flat(Infinity)
+      .find((e: BasicData) => {
+        return e.type === 'metric' && e.key
+      })?.preFunc
+    return {
+      hasNotSet,
+      commonPreFunc
+    }
   }
 
   setSourcesChange(val: LabelItem & { dataSources: null | string[] }) {
@@ -675,7 +682,7 @@ export class QueryEditor extends PureComponent<Props> {
       const _result = state[target]
       const result = JSON.parse(JSON.stringify(_result))
       let preFuncCheckerResult
-      if (Object.keys(newValue).length === 1 && 'preFunc' in newValue ) {
+      if (Object.keys(newValue).length === 1 && 'preFunc' in newValue) {
         preFuncCheckerResult = this.preFuncChecker(result[index], {
           ...result[index],
           ...newValue
@@ -1027,24 +1034,23 @@ export class QueryEditor extends PureComponent<Props> {
         }
       })
 
-      const metricOpts = metrics
-        .map((item: any) => {
-          const { name, is_agg, operators, display_name, type } = item
-          return {
-            label: `${name} (${display_name})`,
-            value: name,
-            type,
-            is_agg,
-            operatorOpts: operators
-              ? operators.map((op: any) => {
-                  return {
-                    label: op,
-                    value: op
-                  }
-                })
-              : []
-          }
-        }) as MetricOpts
+      const metricOpts = metrics.map((item: any) => {
+        const { name, is_agg, operators, display_name, type } = item
+        return {
+          label: `${name} (${display_name})`,
+          value: name,
+          type,
+          is_agg,
+          operatorOpts: operators
+            ? operators.map((op: any) => {
+                return {
+                  label: op,
+                  value: op
+                }
+              })
+            : []
+        }
+      }) as MetricOpts
 
       const tagOpts = tags
         .filter((item: any) => {
@@ -1309,7 +1315,9 @@ export class QueryEditor extends PureComponent<Props> {
                                       ? this.orderByMetricOpts
                                       : conf.targetDataKey === 'having'
                                       ? this.metricsFromSelect.concat(this.basicMetricOpts).filter(item => {
-                                          return ![TAG_METRIC_TYPE_NUM,MAP_METRIC_TYPE_NUM].includes(item.type as number)
+                                          return ![TAG_METRIC_TYPE_NUM, MAP_METRIC_TYPE_NUM].includes(
+                                            item.type as number
+                                          )
                                         })
                                       : this.basicMetricOpts
                                   }

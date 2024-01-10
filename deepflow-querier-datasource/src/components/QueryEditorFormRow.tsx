@@ -4,7 +4,7 @@ import { Select, Button, Input, RadioButtonGroup } from '@grafana/ui'
 import { FuncSelectOpts, LabelItem, MetricOpts, SelectOpts, SelectOptsWithStringValue } from 'QueryEditor'
 import _ from 'lodash'
 import { SubFuncsEditor } from './SubFuncsEditor'
-import { BasicDataWithId, FormTypes, MAP_METRIC_TYPE_NUM, TAG_METRIC_TYPE_NUM } from 'consts'
+import { BasicDataWithId, FormTypes, MAP_METRIC_TYPE_NUM } from 'consts'
 import { TagValueSelector } from './TagValueSelector'
 import { getRealKey, isAutoGroupTag, isEnumLikelyTag } from 'utils/tools'
 import { SelectableValue } from '@grafana/data'
@@ -61,7 +61,10 @@ type Props = {
   templateVariableOpts: SelectOpts
   uuid: string
   usingAlerting: boolean
-  usingDerivativePreFunc: boolean
+  usingDerivativePreFunc: {
+    hasNotSet: boolean
+    commonPreFunc: any
+  }
 }
 
 const columnTypeOpts = [
@@ -156,22 +159,20 @@ export class QueryEditorFormRow extends PureComponent<Props> {
   }
 
   get showPreFuncsSelector(): boolean {
-    const { config, db, from, basicData, usingGroupBy, metricOpts } = this.props
+    const { config, db, basicData, usingGroupBy } = this.props
     const isPromDB = db === 'prometheus'
-    const tableNameHasTotal = from.toLowerCase().endsWith('_total')
-    const { type, fromSelect } = basicData
-    const metricType = metricOpts.find(item => {
-      return item.value === basicData.key
-    })?.type as number
-    return (
-      usingGroupBy &&
-      config.func &&
-      !fromSelect &&
-      type === 'metric' &&
-      isPromDB &&
-      tableNameHasTotal &&
-      metricType !== TAG_METRIC_TYPE_NUM
-    )
+    const isValueMetrics = basicData.key.toLowerCase() === 'value'
+    const { fromSelect } = basicData
+    const result =
+      usingGroupBy && config.func && !fromSelect && basicData.type === 'metric' && isPromDB && isValueMetrics
+
+    if (!basicData.fromSelect && !result && 'preFunc' in basicData && basicData.preFunc !== undefined) {
+      this.onPreFuncChange({
+        value: undefined
+      })
+    }
+
+    return result
   }
 
   get preFuncsOpts(): FuncSelectOpts {
@@ -189,15 +190,14 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       val: '',
       params: [],
       subFuncs: [],
-      preFunc: ''
+      preFunc: undefined
     })
   }
 
   onColumnSelect = (val: any) => {
     const result = val ? val.value : ''
-    const { config, db, from, tagOpts, metricOpts, funcOpts, basicData, usingDerivativePreFunc, usingGroupBy } =
-      this.props
-
+    const { config, db, from, tagOpts, metricOpts, funcOpts, basicData, usingGroupBy } = this.props
+    const { hasNotSet, commonPreFunc } = this.props.usingDerivativePreFunc
     let newFuncOpts
     let _isEnumLikelyTag = false
     let metricType = -Infinity
@@ -225,17 +225,13 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       })
 
     const isPromDB = db === 'prometheus'
-    const tableNameHasTotal = from.toLowerCase().endsWith('_total')
     const _fromSelect = val?.fromSelect
 
+    const isValueMetrics = result.toLowerCase() === 'value'
     const showSubFuncsEditorWithNewVal =
-      usingGroupBy &&
-      config.func &&
-      !_fromSelect &&
-      basicData.type === 'metric' &&
-      isPromDB &&
-      tableNameHasTotal &&
-      metricType !== TAG_METRIC_TYPE_NUM
+      usingGroupBy && config.func && !_fromSelect && basicData.type === 'metric' && isPromDB && isValueMetrics
+
+    const tableNameHasTotal = from.toLowerCase().endsWith('_total')
 
     this.props.onRowValChange({
       key: result,
@@ -266,10 +262,10 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       ...(basicData.type === 'metric'
         ? showSubFuncsEditorWithNewVal
           ? {
-              preFunc: !result ? '' : usingDerivativePreFunc ? 'Derivative' : ''
+              preFunc: !result ? '' : hasNotSet && tableNameHasTotal ? 'Derivative' : commonPreFunc ?? ''
             }
-          : { preFunc: '' }
-        : { preFunc: '' })
+          : { preFunc: undefined }
+        : { preFunc: undefined })
     })
   }
 
@@ -404,7 +400,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
               func: '',
               params: [],
               subFuncs: [],
-              preFunc: ''
+              preFunc: undefined
             }
             if (!_.isEqual(current, target)) {
               this.props.onRowValChange({
@@ -438,10 +434,6 @@ export class QueryEditorFormRow extends PureComponent<Props> {
           }
         }
       }
-    }
-
-    if (!basicData.fromSelect && !this.showPreFuncsSelector && 'preFunc' in basicData && basicData.preFunc !== '') {
-      this.onPreFuncChange('')
     }
 
     return (
