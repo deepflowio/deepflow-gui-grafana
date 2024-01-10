@@ -674,9 +674,9 @@ export class QueryEditor extends PureComponent<Props> {
     this.setState((state: any, props) => {
       const _result = state[target]
       const result = JSON.parse(JSON.stringify(_result))
-      let abc
+      let preFuncCheckerResult
       if (Object.keys(newValue).length === 1 && 'preFunc' in newValue ) {
-        abc = this.preFuncChecker(result[index], {
+        preFuncCheckerResult = this.preFuncChecker(result[index], {
           ...result[index],
           ...newValue
         })
@@ -687,7 +687,7 @@ export class QueryEditor extends PureComponent<Props> {
       }
       return {
         [target]: result,
-        ...abc,
+        ...preFuncCheckerResult,
         errorMsg: '',
         showErrorAlert: false,
         runQueryWarning: true
@@ -1028,9 +1028,6 @@ export class QueryEditor extends PureComponent<Props> {
       })
 
       const metricOpts = metrics
-        .filter((item: any) => {
-          return item.type !== TAG_METRIC_TYPE_NUM
-        })
         .map((item: any) => {
           const { name, is_agg, operators, display_name, type } = item
           return {
@@ -1312,7 +1309,7 @@ export class QueryEditor extends PureComponent<Props> {
                                       ? this.orderByMetricOpts
                                       : conf.targetDataKey === 'having'
                                       ? this.metricsFromSelect.concat(this.basicMetricOpts).filter(item => {
-                                          return item.type !== MAP_METRIC_TYPE_NUM
+                                          return ![TAG_METRIC_TYPE_NUM,MAP_METRIC_TYPE_NUM].includes(item.type as number)
                                         })
                                       : this.basicMetricOpts
                                   }
