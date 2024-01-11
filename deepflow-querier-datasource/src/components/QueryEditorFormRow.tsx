@@ -146,15 +146,16 @@ export class QueryEditorFormRow extends PureComponent<Props> {
   }
 
   get showSubFuncsEditor(): boolean {
+    const { funcOpts } = this.props
     const { type, key, func, params, fromSelect } = this.props.basicData
-    const forceDisabledFuncs = ['uniq', 'uniqexact', 'topk', 'any']
+    const result = funcOpts.find((e: any) => e.value === func)
     return (
       type === 'metric' &&
       !fromSelect &&
       !!key &&
       !!func &&
       (!Array.isArray(params) || (Array.isArray(params) && params.every(e => e))) &&
-      !forceDisabledFuncs.includes(func.toLowerCase())
+      !!result?.is_support_other_operators
     )
   }
 
