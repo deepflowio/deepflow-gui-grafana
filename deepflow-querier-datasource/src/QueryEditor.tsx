@@ -524,6 +524,25 @@ export class QueryEditor extends PureComponent<Props> {
     }
   }
 
+  derivativeChecker(select: BasicData[]) {
+    const _select = select.filter((e: BasicData) => {
+      return e.type === 'metric' && e.key
+    })
+    if (select.length >= 2) {
+      const hasDerivative = _select.find((e: BasicData) => {
+        return e.preFunc === 'Derivative'
+      })
+      if (hasDerivative) {
+        const allHasDerivative = _select.every((e: BasicData) => {
+          return e.preFunc === 'Derivative'
+        })
+        if (!allHasDerivative) {
+          throw new Error('All metrics can only use (or not use) the Derivative operator simultaneously.')
+        }
+      }
+    }
+  }
+
   onSubmit = async (stopQuery = false) => {
     const dataObj = _.pick(this.state, [
       'appType',
@@ -534,11 +553,16 @@ export class QueryEditor extends PureComponent<Props> {
       'tracingId'
     ])
 
+    this.setState({
+      errorMsg: '',
+      showErrorAlert: false
+    })
     try {
       dataObj.where = queryCondsFilter(dataObj?.where, 'tag')
       dataObj.having = queryCondsFilter(dataObj?.having, 'metric')
       const { appType, groupBy, select, interval, where, having, orderBy } = dataObj
       if (!stopQuery) {
+        this.derivativeChecker(select as BasicDataWithId[])
         const groupByKeys = (groupBy as BasicDataWithId[])
           .filter((item: any) => {
             return item.key
@@ -657,23 +681,23 @@ export class QueryEditor extends PureComponent<Props> {
   }
 
   preFuncChecker = (oldData: BasicData, newData: BasicData) => {
-    if (oldData.preFunc === newData.preFunc) {
+    if (oldData.preFunc === newData.preFunc || newData.preFunc === undefined) {
       return
     }
-    const abc: Record<string, any> = {}
+    const result: Record<string, any> = {}
     ;['select', 'having', 'orderBy'].forEach(key => {
       const current = _.get(this.state, key)
-      abc[key] = current.map((e: BasicData) => {
+      result[key] = current.map((e: BasicData) => {
         if (e.type === 'metric' && e.key) {
           e.preFunc = newData.preFunc
         }
         return {
           ...e,
-          ...(e.type === 'metric' && e.key ? { preFunc: newData.preFunc } : {})
+          ...(e.type === 'metric' && e.key === 'value' ? { preFunc: newData.preFunc } : {})
         }
       })
     })
-    return abc
+    return result
   }
 
   onRowValChange = (a: any, newValue: any) => {
