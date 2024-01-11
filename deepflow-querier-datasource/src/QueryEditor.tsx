@@ -72,6 +72,7 @@ export type FuncSelectOpts = Array<
   LabelItem & {
     paramCount: number
     support_metric_types: number[]
+    is_support_other_operators: boolean
   }
 >
 
@@ -1134,7 +1135,8 @@ export class QueryEditor extends PureComponent<Props> {
           label: item.name,
           value: item.name,
           paramCount: item.additional_param_count,
-          support_metric_types: item.support_metric_types
+          support_metric_types: item.support_metric_types,
+          is_support_other_operators: item.is_support_other_operators
         }
       }) as FuncSelectOpts
 
