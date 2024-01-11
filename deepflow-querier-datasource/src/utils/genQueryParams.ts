@@ -531,8 +531,11 @@ export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVa
 
 export const replaceIntervalAndVariables = (queryText: string, scopedVars?: ScopedVars) => {
   let _queryText = queryText
-    .replace(`"${TIME_VARIABLE_FROM}"`, TIME_VARIABLE_FROM)
-    .replace(`"${TIME_VARIABLE_TO}"`, TIME_VARIABLE_TO)
+  if ((getTemplateSrv() as any).timeRange) {
+    _queryText = queryText
+      .replace(`"${TIME_VARIABLE_FROM}"`, TIME_VARIABLE_FROM)
+      .replace(`"${TIME_VARIABLE_TO}"`, TIME_VARIABLE_TO)
+  }
   if (typeof scopedVars?.__interval_ms?.value === 'number') {
     const intervalSecond = scopedVars.__interval_ms.value / 1000
     _queryText = queryText
