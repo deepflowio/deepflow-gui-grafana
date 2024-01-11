@@ -525,9 +525,9 @@ export class QueryEditor extends PureComponent<Props> {
     }
   }
 
-  derivativeChecker(select: BasicData[]) {
-    const _select = select.filter((e: BasicData) => {
-      return e.type === 'metric' && e.key
+  derivativeChecker(select: BasicData[], having: BasicData[]) {
+    const _select = [...select, ...having].filter((e: BasicData) => {
+      return e.type === 'metric' && e.key && e.func
     })
     if (select.length >= 2) {
       const hasDerivative = _select.find((e: BasicData) => {
@@ -563,7 +563,7 @@ export class QueryEditor extends PureComponent<Props> {
       dataObj.having = queryCondsFilter(dataObj?.having, 'metric')
       const { appType, groupBy, select, interval, where, having, orderBy } = dataObj
       if (!stopQuery) {
-        this.derivativeChecker(select as BasicDataWithId[])
+        this.derivativeChecker(select as BasicDataWithId[], dataObj.having)
         const groupByKeys = (groupBy as BasicDataWithId[])
           .filter((item: any) => {
             return item.key
