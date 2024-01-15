@@ -496,15 +496,27 @@ export class QueryEditorFormRow extends PureComponent<Props> {
               ? basicData.params.map((item: string | number, index: number) => {
                   const isPercent = basicData.func.toLowerCase().includes('percent')
                   const isTopK = basicData.func.toLowerCase() === 'topk'
-                  return isPercent || isTopK ? (
-                    <Select
-                      width="auto"
-                      options={new Array(100).fill('').map((e, i) => {
+                  if (!isPercent && !isTopK) {
+                    return null
+                  }
+                  const options = isPercent
+                    ? new Array(99).fill('').map((e, i) => {
+                        const res = 99 - i
+                        return {
+                          label: `${res}`,
+                          value: res
+                        }
+                      })
+                    : new Array(isPercent ? 99 : 100).fill('').map((e, i) => {
                         return {
                           label: `${i + 1}`,
                           value: i + 1
                         }
-                      })}
+                      })
+                  return isPercent || isTopK ? (
+                    <Select
+                      width="auto"
+                      options={options}
                       onChange={ev => this.onFuncParamChange(ev, index)}
                       value={item}
                       key={index}
