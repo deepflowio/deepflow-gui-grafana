@@ -393,15 +393,20 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       if (!hasCurrentItem) {
         this.onColumnSelect('')
       } else {
-        const fields = ['func', 'params', 'subFuncs', 'preFunc']
+        const fields = ['func', 'params', 'subFuncs']
         const current = _.pick(basicData, fields)
+        if ('preFunc' in current) {
+          fields.push('preFunc')
+        }
         if (rowType === 'select') {
           if (!usingGroupBy && basicData.type === 'metric') {
             const target = {
               func: '',
               params: [],
-              subFuncs: [],
-              preFunc: undefined
+              subFuncs: []
+            }
+            if ('preFunc' in current) {
+              _.set(target, 'preFunc', undefined)
             }
             if (!_.isEqual(current, target)) {
               this.props.onRowValChange({
