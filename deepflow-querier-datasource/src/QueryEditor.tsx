@@ -799,7 +799,7 @@ export class QueryEditor extends PureComponent<Props> {
           where: [
             {
               type: 'tag',
-              key: 'tap_port_type',
+              key: 'capture_nic_type',
               func: '',
               op: 'IN',
               val: [

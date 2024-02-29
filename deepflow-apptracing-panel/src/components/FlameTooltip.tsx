@@ -31,8 +31,8 @@ const getTooltipSpanName = (data: any) => {
 
 const getTooltipSpanContent = (data: any) => {
   if (data._barType === 'network') {
-    const tapPortName = data.tap_port_name ? `(${data.tap_port_name})` : ''
-    return `${data.tap_port} ${tapPortName} ${data.auto_instance || data.resource_gl0}`
+    const captureNicName = data.capture_nic_name ? `(${data.capture_nic_name})` : ''
+    return `${data.capture_nic} ${captureNicName} ${data.auto_instance || data.resource_gl0}`
   } else if (data._barType === 'process') {
     return `${data.process_kname} ${data.auto_instance || data.resource_gl0}`
   } else {
@@ -98,7 +98,7 @@ export const FlameTooltip: React.FC<Props> = ({ barData, mousePos }) => {
             ? ' ' + _.get(TOOLTIP_SPAN_TYPE_MAP, [content._barType])
             : ''}
         </span>
-        <span>{content['Enum(tap_side)'] ? ' ' + content['Enum(tap_side)'] : ''}</span>
+        <span>{content['Enum(observation_point)'] ? ' ' + content['Enum(observation_point)'] : ''}</span>
       </p>
       <p>{getTooltipSpanName(content)}</p>
       <p>{getTooltipSpanContent(content)}</p>
