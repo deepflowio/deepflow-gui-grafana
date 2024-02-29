@@ -35,7 +35,9 @@ type LinkItem = {
 
 interface Props extends PanelProps<SimpleOptions> {}
 
-const NO_GROUP_BY_TAGS = ['tap_side', 'Enum(tap_side)']
+// TODO
+const NO_GROUP_BY_TAGS_OLD = ['tap_side', 'Enum(tap_side)']
+const NO_GROUP_BY_TAGS = NO_GROUP_BY_TAGS_OLD.concat(['observation_point', 'Enum(observation_point)'])
 
 const MINIMAP_CONTAINER_CACHE: Record<number, HTMLElement> = {}
 
@@ -253,9 +255,10 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
                 ...e.metricsGroup.map((g: any) => {
                   return {
                     ...Object.fromEntries(
-                      NO_GROUP_BY_TAGS.map(k => {
-                        const enumKey = `Enum(${k})`
-                        return enumKey in g ? [enumKey, g[enumKey]] : [k, g[k]]
+                      NO_GROUP_BY_TAGS.filter(k => {
+                        return k in g
+                      }).map(k => {
+                        return [k, g[k]]
                       })
                     ),
                     ...formatMetrics(queryConfig.returnMetrics, g, metricsUnits)

@@ -236,9 +236,9 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
         'syscall_cap_seq_0',
         'syscall_cap_seq_1',
         'flow_id',
-        'vtap',
-        'tap_port_type',
-        'tap_port',
+        'agent',
+        'capture_nic_type',
+        'capture_nic',
         'start_time',
         'end_time'
       ]
@@ -281,7 +281,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       const { sql } = querierJsResult.resource[0]
       // @ts-ignore
       const response = await querierJs.searchBySql(sql, 'flow_log')
-      return response.map((e: any) => _.omit(e, 'vtap_id'))
+      return response.map((e: any) => _.omit(e, 'agent_id'))
     } catch (error) {
       console.log(error)
       return error

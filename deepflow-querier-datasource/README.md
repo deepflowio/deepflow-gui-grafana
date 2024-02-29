@@ -123,7 +123,7 @@ The only and required form item. Can input and select `traincg _id` or better us
 	  ```SQL
 	  // Add 5 minutes before and after the time range to avoid frequent changes of candidates
 	  // Use pod_id as `value`, make the value of current variable be id
-	  SELECT pod_id as `value`, pod as `display_name` FROM `vtap_flow_port.1m` WHERE pod_cluster IN ($cluster) AND time >= ${__from:date:seconds}-500 AND time <= ${__to:date:seconds}+500 GROUP BY `value`
+	  SELECT pod_id as `value`, pod as `display_name` FROM `network.1m` WHERE pod_cluster IN ($cluster) AND time >= ${__from:date:seconds}-500 AND time <= ${__to:date:seconds}+500 GROUP BY `value`
 	  ```
 	- Use `${cluster:singlequote}`, when the value of cluster is name:
 
@@ -133,5 +133,5 @@ The only and required form item. Can input and select `traincg _id` or better us
 	  ```
 	  ```SQL
 	  // Use pod as `value`, make the value of current variable be name
-	  SELECT pod as `value`, pod as `display_name` FROM `vtap_flow_port.1m` WHERE pod_cluster IN (${cluster:singlequote}) AND  time >= ${__from:date:seconds}-500 AND time <= ${__to:date:seconds}+500 GROUP BY `value`
+	  SELECT pod as `value`, pod as `display_name` FROM `network.1m` WHERE pod_cluster IN (${cluster:singlequote}) AND  time >= ${__from:date:seconds}-500 AND time <= ${__to:date:seconds}+500 GROUP BY `value`
 	  ```
