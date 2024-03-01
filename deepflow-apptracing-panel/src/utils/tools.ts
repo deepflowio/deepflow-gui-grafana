@@ -166,7 +166,7 @@ export function dealPercentageValue(v: unknown) {
 
 const RELATED_TYPE_FIELDS_MAP = {
   traceid: ['trace_id'],
-  xrequestid: ['x_request_id'],
+  xrequestid: ['x_request_id_0', 'x_request_id_1'],
   app: ['span_id', 'parent_span_id'],
   network: ['req_tcp_seq', 'resp_tcp_seq'],
   syscall: ['syscall_trace_id_request', 'syscall_trace_id_response']
