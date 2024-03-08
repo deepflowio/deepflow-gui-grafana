@@ -1077,16 +1077,23 @@ export class QueryEditor extends PureComponent<Props> {
         }
       }) as MetricOpts
 
+      const deprecatedTags: any[] = []
       const tagOpts = tags
         .filter((item: any) => {
+          if (item.deprecated) {
+            deprecatedTags.push(item)
+            return false
+          }
           return !DISABLE_TAGS.includes(item.name)
         })
+        .concat(deprecatedTags)
         .map((item: any) => {
-          const { name, client_name, server_name, display_name, type } = item
+          const { name, client_name, server_name, display_name, type, deprecated } = item
           const operatorOpts = formatTagOperators(item)
+          const displaySuffix = deprecated ? ' ⚠️' : ''
           if (name === client_name && name === server_name) {
             return {
-              label: display_name === name ? `${name}` : `${name} (${display_name})`,
+              label: display_name === name ? `${name}` : `${name} (${display_name})` + displaySuffix,
               value: name,
               type,
               operatorOpts
@@ -1096,7 +1103,7 @@ export class QueryEditor extends PureComponent<Props> {
             ...((type === 'resource' || type === 'ip') && (client_name || server_name)
               ? [
                   {
-                    label: `${name} (${display_name})`,
+                    label: `${name} (${display_name})` + displaySuffix,
                     value: name,
                     type,
                     whereOnly: true,
@@ -1107,7 +1114,7 @@ export class QueryEditor extends PureComponent<Props> {
             ...(client_name
               ? [
                   {
-                    label: `${client_name} (${display_name} - ${getI18NLabelByName('client')})`,
+                    label: `${client_name} (${display_name} - ${getI18NLabelByName('client')})` + displaySuffix,
                     value: client_name,
                     type,
                     sideType: 'from',
@@ -1118,7 +1125,7 @@ export class QueryEditor extends PureComponent<Props> {
             ...(server_name
               ? [
                   {
-                    label: `${server_name} (${display_name} - ${getI18NLabelByName('server')})`,
+                    label: `${server_name} (${display_name} - ${getI18NLabelByName('server')})` + displaySuffix,
                     value: server_name,
                     type,
                     sideType: 'to',
