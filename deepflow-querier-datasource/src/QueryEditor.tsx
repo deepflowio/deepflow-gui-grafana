@@ -1093,7 +1093,7 @@ export class QueryEditor extends PureComponent<Props> {
           const displaySuffix = deprecated ? ' ⚠️' : ''
           if (name === client_name && name === server_name) {
             return {
-              label: display_name === name ? `${name}` : `${name} (${display_name})` + displaySuffix,
+              label: (display_name === name ? `${name}` : `${name} (${display_name})`) + displaySuffix,
               value: name,
               type,
               operatorOpts
