@@ -9,6 +9,7 @@ interface SubFuncsEditorProps {
   subFuncOpts: SelectOptsWithStringValue
   onSubFuncsChange: (newSubFuncs: GenFuncDisplayNameParam[]) => void
   usingAlerting: boolean
+  templateVariableOptsFull: SelectOpts
 }
 
 interface GenFuncDisplayNameParam {
@@ -65,8 +66,10 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
   ]
 
   const noFunc = !func
+  const isVariableParams = props.templateVariableOptsFull.find(e => e.label === params)
   const mathWithoutOpOrParams =
-    func.toLocaleLowerCase() === 'math' && (!op || !(Number.isInteger(params) || params === VAR_INTERVAL_LABEL))
+    func.toLocaleLowerCase() === 'math' &&
+    (!op || !(Number.isInteger(params) || params === VAR_INTERVAL_LABEL || isVariableParams))
   const sunFuncsMaxLen = props.subFuncs.length >= 8
   const addBtnDisable = noFunc || mathWithoutOpOrParams || sunFuncsMaxLen
 
@@ -99,6 +102,17 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
   const [numberOpts, setNumberOpts] = useState<SelectOpts>(
     !props.usingAlerting
       ? [
+          ...props.templateVariableOptsFull
+            .filter(e => {
+              return e.variableType === 'interval'
+            })
+            .map(e => {
+              return {
+                ...e,
+                value: e.value
+                // value: e.label
+              }
+            }),
           {
             label: VAR_INTERVAL_LABEL,
             value: VAR_INTERVAL_LABEL

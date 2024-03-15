@@ -59,6 +59,7 @@ type Props = {
   gotBasicData: boolean
   usingGroupBy: boolean
   templateVariableOpts: SelectOpts
+  templateVariableOptsFull: SelectOpts
   uuid: string
   usingAlerting: boolean
   usingDerivativePreFunc: {
@@ -375,7 +376,8 @@ export class QueryEditorFormRow extends PureComponent<Props> {
       typeSelectDisabled,
       subFuncOpts,
       gotBasicData,
-      usingAlerting
+      usingAlerting,
+      templateVariableOptsFull
     } = this.props
     const tagOptsAfterFilter = config.disableTimeTag
       ? tagOpts.filter(item => {
@@ -605,6 +607,7 @@ export class QueryEditorFormRow extends PureComponent<Props> {
             subFuncOpts={subFuncOpts}
             onSubFuncsChange={this.onSubFuncsChange}
             usingAlerting={usingAlerting}
+            templateVariableOptsFull={templateVariableOptsFull}
           ></SubFuncsEditor>
         ) : null}
       </>
