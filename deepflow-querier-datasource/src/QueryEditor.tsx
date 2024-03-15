@@ -898,7 +898,7 @@ export class QueryEditor extends PureComponent<Props> {
           .map((item: VariableModel) => {
             return {
               label: `$${item.name}`,
-              value: item.name,
+              value: `${item.type === 'interval' ? '$' : ''}${item.name}`,
               isVariable: true,
               variableType: item.type
             }
@@ -1311,6 +1311,7 @@ export class QueryEditor extends PureComponent<Props> {
                                   templateVariableOpts={templateVariableOpts.filter(item => {
                                     return item.variableType !== 'interval' && item.variableType !== 'datasource'
                                   })}
+                                  templateVariableOptsFull={templateVariableOpts}
                                   config={formItemConfigs[conf.targetDataKey]}
                                   basicData={item}
                                   gotBasicData={gotBasicData}

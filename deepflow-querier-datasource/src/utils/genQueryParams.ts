@@ -543,6 +543,24 @@ export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVa
   return result
 }
 
+const convertIntervalStringToSeconds = (intervalStr?: string) => {
+  if (!intervalStr) {
+    return intervalStr
+  }
+  const num = parseInt(intervalStr, 10)
+  const unit = intervalStr.replace(`${num}`, '')
+  const unitSecondsMap = {
+    s: 1,
+    m: 60,
+    h: 60 * 60,
+    d: 24 * 60 * 60
+  } as const
+  if (!unitSecondsMap[`${unit}` as keyof typeof unitSecondsMap]) {
+    return intervalStr
+  }
+  return num * unitSecondsMap[`${unit}` as keyof typeof unitSecondsMap]
+}
+
 export const replaceIntervalAndVariables = (queryText: string, scopedVars?: ScopedVars) => {
   let _queryText = queryText
   if ((getTemplateSrv() as any).timeRange) {
@@ -559,6 +577,18 @@ export const replaceIntervalAndVariables = (queryText: string, scopedVars?: Scop
       .split(VAR_INTERVAL_LABEL)
       .join(intervalSecond + '')
   }
+  getTemplateSrv()
+    .getVariables()
+    .forEach(e => {
+      if (e.type === 'interval') {
+        const value = _.get(e, ['current', 'value'])
+        const valueAfterConvert = convertIntervalStringToSeconds(value)
+        if (value !== valueAfterConvert) {
+          const id = _.get(e, 'id')
+          _queryText = queryText.split(`"$${id}"`).join(valueAfterConvert + '')
+        }
+      }
+    })
   return getTemplateSrv().replace(_queryText, scopedVars)
 }
 
