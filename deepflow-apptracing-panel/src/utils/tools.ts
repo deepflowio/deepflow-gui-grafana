@@ -191,20 +191,21 @@ export function getRelatedData(item: any, fullData: any) {
       })
     }
   })
-  const result = [
-    ...relateData.map((e: any) => {
+  const result = relateData
+    .map((e: any) => {
       return {
         ...fullDataKeyById[e.id],
         __related: e
       }
     })
-  ]
 
   item.__hightLights = {}
-  result.forEach(e => {
-    const relatedFields = RELATED_TYPE_FIELDS_MAP[e.__related.type as keyof typeof RELATED_TYPE_FIELDS_MAP]
+  result.forEach((e: any) => {
+    const relatedFields = e.__related.type.split(',').map((k: keyof typeof RELATED_TYPE_FIELDS_MAP) => {
+      return RELATED_TYPE_FIELDS_MAP[k]
+    })
     e.__hightLights = {}
-    const _relatedFields = [...relatedFields].sort(() => -1)
+    const _relatedFields = relatedFields ? [...relatedFields].sort(() => -1) : []
     relatedFields.forEach((k: string, i: number) => {
       if (RELATED_EQUAL_INVALID_VALUES.includes(e[k])) {
         return
@@ -228,7 +229,12 @@ export function getRelatedData(item: any, fullData: any) {
       }
     })
   })
-  return [item, ...result]
+  return [
+    item,
+    ..._.uniqBy(result, (e: any) => {
+      return e.__related._id
+    })
+  ]
 }
 
 export function formatDetailList(detailList: any[], metaCustom: any) {
