@@ -386,6 +386,9 @@ export function getTracingQuery({ metrics, tags }: any) {
       })
 
     const _tags = tags
+      .filter((e: any) => {
+        return !e.not_supported_operators.includes('select')
+      })
       .map((e: any) => {
         const isEnumLikely = isEnumLikelyTag(e)
         const isJSONTag = JSON_TAGS.find(jsonTag => {
