@@ -71,6 +71,20 @@
           "content": "application/x-www-form-urlencoded"
         }
       ]
+    },
+    {
+      "path": "ai",
+      "url": "http://earth.df",
+      "headers": [
+        {
+          "name": "Content-Type",
+          "content": "application/json"
+        },
+        {
+          "name": "Authorization",
+          "content": "Bearer gAAAAABkmWHtindtStIzizwp2tor8x2bWk3l0IEacEf3KDF-bEHfI8VQOc3Bs-r_rgfoAoHKpmkfKQzlDWWYQ2T_wPEnhW0KLzkZr_qRtqSl-58BVr9wDnhRXVaR2oMPORN7atGexZpCYJ0in9vY0cMp9f6RHVRa-l_quQ2GbDwak6jq6yeyeGRFyiRg5nkWGeu0mn9R97MM"
+        }
+      ]
     }
   ],
   "dependencies": {

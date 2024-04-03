@@ -27,13 +27,16 @@ import { MyVariableQuery } from 'components/VariableQueryEditor'
 import { Observable, of, zip } from 'rxjs'
 import { catchError, switchMap } from 'rxjs/operators'
 import { APPTYPE_APP_TRACING_FLAME } from 'consts'
+import DataStreamer from 'utils/dataStreamer'
 
 export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptions> {
   url: string
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
     super(instanceSettings)
     this.url = instanceSettings.url || ''
-    const { token } = instanceSettings.jsonData
+    DATA_SOURCE_SETTINGS.basicUrl = this.url
+    const { token, aiUrl } = instanceSettings.jsonData
+    DATA_SOURCE_SETTINGS.aiUrl = aiUrl
     // @ts-ignore
     const test = (method: string, url, params, headers) => {
       const data = _.omit(params, 'requestId')
@@ -329,5 +332,108 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
           })
         : []
     )
+  }
+
+  async getAIConfigs() {
+    const { aiUrl } = DATA_SOURCE_SETTINGS
+    if (!aiUrl) {
+      throw new Error('Please set AI url in datasource settings.')
+    }
+    return await fetch(`${aiUrl}/v1/llm_agent_config`, {
+      method: 'GET'
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw Error(response.statusText)
+        }
+        return response
+      })
+      // 注意这个API支持多个点，但我们用多个API并行查
+      .then(async res => {
+        const { DATA } = await res.json()
+        return DATA
+      })
+      .catch(e => {
+        throw new Error(`请求数据失败: ${e}`)
+      })
+  }
+
+  async askGPTRequest(
+    engine: { platform: string; engine_name: string },
+    postData: { system_content: string; user_content: string },
+    receiveFn: any
+  ) {
+    const { aiUrl } = DATA_SOURCE_SETTINGS
+    if (!aiUrl) {
+      throw new Error('Please set AI url in datasource settings.')
+    }
+    let answer = ''
+
+    const onStreamEnd = () => {
+      receiveFn({
+        isEnd: true,
+        char: answer,
+        streamer
+      })
+    }
+    const streamer = new DataStreamer(onStreamEnd)
+    streamer.output(char => {
+      receiveFn({
+        isEnd: false,
+        char,
+        streamer
+      })
+    }, 32)
+    const callback = (chunk: string) => {
+      answer += chunk
+      streamer.write(chunk)
+    }
+    // @ts-ignore
+    const getGPTAnswerHandler = async (reader, callback) => {
+      // @ts-ignore
+      const handleData = async ({ done, value }) => {
+        if (done) {
+          return
+        }
+        // 将收到的数据处理为字符串
+        const chunk = new TextDecoder().decode(value)
+        // 处理单个数据块
+        if (!callback) {
+          throw Error('chunked需要指定callback')
+        }
+        callback(chunk)
+        // 继续等待下一个数据块
+        // reader.read().then(handleData)
+        const res = await reader.read()
+        return handleData(res)
+      }
+      const res = await reader.read()
+      return handleData(res)
+    }
+    await fetch(`${aiUrl}/v1/ai/stream/${engine.platform}?engine=${engine.engine_name}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+        // 'x-user-id': '1',
+        // 'x-user-type': '1'
+      },
+      body: JSON.stringify(postData)
+    })
+      .then(response => {
+        if (!response.ok) {
+          throw Error(response.statusText)
+        }
+        return response
+      })
+      // 注意这个API支持多个点，但我们用多个API并行查
+      .then(async res => {
+        const reader = res.body?.getReader()
+        await getGPTAnswerHandler(reader, callback)
+      })
+      .catch(e => {
+        throw new Error(`请求数据失败: ${e}`)
+      })
+
+    streamer.end()
   }
 }

@@ -18,6 +18,7 @@ import {
 } from 'deepflow-vis-js'
 import { TopoTooltip } from 'components/TopoTooltip'
 import { formatMetrics, genUniqueFieldByTag, useDebounce } from 'utils/tools'
+import { AskGPT } from 'components/AskGPT'
 
 type NodeItem = {
   id: string
@@ -639,6 +640,13 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
           severity="error"
           onRemove={() => setErrMsg('')}
         ></Alert>
+      ) : null}
+      {!noData ? (
+        <AskGPT
+          data={{
+            links
+          }}
+        ></AskGPT>
       ) : null}
     </div>
   )

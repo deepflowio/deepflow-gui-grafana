@@ -1,0 +1,66 @@
+.answer-content p {
+    margin: 10px 0;
+}
+
+.answer-content,
+.answer-content * {
+    font-size: 13px;
+    color: #303133;
+}
+
+.theme-dark .answer-content,
+.theme-dark .answer-content * {
+    color: #f3f3f3;
+}
+
+.answer-content h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #000000;
+    margin: 6px 0 4px;
+}
+
+.theme-dark .answer-content h3 {
+    color: #ffffff;
+}
+
+.answer-content ol,
+.answer-content ul {
+    padding-left: 20px;
+}
+
+.answer-content li {
+    margin: 10px 0;
+    line-height: 2;
+}
+
+.blink {
+    content: '';
+    margin-bottom: -2px;
+    width: 2px;
+    height: 12px;
+    background: #000000;
+    animation: blink 1s infinite;
+    display: inline-block;
+}
+
+.theme-dark .blink {
+    background: #ffffff;
+}
+
+/* .wrapper-with-blink .answer-content {
+    display: inline;
+} */
+
+@keyframes blink {
+
+    0%,
+    49% {
+        opacity: 1;
+    }
+
+    50%,
+    100% {
+        opacity: 0;
+    }
+}

@@ -22,9 +22,11 @@ export const QUERY_DATA_CACHE: {
 export const DATA_SOURCE_SETTINGS: {
   basicUrl: string
   language: keyof typeof I18N_RESOURCE | ''
+  aiUrl: string
 } = {
   basicUrl: '',
-  language: ''
+  language: '',
+  aiUrl: ''
 }
 
 export const TAG_CACHE = _.get(querierJs, 'TagCache', {})
