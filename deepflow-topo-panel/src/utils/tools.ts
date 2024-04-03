@@ -1,4 +1,5 @@
 import { FormattedValue, getValueFormat } from '@grafana/data'
+import { getDataSourceSrv } from '@grafana/runtime'
 import _ from 'lodash'
 import { useState, useEffect, useRef } from 'react'
 import { SimpleOptions } from 'types'
@@ -172,4 +173,30 @@ export function formatMetrics(returnMetrics: any[], e: any, metricsUnits: Simple
       return [key, `${valAfterFormat}${valAfterFormat !== null && valAfterFormat !== '' ? unit : ''}`]
     })
   )
+}
+
+export async function getDeepFlowDatasource() {
+  const deepFlowName = getDataSourceSrv()
+    .getList()
+    .find(dataSource => {
+      return dataSource.type === 'deepflowio-deepflow-datasource'
+    })?.name
+  return await getDataSourceSrv().get(deepFlowName)
+}
+
+export function findLastVisibleTextNode(doc: any) {
+  let lastTextNode = null
+
+  function traverse(node: any) {
+    node.childNodes.forEach((child: any) => {
+      if (child.nodeType === Node.TEXT_NODE && child.textContent.trim() !== '') {
+        lastTextNode = child // 更新最后一个有效的文本节点
+      } else if (child.nodeType === Node.ELEMENT_NODE) {
+        traverse(child) // 递归遍历元素节点
+      }
+    })
+  }
+
+  traverse(doc)
+  return lastTextNode
 }

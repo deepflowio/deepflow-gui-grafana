@@ -16,5 +16,8 @@
     "sign:topo": "cd deepflow-topo-panel && yarn sign",
     "sign:all": "yarn sign:tracing && yarn sign:querier && yarn sign:topo"
   },
-  "license": "AGPL-3.0"
+  "license": "AGPL-3.0",
+  "dependencies": {
+    "copy-text-to-clipboard": "^3.2.0"
+  }
 }

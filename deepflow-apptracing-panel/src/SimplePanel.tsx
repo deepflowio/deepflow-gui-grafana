@@ -21,6 +21,7 @@ import { getDataSourceSrv } from '@grafana/runtime'
 import './SimplePanel.css'
 import { Button } from '@douyinfe/semi-ui'
 import { IconArrowLeft } from '@douyinfe/semi-icons'
+import { AskGPT } from 'components/AskGPT'
 
 interface Props extends PanelProps<SimpleOptions> {}
 
@@ -474,6 +475,13 @@ export const SimplePanel: React.FC<Props> = ({ id, data, width, height }) => {
           severity="error"
           onRemove={() => setErrMsg('')}
         ></Alert>
+      ) : null}
+      {flameData && flameData?.length > 0 ? (
+        <AskGPT
+          data={{
+            tracing: flameData
+          }}
+        ></AskGPT>
       ) : null}
     </div>
   )

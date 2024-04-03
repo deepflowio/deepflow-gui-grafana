@@ -44,6 +44,17 @@ export class ConfigEditor extends PureComponent<Props, State> {
             ></Input>
           </div>
         </div>
+        <div className="gf-form">
+          <span className="width-10">AI Url</span>
+          <div style={{ flexGrow: 1 }}>
+            <Input
+              name="AI Url"
+              value={jsonData.aiUrl}
+              onChange={this.onJsonChange('aiUrl')}
+              placeholder="AI request url"
+            ></Input>
+          </div>
+        </div>
       </div>
     )
   }
