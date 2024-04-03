@@ -36,6 +36,9 @@ const system_content = `
   5. 输出一个JSON的数组，包含有问题的span的deep_flow_span_id和对应的简单文本描述。注意此项输出用纯的JSON放到输出的结尾，除此之外不要带有其他标记或者文字描述说明这是一段JSON。
   6. 用中文输出结果。对输出的结果重复检查下规则4。
   ====
+  注意，分析数据需要分析所有数据，同时使用中文输出结果，不用重复说明步骤，输出对应结果即可。
+
+  ---
   输出结果后，对结果进行重整下：
   我需要对里面的JSON二次处理，希望整句话移除这个JSON后，语句语序没有任何问题和误解。例如，不要出现 "以下是对应问题的JSON数组输出"或类似语句。将整个语句分析后，把内容输出，将JSON单独附加到结尾
 `
@@ -115,10 +118,10 @@ export const AskGPT: React.FC<Props> = ({ data }) => {
         return data
           .map((d: any, i: number) => {
             const { node_type } = d
-            if (node_type.toLocaleLowerCase() === 'pod') {
+            if (node_type?.toLocaleLowerCase() === 'pod') {
               const prefix = window.location.href.split('/d')[0]
               const href = `${prefix}/d/Application_K8s_Pod/application-k8s-pod?orgId=1`
-              return `<a style="margin: 10px 0; text-decoration: underline; color: #6e9fff; display: block;" href="${href}" target="_blank">${d.name}.json</a>`
+              return `<a style="margin: 10px 0; text-decoration: underline; color: #6e9fff; display: block;" href="${href}" target="_blank">进一步查看 ${d.name} (pod)</a>`
             } else {
               return `<pre style="margin: 10px 0;">${Object.keys(d)
                 .map(e => {
