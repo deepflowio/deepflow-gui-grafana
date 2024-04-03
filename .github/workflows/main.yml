@@ -43,12 +43,12 @@ jobs:
       - name: Setup Yarn
         uses: DerYeger/yarn-setup-action@master
         with:
-          node-version: 16
+          node-version: 18
 
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16.0
+          node-version: 18.0
 
       - name: Checkout Deepflow Dashboards
         uses: actions/checkout@v3
