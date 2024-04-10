@@ -335,26 +335,16 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
   }
 
   async getAIConfigs() {
-    const { aiUrl } = DATA_SOURCE_SETTINGS
-    if (!aiUrl) {
-      throw new Error('Please set AI url in datasource settings.')
-    }
-    return await fetch(`${aiUrl}/v1/llm_agent_config`, {
-      method: 'GET'
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw Error(response.statusText)
-        }
-        return response
-      })
-      // 注意这个API支持多个点，但我们用多个API并行查
-      .then(async res => {
-        const { DATA } = await res.json()
+    const fetchOption = {
+      method: 'get',
+      url: `${DATA_SOURCE_SETTINGS.basicUrl}/ai/v1/llm_agent_config`
+    } as BackendSrvRequest
+    return await getBackendSrv()
+      .fetch(fetchOption)
+      .toPromise()
+      .then((res: any) => {
+        const { DATA } = res.data
         return DATA
-      })
-      .catch(e => {
-        throw new Error(`请求数据失败: ${e}`)
       })
   }
 
@@ -363,10 +353,6 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     postData: { system_content: string; user_content: string },
     receiveFn: any
   ) {
-    const { aiUrl } = DATA_SOURCE_SETTINGS
-    if (!aiUrl) {
-      throw new Error('Please set AI url in datasource settings.')
-    }
     let answer = ''
 
     const onStreamEnd = () => {
@@ -384,56 +370,24 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
         streamer
       })
     }, 32)
-    const callback = (chunk: string) => {
-      answer += chunk
-      streamer.write(chunk)
-    }
-    // @ts-ignore
-    const getGPTAnswerHandler = async (reader, callback) => {
-      // @ts-ignore
-      const handleData = async ({ done, value }) => {
-        if (done) {
-          return
-        }
-        // 将收到的数据处理为字符串
-        const chunk = new TextDecoder().decode(value)
-        // 处理单个数据块
-        if (!callback) {
-          throw Error('chunked需要指定callback')
-        }
-        callback(chunk)
-        // 继续等待下一个数据块
-        // reader.read().then(handleData)
-        const res = await reader.read()
-        return handleData(res)
-      }
-      const res = await reader.read()
-      return handleData(res)
-    }
-    await fetch(`${aiUrl}/v1/ai/stream/${engine.platform}?engine=${engine.engine_name}`, {
-      method: 'POST',
+
+    const fetchOption = {
+      method: 'post',
+      url: `${DATA_SOURCE_SETTINGS.basicUrl}/ai/v1/ai/stream/${engine.platform}?engine=${engine.engine_name}`,
+      responseType: 'text',
       headers: {
         'Content-Type': 'application/json'
-        // 'x-user-id': '1',
-        // 'x-user-type': '1'
       },
-      body: JSON.stringify(postData)
-    })
-      .then(response => {
-        if (!response.ok) {
-          throw Error(response.statusText)
-        }
-        return response
+      data: JSON.stringify(postData)
+    } as BackendSrvRequest
+    await getBackendSrv()
+      .fetch(fetchOption)
+      .toPromise()
+      .then((res: any) => {
+        answer = res.data
+        streamer.write(res.data)
       })
-      // 注意这个API支持多个点，但我们用多个API并行查
-      .then(async res => {
-        const reader = res.body?.getReader()
-        await getGPTAnswerHandler(reader, callback)
-      })
-      .catch(e => {
-        throw new Error(`请求数据失败: ${e}`)
-      })
-
+    
     streamer.end()
   }
 }
