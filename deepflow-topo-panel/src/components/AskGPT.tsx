@@ -260,7 +260,7 @@ export const AskGPT: React.FC<Props> = ({ data }) => {
         })
         .flat()
       setAiEngines(list)
-      setCheckedAiEngine(list.filter(e => !e.disabled)?.[0].value || '')
+      setCheckedAiEngine(list.filter(e => !e.disabled)?.[0]?.value || '')
     } catch (error: any) {
       setErrorMsg(`GET ENGINES FAILED: ${error.message}`)
       setDrawerData({
@@ -340,7 +340,7 @@ export const AskGPT: React.FC<Props> = ({ data }) => {
               }}
               onClick={onStartRequestClick}
               icon={drawerData.inRequest ? 'fa fa-spinner' : 'info'}
-              variant={errorMsg !== '' ? 'destructive' : drawerData.inRequest ? 'secondary' : 'primary'}
+              variant={drawerData.inRequest ? 'secondary' : 'primary'}
             >
               {requestBtnText}
             </Button>
@@ -350,7 +350,7 @@ export const AskGPT: React.FC<Props> = ({ data }) => {
                 width: '16px',
                 height: '16px',
                 position: 'absolute',
-                right: '110px',
+                right: '115px',
                 top: '7px',
                 opacity: drawerData.inRequest ? 0 : 1
               }}
