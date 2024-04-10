@@ -268,7 +268,11 @@ export const AskGPT: React.FC<Props> = ({ data }) => {
       setCheckedAiEngine(list.filter(e => !e.disabled)?.[0].value || '')
     } catch (error: any) {
       setErrorMsg(`GET ENGINES FAILED: ${error.message}`)
-
+      setDrawerData({
+        inRequest: false,
+        answer: `<a style="margin: 10px 0; text-decoration: underline; color: #6e9fff; display: block;" href="https://deepflow.io/docs/zh/best-practice/production-deployment/#%E4%BD%BF%E7%94%A8ai%E6%A8%A1%E5%9E%8B" target="_blank">Engine帮助文档</a>`,
+        answerIsEnd: true
+      })
       setTimeout(() => {
         setErrorMsg('')
       }, 800)
@@ -365,7 +369,7 @@ export const AskGPT: React.FC<Props> = ({ data }) => {
               overflow: 'auto'
             }}
           >
-            {drawerData.answer !== '' && !drawerData.inRequest ? (
+            {checkedAiEngine && drawerData.answer !== '' && !drawerData.inRequest ? (
               <IconButton
                 onClick={copyAnswer}
                 aria-label="Copy"
