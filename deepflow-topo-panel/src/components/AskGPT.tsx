@@ -107,10 +107,10 @@ export const AskGPT: React.FC<Props> = ({ data }) => {
 
         return data
           .map((d: any, i: number) => {
-            const { node_type } = d
-            if (node_type?.toLocaleLowerCase() === 'pod') {
+            const { node_type, name: podName } = d
+            if (node_type?.toLocaleLowerCase() === 'pod' && podName) {
               const prefix = window.location.href.split('/d')[0]
-              const href = `${prefix}/d/Application_K8s_Pod/application-k8s-pod?orgId=1`
+              const href = `${prefix}/d/Application_K8s_Pod/application-k8s-pod?orgId=1&var-pod=${podName}`
               return `<a style="margin: 10px 0; text-decoration: underline; color: #6e9fff; display: block;" href="${href}" target="_blank">进一步查看 ${d.name} (pod)</a>`
             } else {
               return `<pre style="margin: 10px 0;">${Object.keys(d)
@@ -263,7 +263,6 @@ export const AskGPT: React.FC<Props> = ({ data }) => {
       setCheckedAiEngine(list.filter(e => !e.disabled)?.[0].value || '')
     } catch (error: any) {
       setErrorMsg(`GET ENGINES FAILED: ${error.message}`)
-
       setTimeout(() => {
         setErrorMsg('')
       }, 800)
