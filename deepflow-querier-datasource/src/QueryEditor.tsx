@@ -124,6 +124,7 @@ export class QueryEditor extends PureComponent<Props> {
     templateVariableOpts: SelectOpts
     runQueryWarning: boolean
     copied: boolean
+    collapsed: boolean
   }
   constructor(props: any) {
     super(props)
@@ -170,7 +171,8 @@ export class QueryEditor extends PureComponent<Props> {
       gotBasicData: false,
       templateVariableOpts: [],
       runQueryWarning: false,
-      copied: false
+      copied: false,
+      collapsed: false
     }
   }
 
@@ -1188,6 +1190,12 @@ export class QueryEditor extends PureComponent<Props> {
     }, 1800)
   }
 
+  onCollapseBtnClick = () => {
+    this.setState({
+      collapsed: !this.state.collapsed
+    })
+  }
+
   render() {
     const {
       formConfig,
@@ -1525,13 +1533,30 @@ export class QueryEditor extends PureComponent<Props> {
         </div>
         {appType !== APPTYPE_APP_TRACING_FLAME && this.sqlContent ? (
           <div className="sql-content-wrapper">
-            <div className="sql-content" dangerouslySetInnerHTML={{ __html: this.sqlContent }}></div>
-            <Button
-              style={{ position: 'absolute', right: 0, top: 0 }}
-              fill="text"
-              icon={this.state.copied ? 'check' : 'copy'}
-              onClick={this.onCopySQLBtnClick}
-            />
+            <div
+              className="sql-content"
+              style={{
+                maxHeight: this.state.collapsed ? '32px' : '',
+                padding: this.state.collapsed ? '32px 6px 0 6px' : ''
+              }}
+              dangerouslySetInnerHTML={{ __html: this.sqlContent }}
+            ></div>
+            <Tooltip content={this.state.collapsed ? 'Show' : 'Hide'} placement="top">
+              <Button
+                style={{ position: 'absolute', right: '32px', top: 0 }}
+                fill="text"
+                icon={this.state.collapsed ? 'eye' : 'eye-slash'}
+                onClick={this.onCollapseBtnClick}
+              />
+            </Tooltip>
+            <Tooltip content={this.state.copied ? 'Copied' : 'Copy'} placement="top">
+              <Button
+                style={{ position: 'absolute', right: 0, top: 0 }}
+                fill="text"
+                icon={this.state.copied ? 'check' : 'copy'}
+                onClick={this.onCopySQLBtnClick}
+              />
+            </Tooltip>
           </div>
         ) : null}
       </div>
