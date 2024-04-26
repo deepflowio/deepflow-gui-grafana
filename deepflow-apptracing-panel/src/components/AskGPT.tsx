@@ -138,13 +138,13 @@ export const AskGPT: React.FC<Props> = ({ data }) => {
     if (answerIsEnd) {
       return htmlText
     }
-    let parser = new DOMParser()
-    let doc = parser.parseFromString(htmlText, 'text/html')
-    let target = findLastVisibleTextNode(doc) as any
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(htmlText, 'text/html')
+    const target = findLastVisibleTextNode(doc) as any
     if (!target) {
       return htmlText
     }
-    let newTextElement = document.createElement('b')
+    const newTextElement = document.createElement('b')
     newTextElement.setAttribute('class', 'blink')
     if (target.nodeType === Node.TEXT_NODE) {
       target.parentNode.appendChild(newTextElement)
