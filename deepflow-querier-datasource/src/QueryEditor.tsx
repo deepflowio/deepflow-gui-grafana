@@ -83,6 +83,7 @@ type MetricOptsItem = LabelItem & {
   is_agg?: boolean
   whereOnly?: boolean
   fromSelect?: BasicDataWithId
+  not_supported_operators?: string
 }
 
 export type MetricOpts = MetricOptsItem[]
@@ -249,7 +250,8 @@ export class QueryEditor extends PureComponent<Props> {
         !tag.whereOnly &&
         !SELECT_GROUP_BY_DISABLE_TAGS.find((val: string) => {
           return (tag.value as string).includes(val)
-        })
+        }) &&
+        !tag.not_supported_operators?.includes('select')
       )
     })
   }
@@ -1090,7 +1092,7 @@ export class QueryEditor extends PureComponent<Props> {
         })
         .concat(deprecatedTags)
         .map((item: any) => {
-          const { name, client_name, server_name, display_name, type, deprecated } = item
+          const { name, client_name, server_name, display_name, type, deprecated, not_supported_operators } = item
           const operatorOpts = formatTagOperators(item)
           const displaySuffix = deprecated ? ' ⚠️' : ''
           if (name === client_name && name === server_name) {
@@ -1098,7 +1100,8 @@ export class QueryEditor extends PureComponent<Props> {
               label: (display_name === name ? `${name}` : `${name} (${display_name})`) + displaySuffix,
               value: name,
               type,
-              operatorOpts
+              operatorOpts,
+              not_supported_operators
             }
           }
           return [
@@ -1109,7 +1112,8 @@ export class QueryEditor extends PureComponent<Props> {
                     value: name,
                     type,
                     whereOnly: true,
-                    operatorOpts
+                    operatorOpts,
+                    not_supported_operators
                   }
                 ]
               : []),
@@ -1120,7 +1124,8 @@ export class QueryEditor extends PureComponent<Props> {
                     value: client_name,
                     type,
                     sideType: 'from',
-                    operatorOpts
+                    operatorOpts,
+                    not_supported_operators
                   }
                 ]
               : []),
@@ -1131,7 +1136,8 @@ export class QueryEditor extends PureComponent<Props> {
                     value: server_name,
                     type,
                     sideType: 'to',
-                    operatorOpts
+                    operatorOpts,
+                    not_supported_operators
                   }
                 ]
               : [])
@@ -1333,7 +1339,9 @@ export class QueryEditor extends PureComponent<Props> {
                                       ? tagOpts
                                           .filter(tag => {
                                             return (
-                                              !GROUP_BY_DISABLE_TAG_TYPES.includes(tag.type as string) && !tag.whereOnly
+                                              !GROUP_BY_DISABLE_TAG_TYPES.includes(tag.type as string) &&
+                                              !tag.whereOnly &&
+                                              !tag.not_supported_operators?.includes('group')
                                             )
                                           })
                                           .filter((tag: MetricOptsItem) => {
