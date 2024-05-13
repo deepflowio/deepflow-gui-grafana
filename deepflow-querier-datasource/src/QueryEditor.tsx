@@ -621,8 +621,13 @@ export class QueryEditor extends PureComponent<Props> {
       }
       let newQuery
       if (appType !== APPTYPE_APP_TRACING_FLAME) {
-        const _queryText = JSON.stringify(addTimeToWhere(dataObj))
-        const parsedQueryData = genQueryParams(JSON.parse(replaceIntervalAndVariables(_queryText)), {})
+        const queryDataOriginal = addTimeToWhere(dataObj)
+        const _queryText = JSON.stringify(queryDataOriginal)
+        const parsedQueryData = genQueryParams(
+          JSON.parse(replaceIntervalAndVariables(_queryText)),
+          {},
+          queryDataOriginal
+        )
         // @ts-ignore
         const querierJsResult = querierJs.dfQuery(_.cloneDeep(parsedQueryData))
         const { returnTags, returnMetrics, sql } = querierJsResult.resource[0]

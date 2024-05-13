@@ -431,8 +431,11 @@ function getInterval(intervalStr: string, variables: any[]) {
   return isNaN(Number(interval)) ? intervalTrans(interval, variableItem) : interval
 }
 
-function groupByFormat(data: any, variables: any[]) {
+function groupByFormat(data: any, variables: any[], dataOriginal: any) {
   const intervalValue = getInterval(data.interval, variables)
+  const intervalValueOriginal = dataOriginal.interval
+  const intervalValueOriginalIsVariable =
+    typeof intervalValueOriginal === 'string' && intervalValueOriginal.startsWith('$')
   return [
     ...(data.interval
       ? [
@@ -440,7 +443,7 @@ function groupByFormat(data: any, variables: any[]) {
             func: 'interval',
             key: 'time',
             params: intervalValue,
-            as: `time_${intervalValue}`
+            as: intervalValueOriginalIsVariable ? 'time_value' : `time_${intervalValue}`
           }
         ]
       : []),
@@ -495,7 +498,11 @@ function orderByFormat(orderBy: BasicData[]) {
     })
 }
 
-export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVars) {
+export function genQueryParams(
+  queryData: Record<any, any>,
+  scopedVars: ScopedVars,
+  queryDataOriginal: Record<any, any>
+) {
   const keys = [
     'db',
     'from',
@@ -531,7 +538,7 @@ export function genQueryParams(queryData: Record<any, any>, scopedVars: ScopedVa
         }
       ]
     },
-    groupBy: groupByFormat(data, variables),
+    groupBy: groupByFormat(data, variables, queryDataOriginal),
     orderBy: orderByFormat(data.orderBy as BasicData[]),
     ...((data?.groupBy as BasicData[]).filter(e => e.key).length && data.interval
       ? { slimit: data.slimit === undefined || data.slimit === '' ? SLIMIT_DEFAULT_VALUE : data.slimit }
