@@ -196,12 +196,13 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
   }
 
   applyTemplateVariables(query: MyQuery & { requestId: string }, scopedVars: ScopedVars): any {
+    const queryDataOriginal = JSON.parse(query.queryText)
     const _queryText = replaceIntervalAndVariables(query.queryText, scopedVars)
     const queryData = JSON.parse(_queryText)
     const result = {} as MyQuery
     // set new params after replaced variables
     if (queryData.appType !== APPTYPE_APP_TRACING_FLAME) {
-      const parsedQueryData = genQueryParams(addTimeToWhere(queryData), scopedVars)
+      const parsedQueryData = genQueryParams(addTimeToWhere(queryData), scopedVars, queryDataOriginal)
       // @ts-ignore
       const querierJsResult = querierJs.dfQuery(_.cloneDeep(parsedQueryData))
       const { returnTags, returnMetrics, sql } = querierJsResult.resource[0]
