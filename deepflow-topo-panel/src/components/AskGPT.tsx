@@ -245,8 +245,9 @@ export const AskGPT: React.FC<Props> = ({ data }) => {
       const list = Object.keys(result)
         .map((k: string) => {
           const item = result[k]
+          const engines = Array.isArray(item.engine_name) ? item.engine_name : [item.engine_name]
           return (
-            item.engine_name?.map((engine_name: string) => {
+            engines?.map((engine_name: string) => {
               return {
                 label: `${engine_name}${item.enable === '0' ? ' (disabled)' : ''}`,
                 value: JSON.stringify({
