@@ -48,3 +48,6 @@ export const getTagMapCache = (db: string, from: string, tag: string) => {
 }
 
 export const SQL_CACHE: Record<string, string> = {}
+export const DATASOURCE_SETTINGS_CACHE = {
+  url: ''
+}

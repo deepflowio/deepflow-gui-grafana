@@ -22,7 +22,7 @@ import {
 import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
 import { genQueryParams, replaceIntervalAndVariables } from 'utils/genQueryParams'
-import { DATA_SOURCE_SETTINGS, QUERY_DATA_CACHE, SQL_CACHE } from 'utils/cache'
+import { DATA_SOURCE_SETTINGS, DATASOURCE_SETTINGS_CACHE, QUERY_DATA_CACHE, SQL_CACHE } from 'utils/cache'
 import { MyVariableQuery } from 'components/VariableQueryEditor'
 import { Observable, of, zip } from 'rxjs'
 import { catchError, switchMap } from 'rxjs/operators'
@@ -33,6 +33,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
   constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
     super(instanceSettings)
     this.url = instanceSettings.url || ''
+    DATASOURCE_SETTINGS_CACHE.url = this.url
     const { token } = instanceSettings.jsonData
     // @ts-ignore
     const test = (method: string, url, params, headers) => {
@@ -40,9 +41,10 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       const requestIdSetting = _.pick(params, 'requestId')
       const f = () => {
         const debugOnOff = getParamByName('debug') === 'true'
+        const { url } = DATASOURCE_SETTINGS_CACHE
         const fetchOption = {
           method,
-          url: `${this.url}${token ? '/auth/api/querier' : '/noauth'}/v1/query/${debugOnOff ? '?debug=true' : ''}`,
+          url: `${url}${token ? '/auth/api/querier' : '/noauth'}/v1/query/${debugOnOff ? '?debug=true' : ''}`,
           data: qs.stringify(data),
           headers,
           responseType: 'text',
@@ -294,6 +296,10 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       return []
     }
 
+    const currentDatasourceUrl = this.url
+    if (DATASOURCE_SETTINGS_CACHE.url !== this.url) {
+      DATASOURCE_SETTINGS_CACHE.url = currentDatasourceUrl
+    }
     const _sql = getTemplateSrv().replace(sql, {}, 'csv')
     // @ts-ignore
     const response = await querierJs.searchBySql(_sql, database, params => {
