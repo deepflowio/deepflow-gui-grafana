@@ -43,9 +43,10 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       const requestIdSetting = _.pick(params, 'requestId')
       const f = () => {
         const debugOnOff = getParamByName('debug') === 'true'
+        const { basicUrl } = DATA_SOURCE_SETTINGS
         const fetchOption = {
           method,
-          url: `${this.url}${token ? '/auth/api/querier' : '/noauth'}/v1/query/${debugOnOff ? '?debug=true' : ''}`,
+          url: `${basicUrl}${token ? '/auth/api/querier' : '/noauth'}/v1/query/${debugOnOff ? '?debug=true' : ''}`,
           data: qs.stringify(data),
           headers,
           responseType: 'text',
@@ -297,6 +298,10 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
       return []
     }
 
+    const currentDatasourceUrl = this.url
+    if (DATA_SOURCE_SETTINGS.basicUrl !== this.url) {
+      DATA_SOURCE_SETTINGS.basicUrl = currentDatasourceUrl
+    }
     const _sql = getTemplateSrv().replace(sql, {}, 'csv')
     // @ts-ignore
     const response = await querierJs.searchBySql(_sql, database, params => {
