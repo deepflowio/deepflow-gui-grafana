@@ -302,6 +302,11 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     const currentDatasourceUrl = this.url
     if (DATA_SOURCE_SETTINGS.basicUrl !== this.url) {
       DATA_SOURCE_SETTINGS.basicUrl = currentDatasourceUrl
+      // clear tags cache
+      const cacheKeys = ['TagMapCache', 'CTagMapCache', 'STagMapCache']
+      cacheKeys.forEach((cacheKey: string) => {
+        _.set(querierJs, cacheKey, {})
+      })
     }
     const _sql = getTemplateSrv().replace(sql, {}, 'csv')
     // @ts-ignore
@@ -393,7 +398,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
         answer = res.data
         streamer.write(res.data)
       })
-    
+
     streamer.end()
   }
 }
