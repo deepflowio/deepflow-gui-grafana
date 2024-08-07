@@ -198,13 +198,14 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	returnMetrics := qj["returnMetrics"].([]interface{})
 	// 获取returnTags
 	returnTags := qj["returnTags"].([]interface{})
-
 	//基本值判断，刚进入时为空，直接返回空
 	if sql, ok := qj["sql"]; ok {
 		if sql == "" {
 			return response, nil
 		}
 	}
+	// 获取profile_event_type
+	profile_event_type := qj["profile_event_type"].(string)
 
 	//app类型
 	appType := queryText["appType"].(string)
@@ -219,6 +220,126 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		debug = qj["debug"].(bool)
 	}
 
+	if appType == "profiling" {
+		// 请求数据
+		tracingsqlRes, err := d.querier(ctx, appType, debug, "", sql, "", token, profile_event_type, requestUrl, fromTimeInt64, toTimeInt64)
+
+		if err != nil {
+			return response, err
+		}
+
+		// 获取列
+		var columns []interface{}
+
+		if _, ok := tracingsqlRes.Result["columns"]; !ok {
+			// 缺失columns
+			return response, fmt.Errorf("the columns field is missing in the returned data grid")
+		}
+		columns = tracingsqlRes.Result["columns"].([]interface{})
+
+		// 获取值
+		if _, ok := tracingsqlRes.Result["values"]; !ok {
+			//缺失values
+			return response, fmt.Errorf("the values field is missing in the returned data grid")
+		}
+
+		if tracingsqlRes.Result["values"] == nil {
+			// return response, fmt.Errorf("the values is null")
+			//数据
+			frame := data.NewFrame("response")
+
+			frame.Fields = append(frame.Fields,
+				data.NewField("level", nil, []float64{0}),
+			)
+			frame.Fields = append(frame.Fields,
+				data.NewField("value", nil, []float64{0}),
+			)
+			frame.Fields = append(frame.Fields,
+				data.NewField("label", nil, []string{"_"}),
+			)
+			frame.Fields = append(frame.Fields,
+				data.NewField("self", nil, []float64{0}),
+			)
+			response.Frames = append(response.Frames, frame)
+			return response, nil
+		}
+		//
+		dataAll := make(map[string]interface{})
+
+		values := tracingsqlRes.Result["values"].([]interface{})
+
+		for i := 0; i < len(values); i++ {
+			subValue := values[i].([]interface{})
+			if len(subValue) != len(columns) {
+				// value的子值和字段长度不一致
+				return response, fmt.Errorf(fmt.Sprintf("sub-value: %v and columns: %v have different lengths", subValue, columns))
+			}
+			for j := 0; j < len(columns); j++ {
+				column := columns[j].(string)
+				switch column {
+				case "level", "total_value", "self_value":
+					var filed_name string
+					if column == "level" {
+						filed_name = "level"
+					} else if column == "total_value" {
+						filed_name = "value"
+					} else if column == "self_value" {
+						filed_name = "self"
+					}
+					slice, ok := dataAll[filed_name].([]float64)
+					if !ok {
+						slice = []float64{}
+					}
+					if _, ok := subValue[j].(json.Number); ok {
+						floatValue, err := subValue[j].(json.Number).Float64()
+						if err != nil {
+							return response, fmt.Errorf("unexpected type for %v, assertion failed for float64, type %T", subValue[j], subValue[j])
+
+						}
+						dataAll[filed_name] = append(slice, floatValue)
+					} else {
+						return response, fmt.Errorf("unexpected type for %v, assertion failed, type %T", subValue[j], subValue[j])
+					}
+				case "function":
+					filed_name := "label"
+					// 断言为 []string
+					slice, ok := dataAll[filed_name].([]string)
+					if !ok {
+						slice = []string{}
+					}
+					// 追加值并进行类型转换
+					stringValue, ok := subValue[j].(string)
+					if !ok {
+						return response, fmt.Errorf("unexpected type for %v, expected string", subValue[j])
+					}
+					dataAll[filed_name] = append(slice, stringValue)
+				}
+			}
+		}
+		//记录日志
+		//column和value 匹配后数据
+		log.DefaultLogger.Info("__________The data after matching columns and value", columns, dataAll)
+
+		//数据
+		frame := data.NewFrame("response")
+
+		frame.Fields = append(frame.Fields,
+			data.NewField("level", nil, dataAll["level"]),
+		)
+		frame.Fields = append(frame.Fields,
+			data.NewField("value", nil, dataAll["value"]),
+		)
+		frame.Fields = append(frame.Fields,
+			data.NewField("label", nil, dataAll["label"]),
+		)
+		frame.Fields = append(frame.Fields,
+			data.NewField("self", nil, dataAll["self"]),
+		)
+		response.Frames = append(response.Frames, frame)
+		return response, nil
+	}
+
+	//
 	if appType == "appTracingFlame" {
 
 		if _, ok := qj["_id"]; !ok {
@@ -262,7 +383,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		tagTranslate := make(map[string]interface{})
 
 		//获取l7_protocol 翻译
-		l7_protocol, err := d.querier(ctx, debug, "flow_log", "show tag l7_protocol values from l7_flow_log", sources, token, requestUrl, fromTimeInt64, toTimeInt64)
+		l7_protocol, err := d.querier(ctx, appType, debug, "flow_log", "show tag l7_protocol values from l7_flow_log", sources, "", token, requestUrl, fromTimeInt64, toTimeInt64)
 
 		if err != nil {
 			return response, err
@@ -277,7 +398,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		tagTranslate["l7_protocol"] = tag17Protocol
 
 		//获取response_status翻译
-		response_status, err := d.querier(ctx, debug, "flow_log", "show tag response_status values from l7_flow_log", sources, token, requestUrl, fromTimeInt64, toTimeInt64)
+		response_status, err := d.querier(ctx, appType, debug, "flow_log", "show tag response_status values from l7_flow_log", sources, "", token, requestUrl, fromTimeInt64, toTimeInt64)
 		if err != nil {
 			return response, err
 		}
@@ -289,7 +410,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		tagTranslate["response_status"] = tagResponseStatus
 
 		// 获取tap_side翻译
-		tap_side, err := d.querier(ctx, debug, "flow_log", "show tag tap_side values from l7_flow_log", sources, token, requestUrl, fromTimeInt64, toTimeInt64)
+		tap_side, err := d.querier(ctx, appType, debug, "flow_log", "show tag tap_side values from l7_flow_log", sources, token, "", requestUrl, fromTimeInt64, toTimeInt64)
 		if err != nil {
 			return response, err
 		}
@@ -339,7 +460,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		tracingWhereNew := strings.TrimSuffix(tracingWhere, " or ")
 		tracingsql := sql + tracingWhereNew + " order by `start_time`"
 		// 请求数据
-		tracingsqlRes, err := d.querier(ctx, debug, "flow_log", tracingsql, sources, token, requestUrl, fromTimeInt64, toTimeInt64)
+		tracingsqlRes, err := d.querier(ctx, appType, debug, "flow_log", tracingsql, sources, token, "", requestUrl, fromTimeInt64, toTimeInt64)
 
 		if err != nil {
 			return response, err
@@ -503,7 +624,7 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 	//
 
 	// 请求querier
-	body, err := d.querier(ctx, debug, db, sql, sources, token, requestUrl, fromTimeInt64, toTimeInt64)
+	body, err := d.querier(ctx, appType, debug, db, sql, sources, token, "", requestUrl, fromTimeInt64, toTimeInt64)
 
 	if err != nil {
 		return response, err
@@ -1120,7 +1241,7 @@ func (d *Datasource) verifyParams(qj, queryText map[string]interface{}) (err err
 }
 
 // 三方querier接口查询
-func (d *Datasource) querier(ctx context.Context, debug bool, db, sql, sources, token, requestUrl string, fromTimeInt64, toTimeInt64 int64) (res newtypes.ApiMetrics, err error) {
+func (d *Datasource) querier(ctx context.Context, appType string, debug bool, db, sql, sources, token, profileEventType, requestUrl string, fromTimeInt64, toTimeInt64 int64) (res newtypes.ApiMetrics, err error) {
 
 	var body newtypes.ApiMetrics
 
@@ -1155,6 +1276,11 @@ func (d *Datasource) querier(ctx context.Context, debug bool, db, sql, sources, 
 		data.Set("data_precision", sources)
 	}
 
+	if profileEventType != "" {
+		postData["profile_event_type"] = profileEventType
+		data.Set("profile_event_type", profileEventType)
+	}
+
 	// postDataMap, _ := json.Marshal(postData)
 	// StrPostData := string(postDataMap)
 	//请求querier接口
@@ -1162,7 +1288,13 @@ func (d *Datasource) querier(ctx context.Context, debug bool, db, sql, sources, 
 
 	//请求url
 	debugStr := strconv.FormatBool(debug)
-	querier := requestUrl + "/v1/query/?debug=" + debugStr
+
+	var querier string
+	if appType == "profiling" {
+		querier = requestUrl + "/v1/profile/ProfileGrafana?debug=" + debugStr
+	} else {
+		querier = requestUrl + "/v1/query/?debug=" + debugStr
+	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, querier, bytes.NewReader([]byte(data.Encode())))
 
@@ -1208,7 +1340,7 @@ func (d *Datasource) querier(ctx context.Context, debug bool, db, sql, sources, 
 	}
 
 	// 记录日志
-	//log.DefaultLogger.Info("格式化后接口返回", "数据", body)
+	// log.DefaultLogger.Info("格式化后接口返回", "数据", body)
 
 	return body, nil
 }
@@ -1250,7 +1382,7 @@ func (d *Datasource) CheckHealth(ctx context.Context, _ *backend.CheckHealthRequ
 		token = dsj["token"].(string)
 	}
 
-	_, err := d.querier(ctx, false, "", "show databases", "", token, requestUrl, 0, 0)
+	_, err := d.querier(ctx, "", false, "", "show databases", "", "", token, requestUrl, 0, 0)
 
 	if err != nil {
 		return newHealthCheckErrorf(err.Error()), nil
