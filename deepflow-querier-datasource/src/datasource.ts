@@ -21,12 +21,12 @@ import {
 } from 'utils/tools'
 import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
-import { genQueryParams, replaceIntervalAndVariables } from 'utils/genQueryParams'
+import { genQueryParams, getFiledValueFormSql, getProfilingSql, replaceIntervalAndVariables } from 'utils/genQueryParams'
 import { DATA_SOURCE_SETTINGS, QUERY_DATA_CACHE, SQL_CACHE } from 'utils/cache'
 import { MyVariableQuery } from 'components/VariableQueryEditor'
 import { Observable, of, zip } from 'rxjs'
 import { catchError, switchMap } from 'rxjs/operators'
-import { APPTYPE_APP_TRACING_FLAME } from 'consts'
+import { APP_TYPE } from 'consts'
 import DataStreamer from 'utils/dataStreamer'
 
 export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptions> {
@@ -98,7 +98,7 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     _targets.forEach(q => {
       const queryData = JSON.parse(q.queryText)
       const { appType, from, db } = queryData
-      if (!hasAddedTracingConfig && appType === APPTYPE_APP_TRACING_FLAME) {
+      if (!hasAddedTracingConfig && appType === APP_TYPE.TRACING_FLAME) {
         hasAddedTracingConfig = true
         tracingQueryIndex = promisesList.length
         _.set(q, ['_id'], getTracingId(queryData.tracingId))
@@ -202,20 +202,25 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
     const queryData = JSON.parse(_queryText)
     const result = {} as MyQuery
     // set new params after replaced variables
-    if (queryData.appType !== APPTYPE_APP_TRACING_FLAME) {
+    if (queryData.appType !== APP_TYPE.TRACING_FLAME) {
       const parsedQueryData = genQueryParams(addTimeToWhere(queryData), scopedVars, queryDataOriginal)
       // @ts-ignore
       const querierJsResult = querierJs.dfQuery(_.cloneDeep(parsedQueryData))
       const { returnTags, returnMetrics, sql } = querierJsResult.resource[0]
       _.set(SQL_CACHE, `${query.requestId}_${query.refId}`, sql)
       const metaExtra =
-        queryData.appType === 'accessRelationship'
+        queryData.appType === APP_TYPE.SERVICE_MAP
           ? getAccessRelationshipQueryConfig(queryData.groupBy, returnTags)
           : {}
 
       result.returnTags = returnTags
       result.returnMetrics = returnMetrics
-      result.sql = sql
+      if (queryData.appType === APP_TYPE.PROFILING) {
+        result.sql = getProfilingSql(sql)
+        result.profile_event_type = getFiledValueFormSql(sql, 'profile_event_type')
+      } else {
+        result.sql = sql
+      }
       result.metaExtra = metaExtra
     }
     result.debug = getParamByName('debug') === 'true'

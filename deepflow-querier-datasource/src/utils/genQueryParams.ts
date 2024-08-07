@@ -1,7 +1,7 @@
 import { ScopedVars } from '@grafana/data'
 import { getTemplateSrv } from '@grafana/runtime'
 import { BasicData } from 'components/QueryEditorFormRow'
-import { SLIMIT_DEFAULT_VALUE, VAR_INTERVAL_LABEL } from 'consts'
+import { APP_TYPE, SLIMIT_DEFAULT_VALUE, VAR_INTERVAL_LABEL } from 'consts'
 import _ from 'lodash'
 import { LabelItem } from 'QueryEditor'
 // import { MyQuery } from 'types'
@@ -226,7 +226,7 @@ function selectFormat(data: any): {
       }
     })
 
-  if (appType === 'appTracing') {
+  if (appType === APP_TYPE.TRACING) {
     TAGS.push({
       key: '_id',
       func: 'TO_STRING'
@@ -600,3 +600,21 @@ export const replaceIntervalAndVariables = (queryText: string, scopedVars?: Scop
 }
 
 export default genQueryParams
+
+export const getProfilingSql = (sql: string) => {
+  const regex = /WHERE\s(.*?)\s(?=LIMIT|$)/i
+  const match = sql.match(regex)
+
+  if (match && match[1]) {
+    return match[1].trim()
+  } else {
+    return sql
+  }
+}
+
+export const getFiledValueFormSql = (sql: string, field: string) => {
+  const escapedField = field.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const regex = new RegExp(`\`?${escapedField}\`?\\s+IN\\s+\\('([^']*)'\\)`)
+  const match = sql.match(regex)
+  return match ? match[1] : undefined
+}

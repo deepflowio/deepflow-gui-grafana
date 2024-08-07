@@ -17,8 +17,14 @@ export const SELECT_GROUP_BY_DISABLE_TAGS = [
 
 export const DISABLE_TAGS = ['_id', 'time']
 
-export const SERVICE_MAP_SUPPORT_DB = ['flow_log', 'flow_metrics']
-export const SERVICE_MAP_SUPPORT_TABLE = ['l4_flow_log', 'l7_flow_log', 'network_map', 'application_map']
+export const SERVICE_MAP_SUPPORTED = {
+  DB: ['flow_log', 'flow_metrics'],
+  TABLE: ['l4_flow_log', 'l7_flow_log', 'network_map', 'application_map']
+}
+export const PROFILING_SUPPORTED = {
+  DB: ['profile'],
+  TABLE: ['in_process']
+}
 
 export const TAG_METRIC_TYPE_NUM = 6
 export const MAP_METRIC_TYPE_NUM = 7
@@ -30,27 +36,37 @@ export const IP_ARRAY_TAG_TYPE = 'ip_array'
 export const RESOURCE_ARRAY_TAG_TYPE = 'resource_array'
 export const GROUP_BY_DISABLE_TAG_TYPES = [MAP_TAG_TYPE, PCAP_TAG_TYPE, IP_ARRAY_TAG_TYPE, RESOURCE_ARRAY_TAG_TYPE]
 
-export const APPTYPE_APP_TRACING_FLAME = 'appTracingFlame'
+export const APP_TYPE = {
+  METRICS: 'trafficQuery',
+  SERVICE_MAP: 'accessRelationship',
+  TRACING: 'appTracing',
+  TRACING_FLAME: 'appTracingFlame',
+  PROFILING: 'profiling'
+}
 export const appTypeOpts = [
   {
     label: 'General Metrics',
-    value: 'trafficQuery'
+    value: APP_TYPE.METRICS
   },
   {
     label: 'Service Map',
-    value: 'accessRelationship'
+    value: APP_TYPE.SERVICE_MAP
   },
   {
     label: 'Distributed Tracing',
-    value: 'appTracing'
+    value: APP_TYPE.TRACING
   },
   {
     label: 'Distributed Tracing - Flame',
-    value: APPTYPE_APP_TRACING_FLAME
+    value: APP_TYPE.TRACING_FLAME
+  },
+  {
+    label: 'Continuous Profiling',
+    value: APP_TYPE.PROFILING
   }
 ]
 
-export const ALERTING_ALLOW_APP_TYPE = ['trafficQuery']
+export const ALERTING_ALLOW_APP_TYPE = [APP_TYPE.METRICS]
 
 export const formatAsOpts: SelectOpts = [
   {
@@ -252,3 +268,5 @@ export const showMetricsOpts: SelectOpts = [
 ]
 
 export const SLIMIT_DEFAULT_VALUE = '20'
+
+export const PROFILING_REQUIRED_FIELDS = ['app_service', 'profile_language_type', 'profile_event_type']

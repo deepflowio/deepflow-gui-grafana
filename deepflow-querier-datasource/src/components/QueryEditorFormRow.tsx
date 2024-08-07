@@ -4,9 +4,9 @@ import { Select, Button, Input, RadioButtonGroup } from '@grafana/ui'
 import { FuncSelectOpts, LabelItem, MetricOpts, SelectOpts, SelectOptsWithStringValue } from 'QueryEditor'
 import _ from 'lodash'
 import { SubFuncsEditor } from './SubFuncsEditor'
-import { BasicDataWithId, FormTypes, MAP_METRIC_TYPE_NUM } from 'consts'
+import { BasicDataWithId, FormTypes, MAP_METRIC_TYPE_NUM, PROFILING_REQUIRED_FIELDS } from 'consts'
 import { TagValueSelector } from './TagValueSelector'
-import { getRealKey, isAutoGroupTag, isEnumLikelyTag } from 'utils/tools'
+import { getRealKey, isAutoGroupTag, isEnumLikelyTag, TAG_OPERATORS_MAP } from 'utils/tools'
 import { SelectableValue } from '@grafana/data'
 
 export interface RowConfig {
@@ -66,6 +66,7 @@ type Props = {
     hasNotSet: boolean
     commonPreFunc: any
   }
+  usingProfilingType: boolean
 }
 
 const columnTypeOpts = [
@@ -109,13 +110,25 @@ export class QueryEditorFormRow extends PureComponent<Props> {
   }
 
   get operatorOpts(): SelectOpts {
-    const { basicData, tagOpts, metricOpts } = this.props
-    const result: MetricOpts = basicData.type === 'tag' ? tagOpts : metricOpts
-    return (
-      result.find(item => {
+    const { basicData, tagOpts, metricOpts, usingProfilingType } = this.props
+    const data: MetricOpts = basicData.type === 'tag' ? tagOpts : metricOpts
+    const result =
+      data.find(item => {
         return item.value === getRealKey(basicData)
       })?.operatorOpts || []
-    )
+
+    // profiling app type special handle
+    const isSpecTag = ['profile_event_type'].includes(basicData.key)
+    if (usingProfilingType && isSpecTag) {
+      const inOperator = TAG_OPERATORS_MAP.IN
+      result.push({
+        label: inOperator.display_name,
+        value: 'IN',
+        // @ts-ignore
+        description: inOperator.description
+      })
+    }
+    return result
   }
 
   get currentTagType(): string {
@@ -180,6 +193,11 @@ export class QueryEditorFormRow extends PureComponent<Props> {
   get preFuncsOpts(): FuncSelectOpts {
     const { basicData } = this.props
     return this.showPreFuncsSelector && basicData.key ? preFuncs : []
+  }
+
+  get profilingRemoveBtnHidden(): boolean {
+    const { usingProfilingType, basicData } = this.props
+    return usingProfilingType && PROFILING_REQUIRED_FIELDS.includes(basicData.key)
   }
 
   onColumnTypeSelect = (val: SelectableValue<string>) => {
@@ -592,13 +610,15 @@ export class QueryEditorFormRow extends PureComponent<Props> {
               onClick={ev => this.onActiveBtnClick(ev, 'add')}
               disabled={addBtnDisabled}
             ></Button>
-            <Button
-              disabled={removeBtnDisabled}
-              fill="outline"
-              variant="secondary"
-              icon="trash-alt"
-              onClick={ev => this.onActiveBtnClick(ev, 'remove')}
-            ></Button>
+            {!this.profilingRemoveBtnHidden ? (
+              <Button
+                disabled={removeBtnDisabled}
+                fill="outline"
+                variant="secondary"
+                icon="trash-alt"
+                onClick={ev => this.onActiveBtnClick(ev, 'remove')}
+              ></Button>
+            ) : null}
           </div>
         </div>
         {this.showSubFuncsEditor ? (
