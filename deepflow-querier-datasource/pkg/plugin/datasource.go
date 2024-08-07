@@ -204,8 +204,12 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 			return response, nil
 		}
 	}
+
+	var profile_event_type string = ""
 	// 获取profile_event_type
-	profile_event_type := qj["profile_event_type"].(string)
+	if qj["profile_event_type"] != nil {
+		profile_event_type = qj["profile_event_type"].(string)
+	}
 
 	//app类型
 	appType := queryText["appType"].(string)
@@ -251,15 +255,26 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 			frame.Fields = append(frame.Fields,
 				data.NewField("level", nil, []float64{0}),
 			)
-			frame.Fields = append(frame.Fields,
-				data.NewField("value", nil, []float64{0}),
-			)
+			field := data.NewField("value", nil, []float64{0})
+			field.Config = &data.FieldConfig{
+				Unit: "ns",
+			}
+			frame.Fields = append(frame.Fields, field)
+
+			// frame.Fields = append(frame.Fields,
+			// 	data.NewField("value", nil, []float64{0}),
+			// )
 			frame.Fields = append(frame.Fields,
 				data.NewField("label", nil, []string{"_"}),
 			)
-			frame.Fields = append(frame.Fields,
-				data.NewField("self", nil, []float64{0}),
-			)
+			fieldSelf := data.NewField("self", nil, []float64{0})
+			fieldSelf.Config = &data.FieldConfig{
+				Unit: "ns",
+			}
+			frame.Fields = append(frame.Fields, fieldSelf)
+			// frame.Fields = append(frame.Fields,
+			// 	data.NewField("self", nil, []float64{0}),
+			// )
 			response.Frames = append(response.Frames, frame)
 			return response, nil
 		}
@@ -326,15 +341,29 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 		frame.Fields = append(frame.Fields,
 			data.NewField("level", nil, dataAll["level"]),
 		)
-		frame.Fields = append(frame.Fields,
-			data.NewField("value", nil, dataAll["value"]),
-		)
+		fieldValue := data.NewField("value", nil, dataAll["value"])
+		fieldValue.Config = &data.FieldConfig{
+			Unit: "ns",
+		}
+		frame.Fields = append(frame.Fields, fieldValue)
+
+		// frame.Fields = append(frame.Fields,
+		// 	data.NewField("value", nil, dataAll["value"]),
+		// )
+
 		frame.Fields = append(frame.Fields,
 			data.NewField("label", nil, dataAll["label"]),
 		)
-		frame.Fields = append(frame.Fields,
-			data.NewField("self", nil, dataAll["self"]),
-		)
+
+		fieldSelf := data.NewField("self", nil, dataAll["self"])
+		fieldSelf.Config = &data.FieldConfig{
+			Unit: "ns",
+		}
+		frame.Fields = append(frame.Fields, fieldSelf)
+
+		// frame.Fields = append(frame.Fields,
+		// 	data.NewField("self", nil, dataAll["self"]),
+		// )
 		response.Frames = append(response.Frames, frame)
 		return response, nil
 	}
