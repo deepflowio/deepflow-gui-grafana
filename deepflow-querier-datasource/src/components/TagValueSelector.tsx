@@ -5,6 +5,7 @@ import _ from 'lodash'
 import * as querierJs from 'deepflow-sdk-js'
 import { genGetTagValuesSql, getRealKey } from 'utils/tools'
 import { getTagMapCache } from 'utils/cache'
+import { PROFILING_REQUIRED_FIELDS } from 'consts'
 
 export const INPUT_TAG_VAL_TYPES = ['int', 'ip', 'mac', 'ip_array']
 export const SELECT_TAG_VAL_OPS = ['=', '!=', 'IN', 'NOT IN']
@@ -18,10 +19,11 @@ export const TagValueSelector = (props: {
     gotBasicData: boolean
     templateVariableOpts: SelectOpts
     uuid: string
+    usingProfilingType: boolean
   }
   onChange: (ev: any) => void
 }) => {
-  const { db, from, basicData, gotBasicData, templateVariableOpts, uuid } = props.parentProps
+  const { db, from, basicData, gotBasicData, templateVariableOpts, uuid, usingProfilingType } = props.parentProps
   const boolOpts = [
     {
       label: '是',
@@ -44,6 +46,10 @@ export const TagValueSelector = (props: {
     return INPUT_TAG_VAL_TYPES.includes(tagMapItem.type) || !SELECT_TAG_VAL_OPS.includes(basicData.op)
   }, [tagMapItem.type, basicData.op])
 
+  const isProfilingSpecTags = useMemo(() => {
+    return usingProfilingType && PROFILING_REQUIRED_FIELDS.includes(basicData.key)
+  }, [basicData.key, usingProfilingType])
+
   const isMulti = useMemo(() => {
     return MULTI_SELECT_TAG_VAL_OPS.includes(basicData.op)
   }, [basicData.op])
@@ -63,12 +69,14 @@ export const TagValueSelector = (props: {
       try {
         // @ts-ignore
         const data = await querierJs.searchBySql(
-          genGetTagValuesSql({
-            tagName: tagMapItem.name,
-            tagType: tagMapItem.type,
-            from,
-            keyword
-          }),
+          tagMapItem.name === 'profile_event_type'
+            ? `SELECT profile_event_type AS \`value\`, profile_event_type AS \`display_name\` FROM ${from} GROUP BY profile_event_type`
+            : genGetTagValuesSql({
+                tagName: tagMapItem.name,
+                tagType: tagMapItem.type,
+                from,
+                keyword
+              }),
           db,
           (d: any) => {
             return {
@@ -78,6 +86,9 @@ export const TagValueSelector = (props: {
             }
           }
         )
+
+        if (tagMapItem.name === 'profile_event_type') {
+        }
 
         opts = [
           // if is not tag of resource type, gen custom option by keyword
@@ -134,7 +145,6 @@ export const TagValueSelector = (props: {
       )
     }
   }, [useInput, basicData.val, templateVariableOpts])
-
   return gotBasicData && !!tagMapItem.type && typeof useInput === 'boolean' ? (
     tagMapItem.type === 'bool' ? (
       <Select
@@ -183,7 +193,7 @@ export const TagValueSelector = (props: {
         onChange={v => {
           props.onChange(v)
         }}
-        isMulti={isMulti}
+        isMulti={isMulti && !isProfilingSpecTags}
         width="auto"
         key={
           (Array.isArray(basicData.val) && basicData.val.length) || (!Array.isArray(basicData.val) && basicData.val)

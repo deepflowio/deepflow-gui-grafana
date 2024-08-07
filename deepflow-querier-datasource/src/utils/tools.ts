@@ -23,7 +23,7 @@ export function uuid() {
   return s4() + s4() + '-' + s4() + '-' + s4() + '-' + s4() + '-' + s4() + s4() + s4()
 }
 
-const TAG_OPERATORS_MAP = {
+export const TAG_OPERATORS_MAP = {
   LIKE: {
     display_name: ':',
     description: 'string, * for wildcard',
@@ -93,7 +93,8 @@ export function formatTagOperators(item: Record<any, any> & { operators: string[
   operators
     .filter(op => {
       const isStringType = item.type === 'string'
-      if (isStringType) {
+      const isNotSpecTag = !['profile_event_type'].includes(item.name)
+      if (isStringType && isNotSpecTag) {
         return !['=', '!=', 'IN', 'NOT IN'].includes(op)
       }
       return true

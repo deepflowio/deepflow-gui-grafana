@@ -15,6 +15,7 @@ export interface MyQuery extends DataQuery {
       }
     | {}
   _id?: string
+  profile_event_type?: string
 }
 
 /**
