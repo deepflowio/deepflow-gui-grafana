@@ -582,7 +582,7 @@ export const replaceIntervalAndVariables = (queryText: string, scopedVars?: Scop
     .forEach(e => {
       if (e.type === 'interval') {
         const value = _.get(e, ['current', 'value'])
-        const valueAfterConvert = convertIntervalStringToSeconds(value)
+        const valueAfterConvert = convertIntervalStringToSeconds(value as string)
         if (value !== valueAfterConvert) {
           const id = _.get(e, 'id')
           _queryText = _queryText.split(`"$${id}"`).join(valueAfterConvert + '')
