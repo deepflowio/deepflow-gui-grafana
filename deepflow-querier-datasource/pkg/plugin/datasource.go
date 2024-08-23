@@ -311,6 +311,9 @@ func (d *Datasource) query(ctx context.Context, pCtx backend.PluginContext, quer
 							return response, fmt.Errorf("unexpected type for %v, assertion failed for float64, type %T", subValue[j], subValue[j])
 
 						}
+						if column != "level" {
+							floatValue *= 1000
+						}
 						dataAll[filed_name] = append(slice, floatValue)
 					} else {
 						return response, fmt.Errorf("unexpected type for %v, assertion failed, type %T", subValue[j], subValue[j])
