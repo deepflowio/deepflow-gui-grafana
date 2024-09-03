@@ -1593,7 +1593,7 @@ export class QueryEditor extends PureComponent<Props> {
                               width={28}
                             />
                           </InlineField>
-                          <InlineField className="custom-label" label="SHOW METRICS" labelWidth={14}>
+                          <InlineField className="custom-label" label="SHOW METRICS" labelWidth={14.5}>
                             <div
                               style={{
                                 display: 'flex',
