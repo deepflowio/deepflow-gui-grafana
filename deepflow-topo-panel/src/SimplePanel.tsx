@@ -65,6 +65,7 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
     x: 0,
     y: 0
   })
+  const [hasMousePos, setHasMousePos] = useState(false)
 
   const { series, request } = data
   const refIds = useMemo(() => {
@@ -505,18 +506,6 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
         )
         bindEventFunction.bindCustomMouseEvent(
           link,
-          'mousemove',
-          (e: MouseEvent, l: Link<LinkItem> | Node<NodeItem>) => {
-            setTimeout(() => {
-              setMousePos({
-                x: e.clientX,
-                y: e.clientY
-              })
-            })
-          }
-        )
-        bindEventFunction.bindCustomMouseEvent(
-          link,
           'mouseleave',
           (e: MouseEvent, l: Link<LinkItem> | Node<NodeItem>) => {
             setTooltipContent({})
@@ -530,18 +519,6 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
           (e: MouseEvent, n: Link<LinkItem> | Node<NodeItem>) => {
             const tagsObj = _.get(node, ['data', 'tags'], {})
             setTooltipContent(tagsObj)
-          }
-        )
-        bindEventFunction.bindCustomMouseEvent(
-          node,
-          'mousemove',
-          (e: MouseEvent, n: Link<LinkItem> | Node<NodeItem>) => {
-            setTimeout(() => {
-              setMousePos({
-                x: e.clientX,
-                y: e.clientY
-              })
-            })
           }
         )
         bindEventFunction.bindCustomMouseEvent(
@@ -626,8 +603,14 @@ export const SimplePanel: React.FC<Props> = ({ id, options, data, width, height 
         ) : null}
       </div>
       {noData ? <div>No Data</div> : null}
-      <div className={`chart-container ${randomClassName}`}></div>
-      <TopoTooltip contentData={tooltipContent} mousePos={mousePos}></TopoTooltip>
+      <div
+        className={`chart-container ${randomClassName}`}
+        onMouseMove={event => {
+          setMousePos({ x: event.clientX, y: event.clientY })
+          setHasMousePos(true)
+        }}
+      ></div>
+      <TopoTooltip contentData={tooltipContent} mousePos={mousePos} hasMousePos={hasMousePos}></TopoTooltip>
       {errMsg ? (
         <Alert
           title={errMsg}
