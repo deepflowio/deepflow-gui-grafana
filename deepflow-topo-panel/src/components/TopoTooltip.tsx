@@ -10,9 +10,10 @@ interface Props {
     x: number
     y: number
   }
+  hasMousePos: boolean
 }
 
-export const TopoTooltip: React.FC<Props> = ({ contentData, mousePos }) => {
+export const TopoTooltip: React.FC<Props> = ({ contentData, mousePos, hasMousePos }) => {
   const pos = useMemo(() => {
     const { x, y } = mousePos
     return {
@@ -25,7 +26,7 @@ export const TopoTooltip: React.FC<Props> = ({ contentData, mousePos }) => {
     <div
       className="topo-tooltip"
       style={{
-        display: Object.keys(contentData).length > 0 ? '' : 'none',
+        display: hasMousePos && Object.keys(contentData).length > 0 ? '' : 'none',
         left: pos.left,
         top: pos.top
       }}
