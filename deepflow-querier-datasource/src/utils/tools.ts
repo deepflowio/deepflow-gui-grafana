@@ -173,18 +173,11 @@ export function getAccessRelationshipQueryConfig(groupBy: any, returnTags: any[]
 }
 
 export function getParamByName(name: string) {
-  const search = window.location.search.replace('?', '')
   if (typeof name === 'undefined') {
     return undefined
   }
-  const searchObj: Record<string, string> = {}
-  search.split('&').forEach((e: string) => {
-    const _arr = e.split('=')
-    const key = _arr[0]
-    const name = _arr[1]
-    searchObj[key] = name
-  })
-  return searchObj[name]
+  const values = new URLSearchParams(window.location.search).getAll(name)
+  return values.length ? values[values.length - 1] : undefined
 }
 
 function roundToStrNotWithDecimalZero(num: any) {
