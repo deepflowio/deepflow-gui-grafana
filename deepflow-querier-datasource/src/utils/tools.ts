@@ -529,7 +529,7 @@ export function queryCondsFilter(conds: BasicDataWithId[] | undefined, type: 'ta
     return defaultCond
   }
   const result = conds.filter(e => {
-    const hasVal = Array.isArray(e.val) ? e.val.length : e.val
+    const hasVal = Array.isArray(e.val) ? e.val.length : e.val === 0 || e.val
     return e.key && e.op && hasVal
   })
   return result?.length ? result : defaultCond
