@@ -22,6 +22,9 @@ class DataStreamer {
    * @param frequency 输出频率（毫秒）
    */
   output(callback: (char: string) => void, frequency: number) {
+    if (this.outputInterval !== undefined) {
+      clearInterval(this.outputInterval)
+    }
     this.outputInterval = window.setInterval(() => {
       if (this.dataQueue.length > 0) {
         const char = this.dataQueue.shift() as string
