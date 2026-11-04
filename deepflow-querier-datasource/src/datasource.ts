@@ -403,7 +403,6 @@ export class DataSource extends DataSourceWithBackend<MyQuery, MyDataSourceOptio
         answer = res.data
         streamer.write(res.data)
       })
-
-    streamer.end()
+      .finally(() => streamer.end())
   }
 }
