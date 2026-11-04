@@ -1,0 +1,10 @@
+const { readFileSync } = require('node:fs')
+const { join } = require('node:path')
+const { test } = require('node:test')
+const assert = require('node:assert/strict')
+const source = readFileSync(join(__dirname, 'src/components/TagValueSelector.tsx'), 'utf8')
+const expression = source.match(/data\.(?:find|some)\(\(item: any\) => \{[\s\S]*?\}\)/)[0]
+const prefix = source.slice(source.indexOf('keyword &&') + 'keyword &&'.length, source.indexOf(expression)).trim()
+const check = new Function('data', 'keyword', `return ${prefix}${expression.replace('(item: any)', '(item)')}`)
+test('offers custom input when no option exists', () => assert.equal(Boolean(check([], 'new')), true))
+test('does not duplicate an existing match', () => assert.equal(Boolean(check([{ display_name: 'new' }, { display_name: 'other' }], 'new')), false))

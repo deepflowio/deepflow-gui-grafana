@@ -94,8 +94,8 @@ export const TagValueSelector = (props: {
           // if is not tag of resource type, gen custom option by keyword
           ...(tagMapItem.type !== 'resource' &&
           keyword &&
-          data.find((item: any) => {
-            return item.display_name !== keyword
+          !data.some((item: any) => {
+            return item.display_name === keyword
           })
             ? [
                 {
