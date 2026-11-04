@@ -15,19 +15,19 @@ export const TracingIdSelector = (props: {
       ? [tracingId].filter((item: LabelItem) => {
           return !item.isVariable
         })
-      : []),
-    ...templateVariableOpts.map((item: LabelItem) => {
-      return {
-        ...item,
-        value: `$${item.value}`
-      }
-    })
+      : [])
   ])
 
   return (
     <Select
       value={tracingId}
-      options={selectInputOpts}
+      options={[
+        ...selectInputOpts,
+        ...templateVariableOpts.map((item: LabelItem) => ({
+          ...item,
+          value: `$${item.value}`
+        }))
+      ]}
       onChange={v => {
         props.onChange(v)
       }}
