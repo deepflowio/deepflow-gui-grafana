@@ -13,7 +13,9 @@ class DataStreamer {
    * @param data 要写入的数据
    */
   write(data: string) {
-    this.dataQueue.push(...data)
+    for (const char of data) {
+      this.dataQueue.push(char)
+    }
   }
 
   /**
