@@ -95,8 +95,9 @@ export function SubFuncsEditor(props: SubFuncsEditorProps) {
   }
 
   function onRemoveBtnClick(index: number) {
-    props.subFuncs.splice(index, 1)
-    props.onSubFuncsChange(props.subFuncs)
+    const nextSubFuncs = [...props.subFuncs]
+    nextSubFuncs.splice(index, 1)
+    props.onSubFuncsChange(nextSubFuncs)
   }
 
   const [numberOpts, setNumberOpts] = useState<SelectOpts>(
