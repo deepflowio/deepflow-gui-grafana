@@ -1,0 +1,25 @@
+const { readFileSync } = require('node:fs')
+const { join } = require('node:path')
+const { test } = require('node:test')
+const assert = require('node:assert/strict')
+const source = readFileSync(join(__dirname, 'src/utils/dataStreamer.ts'), 'utf8')
+  .replace('private dataQueue: string[]', 'dataQueue').replace('private isEnded', 'isEnded')
+  .replace('private outputInterval: number | undefined', 'outputInterval')
+  .replace(/onEnd: \(\) => void/g, 'onEnd').replace('data: string', 'data')
+  .replace('callback: (char: string) => void, frequency: number', 'callback, frequency')
+  .replace(' as string', '').replace('private cleanup()', 'cleanup()').replace('export default DataStreamer', '')
+test('replacing the output callback does not leave an interval behind', () => {
+  const timers = new Map()
+  let next = 0
+  const clear = id => timers.delete(id)
+  const Stream = new Function('window', 'clearInterval', `${source}; return DataStreamer`)(
+    { setInterval: callback => { timers.set(++next, callback); return next } }, clear)
+  let ends = 0
+  const stream = new Stream(() => ends++)
+  stream.output(() => {}, 1)
+  stream.output(() => {}, 1)
+  assert.equal(timers.size, 1)
+  stream.end()
+  assert.equal(timers.size, 0)
+  assert.equal(ends, 1)
+})
